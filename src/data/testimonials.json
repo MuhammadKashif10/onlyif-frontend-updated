@@ -1,0 +1,70 @@
+{
+  "testimonials": [
+    {
+      "id": "1",
+      "name": "Sarah Johnson",
+      "role": "Home Seller",
+      "content": "OnlyIf made selling my home incredibly easy. I got a fair cash offer in just 24 hours and closed in 2 weeks!",
+      "rating": 5,
+      "avatar": "/images/testimonial-1.jpg",
+      "propertyType": "Single Family",
+      "location": "Austin, TX",
+      "date": "2024-01-15"
+    },
+    {
+      "id": "2",
+      "name": "Michael Chen",
+      "role": "Home Buyer",
+      "content": "The buying process was transparent and stress-free. I love my new home and the team was amazing throughout.",
+      "rating": 5,
+      "avatar": "/images/testimonial-2.jpg",
+      "propertyType": "Condo",
+      "location": "Austin, TX",
+      "date": "2024-01-10"
+    },
+    {
+      "id": "3",
+      "name": "Emily Rodriguez",
+      "role": "First-time Buyer",
+      "content": "As a first-time buyer, I was nervous about the process. OnlyIf guided me every step of the way.",
+      "rating": 5,
+      "avatar": "/images/testimonial-3.jpg",
+      "propertyType": "Townhouse",
+      "location": "Austin, TX",
+      "date": "2024-01-08"
+    },
+    {
+      "id": "4",
+      "name": "Jennifer Martinez",
+      "role": "Home Seller",
+      "content": "OnlyIf transformed my selling experience. The team was professional, transparent, and made everything so easy.",
+      "rating": 5,
+      "avatar": "/images/testimonial-jennifer.jpg",
+      "propertyType": "Single Family",
+      "location": "Austin, TX",
+      "date": "2024-01-05"
+    },
+    {
+      "id": "5",
+      "name": "Robert Wilson",
+      "role": "Home Buyer",
+      "content": "As a first-time buyer, I was nervous about the process. OnlyIf guided me every step of the way with patience and expertise.",
+      "rating": 5,
+      "avatar": "/images/testimonial-robert.jpg",
+      "propertyType": "Single Family",
+      "location": "Austin, TX",
+      "date": "2024-01-03"
+    },
+    {
+      "id": "6",
+      "name": "Lisa Thompson",
+      "role": "Real Estate Investor",
+      "content": "OnlyIf's platform is revolutionary. The transparency and efficiency have changed how I think about real estate transactions.",
+      "rating": 5,
+      "avatar": "/images/testimonial-lisa.jpg",
+      "propertyType": "Investment Property",
+      "location": "Austin, TX",
+      "date": "2024-01-01"
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://onlyif.com/sitemap.xml
+
+# Crawl-delay for respectful crawling
+Crawl-delay: 1
+
+# Disallow admin and private areas
+Disallow: /admin/
+Disallow: /api/
+Disallow: /_next/
+Disallow: /private/
+Disallow: /temp/
+Disallow: /draft/
+
+# Allow important pages
+Allow: /browse
+Allow: /property/
+Allow: /agents
+Allow: /about
+Allow: /contact
+Allow: /how-it-works
+Allow: /sell/
+Allow: /buy/
+
+# Block search and filter URLs to prevent duplicate content
+Disallow: /*?search=
+Disallow: /*?filter=
+Disallow: /*?sort=
+Disallow: /*?page=
+
+# Allow Googlebot to access everything
+User-agent: Googlebot
+Allow: /
+
+# Allow Bingbot
+User-agent: Bingbot
+Allow: /
+
+# Block AI training bots
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ChatGPT-User
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
+
+User-agent: Claude-Web
+Disallow: /
+
+User-agent: Omgilibot
+Disallow: /

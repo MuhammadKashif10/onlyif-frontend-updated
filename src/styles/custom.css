@@ -1,0 +1,29 @@
+/* Minimal custom styles - no global overrides */
+
+/* Dark background utility */
+.dark-bg {
+  background-color: var(--brand-primary);
+  color: var(--text-on-dark);
+}
+
+/* Hero section specific styles */
+.hero-white-text,
+.hero-white-text h1,
+.hero-white-text h2,
+.hero-white-text h3,
+.hero-white-text p,
+.hero-white-text span {
+  color: white !important;
+}
+
+/* Responsive heading adjustments */
+@media (max-width: 640px) {
+  .hero-white-text h1 { 
+    font-size: 1.875rem; 
+    line-height: 2.25rem; 
+  }
+  .hero-white-text h2 { 
+    font-size: 1.5rem; 
+    line-height: 2rem; 
+  }
+}

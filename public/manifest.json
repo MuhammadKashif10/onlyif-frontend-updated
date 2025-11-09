@@ -1,0 +1,74 @@
+{
+  "name": "OnlyIf - Real Estate Platform",
+  "short_name": "OnlyIf",
+  "description": "Buy and sell homes with confidence. OnlyIf makes real estate simple, transparent, and stress-free.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1f2937",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en",
+  "categories": ["real estate", "business", "finance"],
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Browse Homes",
+      "short_name": "Browse",
+      "description": "Browse homes for sale",
+      "url": "/browse",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Get Cash Offer",
+      "short_name": "Sell",
+      "description": "Get a cash offer for your home",
+      "url": "/sell/get-offer",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot-wide.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "OnlyIf Real Estate Platform - Desktop View"
+    },
+    {
+      "src": "/screenshot-narrow.png",
+      "sizes": "750x1334",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "OnlyIf Real Estate Platform - Mobile View"
+    }
+  ]
+}
