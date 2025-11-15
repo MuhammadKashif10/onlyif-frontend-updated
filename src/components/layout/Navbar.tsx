@@ -21,7 +21,7 @@ interface NavbarProps {
 }
 
 export default function Navbar({
-  logo = '/images/logo.png',
+  logo = '/images/logo.PNG',
   logoText = '',
   navigationItems = [
     { label: 'Buy', href: '/browse' },
