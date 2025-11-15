@@ -24,6 +24,8 @@ const nextConfig: NextConfig = {
       'images.pexels.com',
       // Allow backend host for uploaded images when configured
       ...(backendHost ? [backendHost.hostname] : []),
+      // Explicit backend uploads host for production
+      'onlyif-backend-updated-production.up.railway.app',
     ],
     remotePatterns: [
       {
@@ -37,6 +39,11 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'images.pexels.com',
+      },
+      // Explicit backend uploads host for production
+      {
+        protocol: 'https',
+        hostname: 'onlyif-backend-updated-production.up.railway.app',
       },
       // Dynamically allow backend uploads domain (including Railway / custom domains)
       ...(backendHost
