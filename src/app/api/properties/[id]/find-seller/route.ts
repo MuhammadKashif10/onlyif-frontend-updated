@@ -21,11 +21,11 @@ export async function GET(
     const authHeader = request.headers.get('Authorization');
     
     // Connect to backend API to find seller using fallback methods
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+    const backendBase = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || '';
     
-    console.log('🔗 Finding seller through backend fallback:', `${backendUrl}/api/properties/${id}/find-seller`);
+    console.log('🔗 Finding seller through backend fallback:', `${backendBase}/api/properties/${id}/find-seller`);
 
-    const backendResponse = await fetch(`${backendUrl}/api/properties/${id}/find-seller`, {
+    const backendResponse = await fetch(`${backendBase}/api/properties/${id}/find-seller`, {
       method: 'GET',
       headers: {
         'Authorization': authHeader || '',

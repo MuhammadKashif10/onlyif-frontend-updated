@@ -43,7 +43,7 @@ export async function GET(
     if (status) queryParams.append('status', status);
 
     // Forward request to backend
-    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/sellers/${sellerId}/listings?${queryParams}`;
+    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL || ''}/sellers/${sellerId}/listings?${queryParams}`;
     
     console.log('🔗 Fetching seller listings from backend:', backendUrl);
     console.log('👤 Seller ID:', sellerId);

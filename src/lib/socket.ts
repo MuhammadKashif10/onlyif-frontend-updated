@@ -5,7 +5,7 @@ let socket: Socket | null = null;
 export const initSocket = (token: string): Socket => {
   if (!socket) {
     // Ensure we connect to the backend host, not the /api path
-    const raw = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+    const raw = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || '';
     const base = raw.replace(/\/api$/, "");
 
     socket = io(base, {

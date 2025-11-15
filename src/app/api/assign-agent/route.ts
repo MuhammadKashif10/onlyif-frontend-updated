@@ -99,7 +99,8 @@ const sendEmailNotifications = async (sellerData: SellerData, assignedAgent: Age
       agentPhone: assignedAgent.phone
     };
 
-    const response = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/notify`, {
+    const frontendUrl = process.env.FRONTEND_URL || process.env.NEXT_PUBLIC_FRONTEND_URL || process.env.NEXTAUTH_URL || '';
+    const response = await fetch(`${frontendUrl}/api/notify`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

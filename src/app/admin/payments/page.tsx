@@ -120,8 +120,8 @@ export default function PaymentsPage() {
 
   const downloadInvoice = async (payment: Payment) => {
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-      const url = `${baseUrl}/api/admin/payments/${encodeURIComponent(payment.transactionId)}/invoice.pdf`;
+      const backendBase = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || '';
+      const url = `${backendBase}/api/admin/payments/${encodeURIComponent(payment.transactionId)}/invoice.pdf`;
       const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
       const res = await fetch(url, {
         headers: token ? { Authorization: `Bearer ${token}` } : undefined,

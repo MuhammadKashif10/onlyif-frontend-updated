@@ -43,7 +43,7 @@ export const adminApi = {
     
     console.log('🔄 Admin API: Fetching properties from endpoint:', endpoint);
     console.log('🔄 Admin API: Query params:', params);
-    console.log('🔄 Admin API: Full URL will be:', `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}${endpoint}`);
+    console.log('🔄 Admin API: Full URL will be:', `${process.env.NEXT_PUBLIC_API_URL || ''}${endpoint}`);
     
     try {
       const response = await apiClient.get(endpoint);

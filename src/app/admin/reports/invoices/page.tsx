@@ -32,7 +32,7 @@ export default function AdminInvoiceReportsPage() {
   const [rows, setRows] = useState<InvoiceRow[]>([]);
   const [total, setTotal] = useState(0);
 
-  const backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  const backendBase = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || '';
 
   const qs = useMemo(() => {
     const p = new URLSearchParams();
@@ -46,7 +46,7 @@ export default function AdminInvoiceReportsPage() {
     try {
       setLoading(true);
       const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
-      const res = await fetch(`${backendUrl}/api/admin/invoices?${qs}`, {
+      const res = await fetch(`${backendBase}/api/admin/invoices?${qs}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -67,7 +67,7 @@ export default function AdminInvoiceReportsPage() {
 
   const exportCsv = async () => {
     const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
-    const res = await fetch(`${backendUrl}/api/admin/invoices/export?${qs}`, {
+    const res = await fetch(`${backendBase}/api/admin/invoices/export?${qs}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     const blob = await res.blob();

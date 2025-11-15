@@ -88,8 +88,8 @@ export async function GET(
     const authHeader = request.headers.get('Authorization');
     
     // Forward to backend API
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-    const backendApiUrl = `${backendUrl}/api/messages/${threadId}`;
+    const backendBase = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || '';
+    const backendApiUrl = `${backendBase}/api/messages/${threadId}`;
     
     console.log(`[Thread API] Forwarding to backend: ${backendApiUrl}`);
     
@@ -196,8 +196,8 @@ export async function PUT(
     const authHeader = request.headers.get('Authorization');
     
     // Forward to backend API
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-    const backendApiUrl = `${backendUrl}/api/messages/${threadId}/read`;
+    const backendBase = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || '';
+    const backendApiUrl = `${backendBase}/api/messages/${threadId}/read`;
     
     console.log(`[Thread API PUT] Forwarding mark as read to backend: ${backendApiUrl}`);
     

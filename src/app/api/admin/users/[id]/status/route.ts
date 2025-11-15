@@ -9,7 +9,7 @@ export async function PATCH(
     const { id } = params;
     const body = await request.json();
     
-    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/admin/users/${id}/status`;
+    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL || ''}/admin/users/${id}/status`;
     
     console.log('🔗 Updating user status at backend:', backendUrl);
     console.log('📦 Request body:', body);

@@ -31,7 +31,7 @@ export async function GET(
     }
 
     // Forward request to backend
-    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/sellers/${sellerId}/overview`;
+    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL || ''}/sellers/${sellerId}/overview`;
     
     console.log('🔗 Fetching seller overview from backend:', backendUrl);
     console.log('👤 Seller ID:', sellerId);

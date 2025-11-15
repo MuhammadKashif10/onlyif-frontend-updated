@@ -3,8 +3,8 @@ import { NextRequest, NextResponse } from 'next/server';
 // Function to create payment record via backend API
 async function createPaymentRecord(invoiceData: any, propertyData: any, sellerData: any, agentData: any) {
   try {
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-    const response = await fetch(`${backendUrl}/api/admin/payment-records`, {
+    const backendBase = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || '';
+    const response = await fetch(`${backendBase}/api/admin/payment-records`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

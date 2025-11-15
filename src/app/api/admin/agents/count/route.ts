@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 // GET /api/admin/agents/count - Get total agents count
 export async function GET(request: NextRequest) {
   try {
-    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/admin/agents/count`;
+    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL || ''}/admin/agents/count`;
     
     const response = await fetch(backendUrl, {
       method: 'GET',

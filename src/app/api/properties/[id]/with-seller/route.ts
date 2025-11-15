@@ -21,11 +21,11 @@ export async function GET(
     const authHeader = request.headers.get('Authorization');
     
     // Connect to backend API to get property with seller details
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+    const backendBase = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || '';
     
-    console.log('🔗 Fetching property with seller from backend:', `${backendUrl}/api/properties/${id}/with-seller`);
+    console.log('🔗 Fetching property with seller from backend:', `${backendBase}/api/properties/${id}/with-seller`);
 
-    const backendResponse = await fetch(`${backendUrl}/api/properties/${id}/with-seller`, {
+    const backendResponse = await fetch(`${backendBase}/api/properties/${id}/with-seller`, {
       method: 'GET',
       headers: {
         'Authorization': authHeader || '',

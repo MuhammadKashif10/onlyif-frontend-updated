@@ -3,8 +3,8 @@ class ApiClient {
   private defaultHeaders: Record<string, string>;
 
   constructor() {
-    // Point directly to backend server
-    this.baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+    // Point directly to backend server (Railway / configured backend)
+    this.baseURL = process.env.NEXT_PUBLIC_API_URL || '/api';
     this.defaultHeaders = {
       'Content-Type': 'application/json',
     };

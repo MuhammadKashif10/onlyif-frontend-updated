@@ -58,7 +58,7 @@ export function isValidImageUrl(url: string): boolean {
  * Constructs full backend URL for image paths
  */
 function constructBackendImageUrl(imagePath: string): string {
-  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5000';
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || '';
   
   // Handle different path formats
   if (imagePath.startsWith('/uploads')) {

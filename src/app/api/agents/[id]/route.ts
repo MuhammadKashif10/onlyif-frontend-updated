@@ -9,7 +9,7 @@ export async function GET(
     const agentId = params.id;
     
     // Forward request to backend
-    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/agents/${agentId}`;
+    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL || ''}/agents/${agentId}`;
     
     console.log('🔗 Fetching agent from backend:', backendUrl);
     

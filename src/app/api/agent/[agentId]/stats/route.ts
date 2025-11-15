@@ -19,7 +19,8 @@ export async function GET(
     
     // Try to fetch from backend stats endpoint
     try {
-      const backendUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/agent/${agentId}/stats`;
+      const backendBase = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || '';
+      const backendUrl = `${backendBase}/api/agent/${agentId}/stats`;
       
       console.log('🔗 Fetching agent stats from backend:', backendUrl);
       

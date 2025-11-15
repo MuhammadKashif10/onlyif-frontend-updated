@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 // GET /api/admin/payments/monthly-revenue - Get monthly revenue
 export async function GET(request: NextRequest) {
   try {
-    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/admin/payments/monthly-revenue`;
+    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL || ''}/admin/payments/monthly-revenue`;
     
     const response = await fetch(backendUrl, {
       method: 'GET',

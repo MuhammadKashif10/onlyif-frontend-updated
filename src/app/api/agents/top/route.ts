@@ -6,7 +6,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const limit = searchParams.get('limit') || '6';
     
-    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/agents/top?limit=${limit}`;
+    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL || ''}/agents/top?limit=${limit}`;
     
     console.log('🔗 Fetching top agents from backend:', backendUrl);
     

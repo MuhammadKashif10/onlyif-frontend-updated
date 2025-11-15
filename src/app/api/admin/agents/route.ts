@@ -6,7 +6,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     
     // Forward all query parameters to backend
-    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/admin/agents?${searchParams.toString()}`;
+    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL || ''}/admin/agents?${searchParams.toString()}`;
     
     console.log('🔗 Fetching admin agents from backend:', backendUrl);
     

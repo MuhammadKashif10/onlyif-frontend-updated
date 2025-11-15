@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/buyer/unlocked-properties`;
+    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL || ''}/buyer/unlocked-properties`;
 
     const response = await fetch(backendUrl, {
       method: 'GET',

@@ -32,9 +32,10 @@ export default function OneToOneChat({
   agent: Agent;
   propertyTitle: string;
 }) {
-  console.log("🚀 ~ OneToOneChat ~ agent:", agent)
+console.log("🚀 ~ OneToOneChat ~ agent:", agent)
 
-const socket = io(process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000", {
+const backendBase = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || '';
+const socket = io(backendBase, {
   withCredentials: true,
 });
   console.log("🚀 ~ OneToOneChat ~ agent:", agent)
@@ -45,7 +46,7 @@ const socket = io(process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000", {
   const [sending, setSending] = useState(false);
   const viewportRef = useRef<HTMLDivElement>(null);
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+  const apiUrl = backendBase || '';
 
   // Load auth
   useEffect(() => {

@@ -8,7 +8,7 @@ export async function DELETE(
   try {
     const { id } = params;
     
-    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/admin/users/${id}`;
+    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL || ''}/admin/users/${id}`;
     
     console.log('🔗 Deleting user at backend:', backendUrl);
     
@@ -52,7 +52,7 @@ export async function GET(
   try {
     const { id } = params;
     
-    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/admin/users/${id}`;
+    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL || ''}/admin/users/${id}`;
     
     const response = await fetch(backendUrl, {
       method: 'GET',

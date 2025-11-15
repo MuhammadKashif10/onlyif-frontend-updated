@@ -35,7 +35,7 @@ export async function GET(
     const timeRange = searchParams.get('timeRange') || '6months';
 
     // Forward request to backend
-    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/sellers/${sellerId}/analytics?timeRange=${timeRange}`;
+    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL || ''}/sellers/${sellerId}/analytics?timeRange=${timeRange}`;
     
     console.log('🔗 Fetching seller analytics from backend:', backendUrl);
     console.log('👤 Seller ID:', sellerId);

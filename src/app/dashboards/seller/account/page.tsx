@@ -126,8 +126,8 @@ const SellerAccount = () => {
     
     setLoadingInvoices(true);
     try {
-      const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-      const invoicesApiUrl = `${backendUrl}/api/invoices/seller/${user.id}`;
+      const backendBase = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || '';
+      const invoicesApiUrl = `${backendBase}/api/invoices/seller/${user.id}`;
       
       console.log('🔗 Fetching invoices from backend:', invoicesApiUrl);
       
@@ -204,8 +204,8 @@ const SellerAccount = () => {
     setLoadingNotifications(true);
     try {
       // Use backend API for fetching seller notifications/messages
-      const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-      const messagesApiUrl = `${backendUrl}/api/messages?userId=${user.id}&userRole=seller`;
+      const backendBase = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || '';
+      const messagesApiUrl = `${backendBase}/api/messages?userId=${user.id}&userRole=seller`;
       
       console.log('🔗 Fetching seller messages from backend:', messagesApiUrl);
       
@@ -289,8 +289,8 @@ const SellerAccount = () => {
   // Mark notification as read
   const markNotificationAsRead = async (messageId: string, conversationId: string) => {
     try {
-      const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-      const markReadUrl = `${backendUrl}/api/messages/${conversationId}/read`;
+      const backendBase = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || '';
+      const markReadUrl = `${backendBase}/api/messages/${conversationId}/read`;
       
       console.log('🔗 Marking message as read in backend:', markReadUrl);
       

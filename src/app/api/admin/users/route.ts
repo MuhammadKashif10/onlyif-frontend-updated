@@ -6,7 +6,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     
     // Forward all query parameters to backend
-    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/admin/users?${searchParams.toString()}`;
+    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL || ''}/admin/users?${searchParams.toString()}`;
     
     console.log('🔗 Fetching admin users from backend:', backendUrl);
     
@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     
-    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/admin/users`;
+    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL || ''}/admin/users`;
     
     const response = await fetch(backendUrl, {
       method: 'POST',
@@ -118,7 +118,7 @@ export async function PUT(request: NextRequest) {
       }, { status: 400 });
     }
     
-    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/admin/users/${userId}/status`;
+    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL || ''}/admin/users/${userId}/status`;
     
     const response = await fetch(backendUrl, {
       method: 'PUT',
@@ -162,7 +162,7 @@ export async function DELETE(request: NextRequest) {
       }, { status: 400 });
     }
     
-    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/admin/users/${userId}`;
+    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL || ''}/admin/users/${userId}`;
     
     const response = await fetch(backendUrl, {
       method: 'DELETE',

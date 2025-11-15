@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 // GET /api/agents/stats - Get general agent statistics
 export async function GET(request: NextRequest) {
   try {
-    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/agents/stats`;
+    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL || ''}/agents/stats`;
     
     console.log('🔗 Fetching agent stats from backend:', backendUrl);
     

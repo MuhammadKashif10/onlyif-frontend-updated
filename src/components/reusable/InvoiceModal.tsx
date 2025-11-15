@@ -29,8 +29,8 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({ invoiceId, onClose }) => {
         setLoading(true);
         setError(null);
         const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
-        const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-        const res = await fetch(`${backendUrl}/api/invoices/${invoiceId}`, {
+        const backendBase = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || '';
+        const res = await fetch(`${backendBase}/api/invoices/${invoiceId}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (!res.ok) {
@@ -52,8 +52,8 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({ invoiceId, onClose }) => {
       if (!invoice) return;
       setPaying(true);
       const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
-      const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-      const res = await fetch(`${backendUrl}/api/payment/initialize`, {
+      const backendBase = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || '';
+      const res = await fetch(`${backendBase}/api/payment/initialize`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ invoiceId, amount: invoice.totalAmount })

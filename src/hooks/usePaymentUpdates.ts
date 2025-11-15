@@ -23,7 +23,9 @@ export const usePaymentUpdates = (enabled: boolean = true) => {
     if (!enabled) return;
 
     // Initialize Socket.IO connection
-    const socket = io(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000', {
+    const raw = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || '';
+    const base = raw.replace(/\/api$/, '');
+    const socket = io(base, {
       transports: ['websocket', 'polling'],
       autoConnect: true,
     });

@@ -81,7 +81,7 @@ const SubmitPhase: React.FC = () => {
       console.log('Submitting property data:', propertyData);
 
       // Use direct fetch for public submission
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/properties/public-submit`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/properties/public-submit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

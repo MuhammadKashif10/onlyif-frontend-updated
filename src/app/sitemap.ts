@@ -2,7 +2,7 @@ import { MetadataRoute } from 'next'
 import { propertiesApi } from '@/api'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = 'https://onlyif.com'
+  const baseUrl = process.env.NEXT_PUBLIC_FRONTEND_URL || process.env.FRONTEND_URL || ''
   
   // Get all properties for dynamic sitemap
   let properties: any[] = []

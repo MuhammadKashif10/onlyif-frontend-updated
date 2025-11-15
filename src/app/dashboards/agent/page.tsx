@@ -253,7 +253,6 @@ export default function AgentDashboard() {
     try {
       setAssignmentsLoading(true);
       setAssignmentsError(null);
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
       const response = await fetch(`/api/agent/${currentUserId}/properties`, {
         headers: {
@@ -608,8 +607,9 @@ export default function AgentDashboard() {
       return;
     }
 
+    const backendBase = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || '';
     const res = await fetch(
-      `http://localhost:5000/api/payment/purchases/${property._id || property.id}`,
+      `${backendBase}/api/payment/purchases/${property._id || property.id}`,
       {
         method: "GET",
         headers: {
@@ -646,7 +646,7 @@ export default function AgentDashboard() {
 
 //     // Call backend API
 //     const res = await fetch(
-//       `http://localhost:5000/api/payment/purchases/${property.id}`,
+//       `${process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || ''}/api/payment/purchases/${property.id}`,
 //       {
 //         method: "GET",
 //         headers: {
@@ -655,7 +655,7 @@ export default function AgentDashboard() {
 //         },
 //       }
 //     );
-
+//
 //     if (!res.ok) {
 //       alert("No purchase found");
 //       // optional: show alert or block modal if user has not paid
@@ -985,8 +985,8 @@ export default function AgentDashboard() {
         return;
       }
 
-      const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-      const buyersUrl = `${backendUrl}/api/properties/${propertyId}/buyers`;
+      const backendBase = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || '';
+      const buyersUrl = `${backendBase}/api/properties/${propertyId}/buyers`;
       
       console.log('🔍 Fetching buyers for property:', buyersUrl);
       
@@ -1053,8 +1053,8 @@ export default function AgentDashboard() {
       console.log('📤 Sending settlement update with buyer:', { propertyId, ...payload });
       
       const token = localStorage.getItem('token');
-      const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-      const statusUpdateUrl = `${backendUrl}/api/properties/${propertyId}/status`;
+      const backendBase = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || '';
+      const statusUpdateUrl = `${backendBase}/api/properties/${propertyId}/status`;
       
       const response = await fetch(statusUpdateUrl, {
         method: 'PATCH',
@@ -1136,8 +1136,8 @@ export default function AgentDashboard() {
       }
       
       // Use backend API for property status update
-      const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-      const statusUpdateUrl = `${backendUrl}/api/properties/${propertyId}/status`;
+      const backendBase = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || '';
+      const statusUpdateUrl = `${backendBase}/api/properties/${propertyId}/status`;
       
       console.log('🔍 Making request to backend:', statusUpdateUrl);
       console.log('📦 Payload:', payload);
@@ -1372,8 +1372,8 @@ export default function AgentDashboard() {
                   <Button onClick={async () => {
                     try {
                       const token = localStorage.getItem('token');
-                      const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-                      const resp = await fetch(`${backendUrl}/api/payment/initialize`, {
+                      const backendBase = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || '';
+                      const resp = await fetch(`${backendBase}/api/payment/initialize`, {
                         method: 'POST',
                         headers: {
                           'Authorization': `Bearer ${token}`,
@@ -1447,8 +1447,8 @@ export default function AgentDashboard() {
                         <Button onClick={async () => {
                           try {
                             const token = localStorage.getItem('token');
-                            const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-                            const resp = await fetch(`${backendUrl}/api/payment/initialize`, {
+                            const backendBase = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || '';
+                            const resp = await fetch(`${backendBase}/api/payment/initialize`, {
                               method: 'POST',
                               headers: {
                                 'Authorization': `Bearer ${token}`,
@@ -1670,7 +1670,8 @@ export default function AgentDashboard() {
                 try {
                   // Fetch seller details from backend
                   const token = localStorage.getItem('token');
-                  const response = await fetch(`http://localhost:5000/api/admin/users/${sellerId}`, {
+                  const backendBase = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || '';
+                  const response = await fetch(`${backendBase}/api/admin/users/${sellerId}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                   });
                   

@@ -42,8 +42,10 @@ export const viewport: Viewport = {
   ],
 };
 
+const FRONTEND_URL = process.env.NEXT_PUBLIC_FRONTEND_URL || process.env.FRONTEND_URL;
+
 export const metadata: Metadata = {
-  metadataBase: new URL('https://onlyif.com'),
+  metadataBase: FRONTEND_URL ? new URL(FRONTEND_URL) : undefined,
   title: {
     default: "OnlyIf - Real Estate Platform | Buy and Sell Homes with Confidence",
     template: "%s | OnlyIf"
@@ -86,7 +88,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://onlyif.com",
+    url: FRONTEND_URL || undefined,
     siteName: "OnlyIf",
     title: "OnlyIf - Real Estate Platform | Buy and Sell Homes with Confidence",
     description: "OnlyIf makes buying and selling homes simple, transparent, and stress-free. Get a cash offer in minutes or browse our inventory of move-in ready homes.",
@@ -109,7 +111,7 @@ export const metadata: Metadata = {
     images: ["/images/hero-home.jpg"],
   },
   alternates: {
-    canonical: "https://onlyif.com",
+    canonical: FRONTEND_URL || undefined,
   },
   category: "Real Estate",
   classification: "Real Estate Platform",

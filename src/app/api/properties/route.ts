@@ -6,7 +6,7 @@ export async function GET(request: NextRequest) {
   
   try {
     const { searchParams } = new URL(request.url);
-    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/properties?${searchParams.toString()}`;
+    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL || ''}/properties?${searchParams.toString()}`;
     
     console.log('🔗 Fetching from backend:', backendUrl);
     console.log('🔍 Search params:', searchParams.toString());
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
     const propertyData = await request.json();
     console.log('📝 Property data received:', propertyData);
     
-    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/properties`;
+    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL || ''}/properties`;
     console.log('🔗 Backend URL:', backendUrl);
     
     // Get auth token from request headers

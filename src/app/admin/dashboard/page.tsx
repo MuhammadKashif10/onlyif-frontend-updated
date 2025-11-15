@@ -51,8 +51,10 @@ const authenticatedFetch = async (url: string, options: RequestInit = {}) => {
 };
 
 // Recent activity fetch
-const fetchRecentActivity = () =>
-  authenticatedFetch('http://localhost:5000/api/admin/activity');
+const fetchRecentActivity = () => {
+  const backendBase = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || '';
+  return authenticatedFetch(`${backendBase}/api/admin/activity`);
+}
 
 interface StatsCardProps {
   title: string;
@@ -104,8 +106,10 @@ function StatsCard({ title, value, description, icon, trend, isLoading, error }:
 }
 
 // Replace individual fetch functions with consolidated stats fetch
-const fetchDashboardStats = () => 
-  authenticatedFetch('http://localhost:5000/api/admin/dashboard/stats');
+const fetchDashboardStats = () => {
+  const backendBase = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || '';
+  return authenticatedFetch(`${backendBase}/api/admin/dashboard/stats`);
+}
 
 
 export default function AdminDashboardPage() {

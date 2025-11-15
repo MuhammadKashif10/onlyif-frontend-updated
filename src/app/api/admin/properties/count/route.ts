@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 // GET /api/admin/properties/count - Get total properties count
 export async function GET(request: NextRequest) {
   try {
-    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/admin/properties/count`;
+    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL || ''}/admin/properties/count`;
     
     const response = await fetch(backendUrl, {
       method: 'GET',

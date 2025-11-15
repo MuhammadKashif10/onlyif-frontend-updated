@@ -19,7 +19,8 @@ export async function GET(
     
     // Try to fetch from backend first
     try {
-      const backendUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/agent/${agentId}/activities`;
+      const backendBase = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || '';
+      const backendUrl = `${backendBase}/api/agent/${agentId}/activities`;
       
       console.log('🔗 Fetching agent activities from backend:', backendUrl);
       

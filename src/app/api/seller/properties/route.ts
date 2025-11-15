@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
     const sellerId = searchParams.get('sellerId');
 
     // Forward request to backend with authorization header and seller ID
-    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/sellers/properties`;
+    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL || ''}/sellers/properties`;
     
     console.log('🔗 Fetching seller properties from backend:', backendUrl);
     console.log('👤 Seller ID:', sellerId);

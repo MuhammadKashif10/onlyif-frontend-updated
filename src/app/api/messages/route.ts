@@ -180,8 +180,8 @@ export async function GET(request: NextRequest) {
     const authHeader = request.headers.get('Authorization');
     
     // Forward to backend API
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-    const backendApiUrl = `${backendUrl}/api/messages?userId=${userId}&userRole=${userRole || ''}`;
+    const backendBase = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || '';
+    const backendApiUrl = `${backendBase}/api/messages?userId=${userId}&userRole=${userRole || ''}`;
     
     console.log(`[Messages API] Forwarding to backend: ${backendApiUrl}`);
     
@@ -322,8 +322,8 @@ export async function POST(request: NextRequest) {
     const authHeader = request.headers.get('Authorization');
     
     // Forward to backend API
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-    const backendApiUrl = `${backendUrl}/api/messages`;
+    const backendBase = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || '';
+    const backendApiUrl = `${backendBase}/api/messages`;
     
     console.log(`[Messages API POST] Forwarding message to backend:`, backendApiUrl);
     console.log(`[Messages API POST] Message payload:`, { senderId, recipientId, messageText, propertyId });

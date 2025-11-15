@@ -105,8 +105,8 @@ const BuyerPayments = () => {
     
     setLoadingInvoices(true);
     try {
-      const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-      const invoicesApiUrl = `${backendUrl}/api/invoices/buyer/${user.id}`;
+      const backendBase = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || '';
+      const invoicesApiUrl = `${backendBase}/api/invoices/buyer/${user.id}`;
       
       console.log('🔗 Fetching buyer invoices from backend:', invoicesApiUrl);
       
@@ -148,8 +148,8 @@ const BuyerPayments = () => {
   // Socket.IO connection for real-time updates
   useEffect(() => {
     if (user?.id) {
-      const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-      const newSocket = io(backendUrl);
+      const backendBase = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || '';
+      const newSocket = io(backendBase);
       
       newSocket.emit('join-buyer-room', user.id);
       

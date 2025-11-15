@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 // GET /api/admin/dashboard/stats - Get admin dashboard statistics
 export async function GET(request: NextRequest) {
   try {
-    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/admin/dashboard/stats`;
+    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL || ''}/admin/dashboard/stats`;
     
     console.log('🔗 Fetching admin dashboard stats from backend:', backendUrl);
     

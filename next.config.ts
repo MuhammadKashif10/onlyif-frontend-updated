@@ -1,5 +1,8 @@
 import type { NextConfig } from "next";
 
+const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.BACKEND_URL;
+const backendHost = backendUrl ? new URL(backendUrl) : null;
+
 const nextConfig: NextConfig = {
   experimental: {
     // Skip prerendering API routes to avoid build-time env var issues
@@ -14,13 +17,13 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    // Add domains alongside remotePatterns for broader compatibility
+    // Core image domains
     domains: [
-      'localhost',
-      '127.0.0.1',
       'images.unsplash.com',
       'plus.unsplash.com',
-      'images.pexels.com'
+      'images.pexels.com',
+      // Allow backend host for uploaded images when configured
+      ...(backendHost ? [backendHost.hostname] : []),
     ],
     remotePatterns: [
       {
@@ -35,16 +38,14 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'images.pexels.com',
       },
-      {
-        protocol: 'http',
-        hostname: 'localhost',
-        port: '5000',
-      },
-      {
-        protocol: 'http',
-        hostname: '127.0.0.1',
-        port: '5000',
-      },
+      // Dynamically allow backend uploads domain (including Railway / custom domains)
+      ...(backendHost
+        ? [{
+            protocol: backendHost.protocol.replace(':', '') as 'http' | 'https',
+            hostname: backendHost.hostname,
+            port: backendHost.port || undefined,
+          }]
+        : []),
     ],
   },
 };
