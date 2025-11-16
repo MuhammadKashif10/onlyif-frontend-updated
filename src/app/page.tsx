@@ -91,7 +91,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-white">
 <Navbar 
-        logo="/images/logo.png"
+        logo="/images/logo.PNG"
         logoText=""
       />
       

@@ -1305,7 +1305,7 @@ export default function AgentDashboard() {
       
       <div className="relative">
 <Navbar 
-          logo="/images/logo.png"
+          logo="/images/logo.PNG"
           logoText=""
         />
         <div className="absolute top-0 right-0 p-4">

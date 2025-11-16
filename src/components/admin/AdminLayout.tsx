@@ -39,7 +39,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         }`}
       >
         <div className="flex items-center justify-start h-24 px-4 bg-white border-b border-gray-200">
-          <img src="/images/logo.png" alt="OnlyIf Logo" className="h-[110px] w-auto" />
+<img src="/images/logo.PNG" alt="OnlyIf Logo" className="h-[110px] w-auto" />
         </div>
 
         <div className="flex flex-col h-[calc(100%-5rem)] justify-between">

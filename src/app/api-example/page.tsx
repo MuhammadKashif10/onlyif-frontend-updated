@@ -20,7 +20,7 @@ export default async function ApiExamplePage() {
     <div className="min-h-screen bg-white">
       {/* Navigation */}
 <Navbar 
-        logo="/images/logo.png"
+logo="/images/logo.PNG"
         logoText=""
         navigationItems={[
           { label: 'Buy', href: '/browse', isActive: false },

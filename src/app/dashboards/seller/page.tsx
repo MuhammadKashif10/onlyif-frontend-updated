@@ -305,7 +305,7 @@ function SellerDashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar 
-        logo="/images/logo.PNG"
+logo="/images/logo.PNG"
         logoText=""
         navigationItems={[
           { label: 'Dashboard', href: '/dashboards/seller', isActive: true },

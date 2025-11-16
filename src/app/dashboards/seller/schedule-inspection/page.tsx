@@ -51,7 +51,7 @@ export default function ScheduleInspection() {
     return (
       <div className="min-h-screen bg-gray-50">
 <Navbar 
-          logo="/images/logo.png"
+          logo="/images/logo.PNG"
           logoText=""
           navigationItems={[
             { label: 'Dashboard', href: '/dashboards/seller', isActive: false },
@@ -112,7 +112,7 @@ export default function ScheduleInspection() {
   return (
     <div className="min-h-screen bg-gray-50">
 <Navbar 
-        logo="/images/logo.png"
+        logo="/images/logo.PNG"
         logoText=""
         navigationItems={[
           { label: 'Dashboard', href: '/dashboards/seller', isActive: false },

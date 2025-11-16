@@ -103,7 +103,7 @@ export default function EnhancedBrowsePageClient() {
     return (
       <div className="min-h-screen bg-white">
 <Navbar
-          logo="/images/logo.png"
+          logo="/images/logo.PNG"
           logoText=""
           navigationItems={[
             { label: 'Buy', href: '/browse', isActive: true },
@@ -137,7 +137,7 @@ export default function EnhancedBrowsePageClient() {
     <div className="min-h-screen bg-white">
       {/* Navigation */}
 <Navbar
-        logo="/images/logo.png"
+        logo="/images/logo.PNG"
         logoText=""
         ctaText="Get Started"
         ctaHref="/signin"

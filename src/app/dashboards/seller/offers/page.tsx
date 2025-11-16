@@ -82,7 +82,7 @@ const SellerOffers = () => {
   return (
     <div className="pt-4 sm:pt-6 md:pt-8">
 <Navbar 
-        logo="/images/logo.png"
+        logo="/images/logo.PNG"
         logoText=""
         navigationItems={[
           { label: 'Dashboard', href: '/dashboards/seller', isActive: false },
