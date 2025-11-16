@@ -6,7 +6,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono, Poppins } from "next/font/google";
 import "./globals.css";
 import "../styles/custom.css";
-import Footer from "@/components/main/Footer";
+import Footer from "@/components/layout/Footer";
 import ClientProviders from "./client-providers";
 import MaintenanceGuard from "@/components/layout/MaintenanceGuard";
 
