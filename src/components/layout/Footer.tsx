@@ -68,15 +68,6 @@ export default function Footer({
         { label: 'Contact', href: '/contact' },
       ]
     },
-    {
-      title: 'Support',
-      links: [
-        { label: 'Help Center', href: '/contact#contact-methods' },
-        { label: 'Contact Support', href: '/contact#contact-form' },
-        { label: 'Agent Portal', href: '/signin?type=agent' },
-        { label: 'Terms of Service', href: '/terms' },
-      ]
-    }
   ],
   socialLinks = [
     {
