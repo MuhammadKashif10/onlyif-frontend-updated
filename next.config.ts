@@ -1,6 +1,6 @@
 import type { NextConfig } from "next";
 
-const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.BACKEND_URL;
+const backendUrl = process.env.NEXT_PUBLIC_API_URL || process.env.BACKEND_URL;
 const backendHost = backendUrl ? new URL(backendUrl) : null;
 
 const nextConfig: NextConfig = {
@@ -25,7 +25,7 @@ const nextConfig: NextConfig = {
       // Allow backend host for uploaded images when configured
       ...(backendHost ? [backendHost.hostname] : []),
       // Explicit backend uploads host for production
-      'onlyif-backend-updated-production.up.railway.app',
+      'https://onlyif-backend-updated-production-b4e3.up.railway.app',
     ],
     remotePatterns: [
       {
@@ -43,7 +43,7 @@ const nextConfig: NextConfig = {
       // Explicit backend uploads host for production
       {
         protocol: 'https',
-        hostname: 'onlyif-backend-updated-production.up.railway.app',
+        hostname: 'https://onlyif-backend-updated-production-b4e3.up.railway.app',
       },
       // Dynamically allow backend uploads domain (including Railway / custom domains)
       ...(backendHost

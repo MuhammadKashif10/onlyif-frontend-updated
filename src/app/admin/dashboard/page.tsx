@@ -53,7 +53,7 @@ const authenticatedFetch = async (url: string, options: RequestInit = {}) => {
 // Recent activity fetch
 const fetchRecentActivity = () => {
   const backendBase = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || '';
-  return authenticatedFetch(`${backendBase}/api/admin/activity`);
+  return authenticatedFetch(`${backendBase}/admin/activity`);
 }
 
 interface StatsCardProps {
@@ -108,7 +108,8 @@ function StatsCard({ title, value, description, icon, trend, isLoading, error }:
 // Replace individual fetch functions with consolidated stats fetch
 const fetchDashboardStats = () => {
   const backendBase = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || '';
-  return authenticatedFetch(`${backendBase}/api/admin/dashboard/stats`);
+  console.log(backendBase,"------------------")
+  return authenticatedFetch(`${backendBase}/admin/dashboard/stats`);
 }
 
 
