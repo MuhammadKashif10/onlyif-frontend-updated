@@ -2,7 +2,7 @@ import { USE_MOCKS, withMockFallback } from '@/utils/mockWrapper';
 import { request } from '@/utils/api';
 import { Conversation, Message } from '@/types/api';
 import { apiClient } from '../lib/api-client';
-import { Message, MessageThread, PaginatedResponse } from '../types/api';
+import {MessageThread, PaginatedResponse } from '../types/api';
 
 // Simulate API delay
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));

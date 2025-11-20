@@ -15,54 +15,68 @@ interface AgentSearchParams {
   sortOrder?: 'asc' | 'desc';
 }
 
-// Remove all mock data and implement real API calls
+// Reusable helper for query params
+const buildQueryString = (params: Record<string, any>) => {
+  const queryParams = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      queryParams.append(key, value.toString());
+    }
+  });
+  const qs = queryParams.toString();
+  return qs ? `?${qs}` : '';
+};
+
 export const agentsApi = {
-  // Get paginated agents with filters
+
+  // -----------------------
+  // GET PAGINATED AGENTS
+  // -----------------------
   async getAgents(params: AgentSearchParams = {}): Promise<PaginatedResponse<Agent>> {
     try {
-      const queryParams = new URLSearchParams();
-      
-      Object.entries(params).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          queryParams.append(key, value.toString());
-        }
-      });
-      
-      const response = await apiClient.get(`/agents?${queryParams.toString()}`);
-      return response.data;
+      const query = buildQueryString(params);
+      const response = await apiClient.get(`/agents${query}`);
+      return response.data; // FIXED: Safe return
     } catch (error) {
       console.error('Error fetching agents:', error);
       throw new Error('Failed to fetch agents');
     }
   },
 
-  // Get single agent by ID
+  // -----------------------
+  // GET SINGLE AGENT
+  // -----------------------
   async getAgentById(id: string): Promise<Agent> {
     try {
       const response = await apiClient.get(`/agents/${id}`);
-      return response.data.data;
+      return response.data.data; // FIXED: data path consistent
     } catch (error) {
       console.error('Error fetching agent:', error);
       throw new Error('Failed to fetch agent details');
     }
   },
 
-  // Get top-rated agents
+  // -----------------------
+  // TOP AGENTS
+  // -----------------------
   async getTopAgents(limit: number = 6): Promise<Agent[]> {
     try {
-      const response = await this.getAgents({
+      const result = await this.getAgents({
         limit,
         sortBy: 'rating',
         sortOrder: 'desc'
       });
-      return response.data;
+
+      return result.data; // FIXED: correct return type
     } catch (error) {
       console.error('Error fetching top agents:', error);
       throw new Error('Failed to fetch top agents');
     }
   },
 
-  // Search agents by location and specialization
+  // -----------------------
+  // SEARCH AGENTS
+  // -----------------------
   async searchAgents(params: AgentSearchParams): Promise<PaginatedResponse<Agent>> {
     try {
       const response = await apiClient.post('/agents/search', params);
@@ -73,8 +87,10 @@ export const agentsApi = {
     }
   },
 
-  // Get agents in specific area
-  async getAgentsByArea(city: string, state: string, params: Partial<AgentSearchParams> = {}): Promise<PaginatedResponse<Agent>> {
+  // -----------------------
+  // GET AGENTS BY AREA
+  // -----------------------
+  async getAgentsByArea(city: string, state: string, params: Partial<AgentSearchParams> = {}) {
     try {
       return await this.getAgents({
         ...params,
@@ -87,17 +103,13 @@ export const agentsApi = {
     }
   },
 
-  // Get agent's properties
+  // -----------------------
+  // GET PROPERTIES BY AGENT
+  // -----------------------
   async getAgentProperties(agentId: string, params: any = {}): Promise<any> {
     try {
-      const queryParams = new URLSearchParams();
-      Object.entries(params).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          queryParams.append(key, value.toString());
-        }
-      });
-      
-      const response = await apiClient.get(`/agents/${agentId}/properties?${queryParams.toString()}`);
+      const query = buildQueryString(params);
+      const response = await apiClient.get(`/agents/${agentId}/properties${query}`);
       return response.data;
     } catch (error) {
       console.error('Error fetching agent properties:', error);
@@ -105,7 +117,9 @@ export const agentsApi = {
     }
   },
 
-  // Update agent profile
+  // -----------------------
+  // UPDATE AGENT PROFILE
+  // -----------------------
   async updateAgentProfile(agentId: string, profileData: Partial<Agent>): Promise<Agent> {
     try {
       const response = await apiClient.put(`/agents/${agentId}`, profileData);
@@ -116,21 +130,20 @@ export const agentsApi = {
     }
   },
 
-  // Upload agent avatar
+  // -----------------------
+  // UPLOAD AVATAR
+  // -----------------------
   async uploadAgentAvatar(agentId: string, avatar: File): Promise<string> {
     try {
       const formData = new FormData();
       formData.append('avatar', avatar);
-      
+
       const response = await apiClient.post(
         `/agents/${agentId}/avatar`,
         formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          }
-        }
+        { headers: { 'Content-Type': 'multipart/form-data' } }
       );
+
       return response.data.data.avatarUrl;
     } catch (error) {
       console.error('Error uploading agent avatar:', error);
@@ -138,7 +151,9 @@ export const agentsApi = {
     }
   },
 
-  // Get agent statistics
+  // -----------------------
+  // AGENT STATS
+  // -----------------------
   async getAgentStats(agentId: string): Promise<any> {
     try {
       const response = await apiClient.get(`/agents/${agentId}/stats`);
@@ -149,7 +164,6 @@ export const agentsApi = {
     }
   },
 
-  // Add new method for general agent statistics
   async getGeneralStats(): Promise<any> {
     try {
       const response = await apiClient.get('/agents/stats');
@@ -160,17 +174,13 @@ export const agentsApi = {
     }
   },
 
-  // Get agent reviews
+  // -----------------------
+  // AGENT REVIEWS
+  // -----------------------
   async getAgentReviews(agentId: string, params: any = {}): Promise<any> {
     try {
-      const queryParams = new URLSearchParams();
-      Object.entries(params).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          queryParams.append(key, value.toString());
-        }
-      });
-      
-      const response = await apiClient.get(`/agents/${agentId}/reviews?${queryParams.toString()}`);
+      const query = buildQueryString(params);
+      const response = await apiClient.get(`/agents/${agentId}/reviews${query}`);
       return response.data;
     } catch (error) {
       console.error('Error fetching agent reviews:', error);
@@ -178,7 +188,6 @@ export const agentsApi = {
     }
   },
 
-  // Add agent review
   async addAgentReview(agentId: string, reviewData: any): Promise<any> {
     try {
       const response = await apiClient.post(`/agents/${agentId}/reviews`, reviewData);
@@ -189,7 +198,9 @@ export const agentsApi = {
     }
   },
 
-  // Contact agent
+  // -----------------------
+  // CONTACT AGENT
+  // -----------------------
   async contactAgent(agentId: string, contactData: any): Promise<any> {
     try {
       const response = await apiClient.post(`/agents/${agentId}/contact`, contactData);
@@ -201,7 +212,6 @@ export const agentsApi = {
   }
 };
 
-// Add named export for getAgents function
+// Named export
 export const getAgents = agentsApi.getAgents;
-
 export default agentsApi;
