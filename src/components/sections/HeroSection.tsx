@@ -11,7 +11,7 @@ interface TrustIndicator {
 
 interface HeroSectionProps {
   backgroundImage?: string;
-  headline: string;
+  headline: React.ReactNode;
   subheadline?: string;
   primaryCtaText?: string;
   primaryCtaHref?: string;

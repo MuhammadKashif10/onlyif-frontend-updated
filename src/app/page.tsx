@@ -97,12 +97,21 @@ export default function HomePage() {
       
       {/* Hero Section */}
       <HeroSection
-        headline="Your Home. Your Rules. Your Price."
-        subheadline="Take control of your real estate journey with OnlyIf. Whether you're buying your dream home or selling on your terms, we put the power in your hands. Set your price, choose your timeline, and make decisions that work for you."
-        primaryCtaText="Register as Buyer"
-        primaryCtaHref="/buy/onboard"
-        secondaryCtaText="Browse Homes"
-        secondaryCtaHref="/browse"
+        headline={
+          <>
+            <span className="block text-base md:text-lg font-semibold tracking-wide text-blue-100 mb-2">
+              Australia’s trusted way to buy and sell property on your terms.
+            </span>
+            <span className="block animate-gradient-text">
+              Your Home. Your Rules. Your Price.
+            </span>
+          </>
+        }
+        subheadline="Only If is an Australian home buying and selling platform that quietly connects local owners and serious buyers, keeping every step transparent, trusted and firmly in your control."
+        primaryCtaText="I'm a Seller"
+        primaryCtaHref="/signin"
+        secondaryCtaText="I'm a Buyer"
+        secondaryCtaHref="/signin"
         onPrimaryCtaClick={handlePrimaryCtaClick}
         onSecondaryCtaClick={handleSecondaryCtaClick}
       />
