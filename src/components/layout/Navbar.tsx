@@ -74,14 +74,21 @@ export default function Navbar({
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2 group">
-            <img 
-              src={logo} 
-              alt="OnlyIf logo" 
+            <div className="flex flex-col leading-tight">
+              <div className="flex items-center space-x-2">
+                <img 
+                  src={logo} 
+                  alt="OnlyIf logo" 
 className="h-18 sm:h-14 md:h-16 lg:h-24 xl:h-24 w-auto transition-transform duration-200 group-hover:scale-105"
-            />
-            {logoText && (
-              <span className="text-base font-bold text-gray-900 group-hover:text-blue-600">{logoText}</span>
-            )}
+                />
+                {logoText && (
+                  <span className="text-base font-bold text-gray-900 group-hover:text-blue-600">{logoText}</span>
+                )}
+              </div>
+              <span className="mt-1 text-[10px] sm:text-xs font-medium text-gray-600 tracking-tight">
+                Your Home. Your Rules. Your Price.
+              </span>
+            </div>
           </Link>
 
           {/* Desktop Navigation */}

@@ -131,8 +131,8 @@ export default function HomePage() {
       {/* CTA Section */}
       <CTASection
         title="Ready to Sell Your Home?"
-        subtitle="Join thousands of satisfied sellers"
-        description="Get a competitive cash offer in 24 hours with no obligation. Our team of experts will guide you through every step of the process."
+        subtitle="Join Australian homeowners selling on their terms"
+        description="Only If is an Australian home-selling platform that connects you with serious buyers in your neighbourhood, with transparent pricing, personalised support and a sale timeline that suits you – no pressure and no hard sell."
         primaryCtaText="Get Your Offer"
         primaryCtaHref="/sell/get-offer"
         secondaryCtaText="Learn More"
