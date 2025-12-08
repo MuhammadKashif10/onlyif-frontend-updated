@@ -71,7 +71,7 @@ export default function PropertyCard({
 
     try {
       const backendBase = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || '';
-      const res = await fetch(`${backendBase}/payment/checkout/${id}`,  {
+      const res = await fetch(`${backendBase}/payment/checkout/${id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
