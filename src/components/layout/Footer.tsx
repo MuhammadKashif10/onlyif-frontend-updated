@@ -42,7 +42,7 @@ interface FooterProps {
 export default function Footer({
   logo = '/images/Footer%20logo.png',
   logoText = '',
-  description = 'Sell your home in days, not months. Get a competitive cash offer in 24 hours with no obligation.',
+  description = 'List your home at the price you’d actually sell for. Only If lets you quietly test the market, connect with serious buyers, and only sell when the price is right.',
   sections = [
     {
       title: 'Buy',
@@ -55,7 +55,6 @@ export default function Footer({
     {
       title: 'Sell',
       links: [
-        { label: 'Get Cash Offer', href: '/sell/get-offer' },
         { label: 'How It Works', href: '/how-it-works' },
         { label: 'Selling Process', href: '/sell' },
         { label: 'Seller FAQ', href: '/contact#faq' },
@@ -83,9 +82,9 @@ export default function Footer({
     }
   ],
   contactInfo = {
-    phone: '+61000000000',
-    email: 'info@onlyif.com',
-    address: '123 Main Street, Perth,Austarila'
+    phone: 'Phone',
+    email: 'Email',
+    address: 'Location in Victoria, Australia'
   },
   legalLinks = [
     { label: 'Terms of Service', href: '/terms' }

@@ -1,11 +1,5 @@
 import { Metadata } from 'next';
-import {
-  Navbar,
-  HeroSection,
-  CTASection,
-  TestimonialSlider,
-  Footer
-} from '@/components';
+import { Navbar } from '@/components';
 
 export const metadata: Metadata = {
   title: 'About OnlyIf - Revolutionizing Real Estate',
@@ -102,128 +96,152 @@ export default function AboutPage() {
       />
 
       {/* Hero Section */}
-      <HeroSection
-        backgroundImage="/images/06.jpg"
-        headline="Revolutionizing real estate, one home at a time"
-        subheadline="We're on a mission to make buying and selling homes simple, transparent, and stress-free for everyone"
-        secondaryCtaText="Learn More"
-        secondaryCtaHref="#our-story"
-        variant="secondary"
-      />
-
-      {/* Mission banner */}
-      <section className="bg-gray-50 py-10">
-        <div className="max-w-6xl mx-auto px-4 text-center">
-          <p className="text-xl sm:text-2xl font-semibold text-gray-800">
-            To give homeowners control over how and when they sell — on their terms.
+      <section className="bg-gray-50 py-16">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900">
+            About Only If
+          </h1>
+          <p className="mt-4 text-lg sm:text-xl text-gray-600">
+            Only If is a new kind of real estate platform built in Australia for owners who are open to selling – but only if the price is right.
           </p>
         </div>
       </section>
 
-      {/* Our Story */}
-      <section id="our-story" className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl mb-6">
-                Our Story
-              </h2>
-              <div className="prose prose-lg text-gray-600 space-y-6">
-                <p>
-                  OnlyIf was founded in 2020 with a simple yet powerful vision: to transform the real estate industry by making it more accessible, transparent, and efficient for everyone.
-                </p>
-                <p>
-                  Our founder, Sarah Johnson, spent 15 years as a real estate agent witnessing firsthand the frustrations that buyers and sellers faced with traditional real estate processes. From endless paperwork to opaque pricing to months of uncertainty, she knew there had to be a better way.
-                </p>
-                <p>
-                  Today, OnlyIf has helped over 10,000 families buy and sell their homes with confidence. We've built a platform that combines cutting-edge technology with human expertise to deliver an experience that's not just better—it's revolutionary.
-                </p>
-              </div>
-            </div>
-            <div className="relative">
-              <img
-                src="/images/01.jpg"
-                alt="OnlyIf team working together"
-                className="rounded-lg shadow-lg"
-              />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      
-      
-
-      {/* Our Values */}
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl mb-4">
-              Our Values
+      {/* Main Content Sections */}
+      <main className="bg-white">
+        {/* Why Only If Exists */}
+        <section className="py-12 sm:py-16">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
+              Why Only If Exists
             </h2>
-            <p className="text-xl text-gray-600">
-              The principles that guide everything we do
-            </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                Transparency
-              </h3>
-              <p className="text-gray-600">
-                We believe in complete transparency in all our dealings. No hidden fees, no surprises, just honest communication every step of the way.
+            <div className="mt-4 sm:mt-6 text-gray-600 space-y-4">
+              <p>About ‘’Only If’’</p>
+              <p>
+                Only If is a new kind of real estate platform built in Australia for owners who are open to selling – but only if the price is right.
               </p>
-            </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                Innovation
-              </h3>
-              <p className="text-gray-600">
-                We constantly push the boundaries of what's possible in real estate, using technology to create better experiences for our customers.
+              <p>
+                Instead of committing to a full campaign, paying big marketing fees, and putting your life on display, Only If lets you quietly list your home at the price you’d actually be happy to sell for. Serious buyers can then discover your property, request more information and, when the time is right, move forward with inspections and negotiations.
               </p>
-            </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                Customer First
-              </h3>
-              <p className="text-gray-600">
-                Every decision we make is guided by what's best for our customers. Their success is our success.
+              <p>
+                We exist for the owners who say, “I’d sell… but only if I got X.”
+              </p>
+              <p>
+                Traditional real estate is built around the idea that you’re either “on the market” or you’re not. In reality, there’s a huge group of people who are thinking about selling, but don’t want the stress, cost and pressure of a full public campaign on the major portals.
+              </p>
+              <p>
+                At the same time, there are motivated buyers who are tired of missing out, watching homes sell off-market, or never even knowing a property could have been available if they’d just known who to talk to.
+              </p>
+              <p>Only If connects these two groups.</p>
+              <p>
+                We give owners a simple way to raise their hand and say, “if someone pays my price, I’ll talk.” And we give serious buyers a way to find those opportunities before they hit the open market.
               </p>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Team */}
-      
+        {/* How Only If Works */}
+        <section className="py-12 sm:py-16 bg-gray-50">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
+              How Only If Works
+            </h2>
+            <div className="mt-4 sm:mt-6 text-gray-600">
+              <p>How Only If works</p>
+            </div>
 
-      {/* CTA */}
-      <CTASection
-        title="Ready to Experience the OnlyIf Difference?"
-        description="Join thousands of homeowners who've simplified their real estate journey with us."
-        primaryCtaText="Get Started Today"
-        primaryCtaHref="/signin"
-        secondaryCtaText="Contact Us"
-        secondaryCtaHref="/contact"
-        backgroundGradient={true}
-        variant="primary"
-        alignment="center"
-      />
+            <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
+              <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-6 flex flex-col">
+                <span className="text-sm font-medium text-blue-600 mb-1">Step 1</span>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Owners set their “Only If” price
+                </h3>
+                <p className="mt-3 text-gray-600 flex-1">
+                  You decide the price you’d be comfortable selling for and create your listing. You stay in control – there’s no obligation to sell unless the right offer appears.
+                </p>
+              </div>
+
+              <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-6 flex flex-col">
+                <span className="text-sm font-medium text-blue-600 mb-1">Step 2</span>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Buyers pay to unlock full details
+                </h3>
+                <p className="mt-3 text-gray-600 flex-1">
+                  Interested buyers pay a small fee to unlock the full property details, including address, photos and owner/agent contact details. This filters out the tyre-kickers and keeps enquiries serious.
+                </p>
+              </div>
+
+              <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-6 flex flex-col">
+                <span className="text-sm font-medium text-blue-600 mb-1">Step 3</span>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Simple, transparent fees
+                </h3>
+                <p className="mt-3 text-gray-600 flex-1">
+                  There are no upfront marketing costs or expensive campaigns. If an Only If buyer goes on to purchase your property and the sale goes unconditional, you pay a simple 1.1% (inc GST) success fee. Only If then shares this fee with a trusted, licensed local agent who handles inspections, negotiations and the contract process with you.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Built With Agents — Not Against Them */}
+        <section className="py-12 sm:py-16">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
+              Built With Agents — Not Against Them
+            </h2>
+            <div className="mt-4 sm:mt-6 text-gray-600 space-y-4">
+              <p>Built with agents, not against them!</p>
+              <p>Only If is not trying to replace real estate agents.</p>
+              <p>
+                We believe great agents are essential in achieving the best outcome for both sellers and buyers. That’s why we partner with selected agents who are paid a transparent share of the success fee when a sale occurs through the platform.
+              </p>
+              <p>
+                Agents gain access to serious, pre-qualified buyers and genuine off-market opportunities, while owners benefit from professional advice and negotiation without the traditional big-ticket marketing spend.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* Our Vision */}
+        <section className="py-12 sm:py-16 bg-gray-50">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
+              Our Vision
+            </h2>
+            <div className="mt-4 sm:mt-6 text-gray-600 space-y-4">
+              <p>Our vision is simple:</p>
+              <p>
+                To give Australian property owners more control, more transparency and more options – without forcing them into an “all or nothing” sale campaign.
+              </p>
+              <p>
+                If you’ve ever said, “I’d sell… but only if the price was right,” Only If was built for you.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* Bottom CTA Section */}
+        <section className="py-16 bg-white">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <button
+                type="button"
+                className="inline-flex items-center justify-center rounded-lg px-8 py-3 text-base font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-200"
+              >
+                Button 1
+              </button>
+              <button
+                type="button"
+                className="inline-flex items-center justify-center rounded-lg px-8 py-3 text-base font-semibold text-blue-600 bg-white border border-blue-600 hover:bg-blue-50 transition-colors duration-200"
+              >
+                Button 2
+              </button>
+            </div>
+          </div>
+        </section>
+
+      </main>
 
       {/* Footer removed - now global */}
     </div>
