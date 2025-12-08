@@ -255,7 +255,7 @@ export default function AgentDashboard() {
       setAssignmentsError(null);
       const backendBase = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || '';
 
-      const response = await fetch(`${backendBase}/api/agent/${currentUserId}/properties`, {
+      const response = await fetch(`${backendBase}/agent/${currentUserId}/properties`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json'
