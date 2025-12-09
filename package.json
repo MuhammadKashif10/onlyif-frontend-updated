@@ -19,7 +19,7 @@
     "jspdf": "^2.5.1",
     "lucide-react": "0.539.0",
     "mongoose": "^8.19.1",
-    "next": "15.4.6",
+    "next": "^16.0.7",
     "nodemailer": "^7.0.5",
     "phosphor-react": "1.4.1",
     "react": "19.1.0",
