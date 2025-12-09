@@ -68,9 +68,9 @@ export default function HeroSection({
           className="absolute inset-0 bg-cover bg-no-repeat"
           style={{
             backgroundImage: `url(${backgroundImage})`,
-            // Fine-tuned position so the check icons sit more in the middle
-            // similar to the provided reference image.
-            backgroundPosition: 'center 40%',
+            // Adjusted position so the checks appear a bit smaller / less zoomed
+            // by shifting the visible area slightly upward.
+            backgroundPosition: 'center 30%',
           }}
           aria-hidden="true"
         />
