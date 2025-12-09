@@ -85,9 +85,7 @@ className="h-18 sm:h-14 md:h-16 lg:h-24 xl:h-24 w-auto transition-transform dura
                   <span className="text-base font-bold text-gray-900 group-hover:text-blue-600">{logoText}</span>
                 )}
               </div>
-              <span className="mt-1 text-[10px] sm:text-xs font-medium text-gray-600 tracking-tight">
-                Your Home. Your Rules. Your Price.
-              </span>
+             
             </div>
           </Link>
 
