@@ -65,11 +65,12 @@ export default function HeroSection({
       <div className="absolute inset-0 z-0">
         {/* Background image */}
         <div
-          className="absolute inset-0 bg-cover bg-no-repeat"
+          className="absolute inset-0 bg-no-repeat"
           style={{
             backgroundImage: `url(${backgroundImage})`,
-            // Adjusted position so the checks appear a bit smaller / less zoomed
-            // by shifting the visible area slightly upward.
+            // Make the image feel less "zoomed in" by reducing the background size
+            // so it sits a bit further back behind the content.
+            backgroundSize: '100% auto',
             backgroundPosition: 'center 30%',
           }}
           aria-hidden="true"
