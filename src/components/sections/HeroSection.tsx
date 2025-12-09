@@ -81,10 +81,10 @@ export default function HeroSection({
       </div>
 
       {/* Content */}
-      <div className={`relative z-20 max-w-5xl mx-auto px-6 ${textAlignment} text-white`}>
+      <div className={`relative z-20 max-w-5xl mx-auto px-6 pb-12 md:pb-16 lg:pb-20 ${textAlignment} text-white`}>
         <div className={`${alignment === 'center' ? 'mx-auto' : ''}`}>
           {/* Main Headline */}
-          <h1 className="text-3xl md:text-5xl lg:text-6xl font-semibold md:font-bold mb-4 md:mb-6 leading-tight md:leading-tight">
+          <h1 className="text-3xl md:text-5xl lg:text-[64px] font-semibold md:font-bold mb-4 md:mb-6 leading-tight md:leading-tight">
             {headline}
           </h1>
 
