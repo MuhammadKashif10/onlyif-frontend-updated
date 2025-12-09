@@ -65,8 +65,13 @@ export default function HeroSection({
       <div className="absolute inset-0 z-0">
         {/* Background image */}
         <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: `url(${backgroundImage})` }}
+          className="absolute inset-0 bg-cover bg-no-repeat"
+          style={{
+            backgroundImage: `url(${backgroundImage})`,
+            // Position the image so more of the top/landscape is visible,
+            // matching the wider aerial view in the design reference
+            backgroundPosition: 'center top',
+          }}
           aria-hidden="true"
         />
         {/* Top-to-bottom dark gradient overlay for readability */}
