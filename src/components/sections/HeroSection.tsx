@@ -59,7 +59,7 @@ export default function HeroSection({
 
   return (
     <section
-      className={`relative min-h-[2000px] pt-16 md:pt-24 pb-16 md:pb-24 flex items-center justify-center ${className}`}
+      className={`relative min-h-[700px] sm:min-h-[900px] lg:min-h-[1500px] pt-16 md:pt-24 pb-16 md:pb-24 flex items-center justify-center ${className}`}
     >
       {/* Background Image with Overlay */}
       <div className="absolute inset-0 z-0">
