@@ -68,9 +68,9 @@ export default function HeroSection({
           className="absolute inset-0 bg-cover bg-no-repeat"
           style={{
             backgroundImage: `url(${backgroundImage})`,
-            // Position the image so more of the top/landscape is visible,
-            // matching the wider aerial view in the design reference
-            backgroundPosition: 'center top',
+            // Fine-tuned position so the check icons sit more in the middle
+            // similar to the provided reference image.
+            backgroundPosition: 'center 40%',
           }}
           aria-hidden="true"
         />
