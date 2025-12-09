@@ -26,7 +26,7 @@ interface HeroSectionProps {
 }
 
 export default function HeroSection({
-  backgroundImage = '/images/01.png',
+  backgroundImage = '/images/01.jpg',
   headline,
   subheadline,
   primaryCtaText = 'Get Started',
@@ -58,7 +58,9 @@ export default function HeroSection({
   const justifyContent = alignment === 'center' ? 'justify-center' : 'justify-start';
 
   return (
-    <section className={`relative min-h-screen pt-4 sm:pt-6 md:pt-8 flex items-center justify-center ${className}`}>
+    <section
+      className={`relative min-h-[60vh] md:min-h-[80vh] pt-12 sm:pt-16 md:pt-20 pb-12 sm:pb-16 md:pb-20 flex items-center justify-center ${className}`}
+    >
       {/* Background Image with Overlay */}
       <div className="absolute inset-0 z-0">
         {/* Background image */}
@@ -67,36 +69,38 @@ export default function HeroSection({
           style={{ backgroundImage: `url(${backgroundImage})` }}
           aria-hidden="true"
         />
-        {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20" />
-        {/* Dark overlay for text readability */}
-        <div className="absolute inset-0 bg-black/40 z-10"></div>
+        {/* Top-to-bottom dark gradient overlay for readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black/70" />
       </div>
 
       {/* Content */}
       <div className={`relative z-20 container mx-auto px-4 ${textAlignment} text-white`}>
-        <div className={`max-w-4xl ${alignment === 'center' ? 'mx-auto' : ''}`}>
+        <div className={`max-w-3xl md:max-w-4xl ${alignment === 'center' ? 'mx-auto' : ''}`}>
           {/* Main Headline */}
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
+          <h1 className="text-xl md:text-3xl lg:text-4xl font-bold mb-4 md:mb-6 leading-snug md:leading-tight">
             {headline}
           </h1>
 
           {/* Subheadline */}
           {subheadline && (
-            <p className={`text-lg md:text-xl lg:text-2xl mb-8 text-gray-100 max-w-2xl ${
-              alignment === 'center' ? 'mx-auto' : ''
-            }`}>
+            <p
+              className={`text-base md:text-lg lg:text-xl mb-6 md:mb-8 text-gray-100 max-w-2xl ${
+                alignment === 'center' ? 'mx-auto' : ''
+              }`}
+            >
               {subheadline}
             </p>
           )}
 
           {/* CTA Buttons */}
-          <div className={`flex flex-col sm:flex-row gap-4 ${justifyContent} items-center mb-12`}>
+          <div
+            className={`flex flex-col sm:flex-row gap-3 sm:gap-4 ${justifyContent} items-center mb-8 md:mb-12`}
+          >
             {primaryCtaText && (
               <Link
                 href={primaryCtaHref}
                 onClick={handlePrimaryClick}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg text-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg inline-block"
+                className="bg-[#24A148] hover:bg-[#1b7f37] text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg text-base sm:text-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg inline-block w-full sm:w-auto text-center"
               >
                 {primaryCtaText}
               </Link>
@@ -105,7 +109,7 @@ export default function HeroSection({
               <Link
                 href={secondaryCtaHref}
                 onClick={handleSecondaryClick}
-                className="inline-flex items-center justify-center bg-white hover:bg-gray-100 text-black px-8 py-4 rounded-lg text-lg font-semibold transition-all duration-300 border-2 border-gray-200 hover:border-gray-300 backdrop-blur-sm"
+                className="inline-flex items-center justify-center bg-white/95 hover:bg-white text-black px-6 sm:px-8 py-3 sm:py-4 rounded-lg text-base sm:text-lg font-semibold transition-all duration-300 border-2 border-gray-200 hover:border-gray-300 backdrop-blur-sm w-full sm:w-auto text-center"
               >
                 {secondaryCtaText}
               </Link>
@@ -114,10 +118,18 @@ export default function HeroSection({
 
           {/* Trust Indicators */}
           {trustIndicators.length > 0 && (
-            <div className={`flex flex-wrap ${justifyContent} items-center gap-8 text-sm text-gray-200`}>
+            <div
+              className={`flex flex-wrap ${justifyContent} items-center gap-4 md:gap-8 text-xs sm:text-sm text-gray-200`}
+            >
               {trustIndicators.map((indicator, index) => (
                 <div key={index} className="flex items-center gap-2">
-                  <Check className="w-5 h-5" color="#47C96F" strokeWidth={2} size={24} aria-hidden="true" />
+                  <Check
+                    className="w-4 h-4 sm:w-5 sm:h-5"
+                    color="#47C96F"
+                    strokeWidth={2}
+                    size={24}
+                    aria-hidden="true"
+                  />
                   <span>{indicator.text}</span>
                 </div>
               ))}
