@@ -70,9 +70,9 @@ export default function HeroSection({
             backgroundImage: `url(${backgroundImage})`,
             // Make the image feel less "zoomed in" by reducing the background size
             // so it sits a bit further back behind the content.
-            // Slightly zoom image and move it down so sky is not visible
-            backgroundSize: '120% auto',
-            backgroundPosition: 'center 70%',
+            // No extra zoom; use natural width of the (already cropped) image
+            backgroundSize: '100% auto',
+            backgroundPosition: 'center 65%',
           }}
           aria-hidden="true"
         />
