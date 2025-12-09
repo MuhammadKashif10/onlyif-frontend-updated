@@ -59,7 +59,7 @@ export default function HeroSection({
 
   return (
     <section
-      className={`relative min-h-[700px] sm:min-h-[900px] lg:min-h-[1500px] pt-16 md:pt-24 pb-16 md:pb-24 flex items-center justify-center ${className}`}
+      className={`relative min-h-[700px] sm:min-h-[900px] lg:min-h-[1300px] pt-16 md:pt-24 pb-16 md:pb-24 flex items-center justify-center ${className}`}
     >
       {/* Background Image with Overlay */}
       <div className="absolute inset-0 z-0">
@@ -70,9 +70,9 @@ export default function HeroSection({
             backgroundImage: `url(${backgroundImage})`,
             // Make the image feel less "zoomed in" by reducing the background size
             // so it sits a bit further back behind the content.
-            backgroundSize: '100% auto',
-            // Move image slightly down to reduce the visible sky at the top
-            backgroundPosition: 'center 40%',
+            // Slightly zoom image and move it down so sky is not visible
+            backgroundSize: '120% auto',
+            backgroundPosition: 'center 70%',
           }}
           aria-hidden="true"
         />
