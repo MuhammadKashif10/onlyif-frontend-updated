@@ -59,7 +59,7 @@ export default function HeroSection({
 
   return (
     <section
-      className={`relative min-h-[60vh] md:min-h-[80vh] pt-12 sm:pt-16 md:pt-20 pb-12 sm:pb-16 md:pb-20 flex items-center justify-center ${className}`}
+      className={`relative pt-16 md:pt-24 pb-16 md:pb-24 flex items-center justify-center ${className}`}
     >
       {/* Background Image with Overlay */}
       <div className="absolute inset-0 z-0">
@@ -80,17 +80,17 @@ export default function HeroSection({
       </div>
 
       {/* Content */}
-      <div className={`relative z-20 container mx-auto px-4 ${textAlignment} text-white`}>
-        <div className={`max-w-3xl md:max-w-4xl ${alignment === 'center' ? 'mx-auto' : ''}`}>
+      <div className={`relative z-20 max-w-5xl mx-auto px-6 ${textAlignment} text-white`}>
+        <div className={`${alignment === 'center' ? 'mx-auto' : ''}`}>
           {/* Main Headline */}
-          <h1 className="text-xl md:text-3xl lg:text-4xl font-bold mb-4 md:mb-6 leading-snug md:leading-tight">
+          <h1 className="text-3xl md:text-5xl lg:text-6xl font-semibold md:font-bold mb-4 md:mb-6 leading-tight md:leading-tight">
             {headline}
           </h1>
 
           {/* Subheadline */}
           {subheadline && (
             <p
-              className={`text-base md:text-lg lg:text-xl mb-6 md:mb-8 text-gray-100 max-w-2xl ${
+              className={`text-lg md:text-2xl lg:text-3xl mb-6 md:mb-8 text-gray-100 max-w-4xl ${
                 alignment === 'center' ? 'mx-auto' : ''
               }`}
             >
