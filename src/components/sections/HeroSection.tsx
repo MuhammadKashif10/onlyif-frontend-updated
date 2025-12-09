@@ -26,7 +26,7 @@ interface HeroSectionProps {
 }
 
 export default function HeroSection({
-  backgroundImage = '/images/01.jpg',
+  backgroundImage = '/images/01.png',
   headline,
   subheadline,
   primaryCtaText = 'Get Started',
