@@ -97,7 +97,7 @@ export default function HomePage() {
       
       {/* Hero Section */}
       <HeroSection
-        backgroundImage="/images/hero-home.jpg"
+        backgroundImage="/images/01.png"
         headline={
           <>
             <span className="block text-4xl sm:text-5xl lg:text-6xl font-bold text-white">
