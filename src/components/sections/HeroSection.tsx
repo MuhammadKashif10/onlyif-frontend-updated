@@ -74,8 +74,8 @@ export default function HeroSection({
           style={{
             backgroundImage: `url(${backgroundImage})`,
             backgroundRepeat: 'no-repeat',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
+            backgroundSize: '100% auto',
+            backgroundPosition: 'center 45%',
           }}
           aria-hidden="true"
         />
