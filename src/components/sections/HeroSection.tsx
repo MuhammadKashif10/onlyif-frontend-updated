@@ -64,22 +64,15 @@ export default function HeroSection({
 
   return (
     <section
-      className={`relative min-h-[82vh] md:min-h-[85vh] flex items-center justify-center px-6 ${className}`}
+      className={`relative min-h-[85vh] flex items-center justify-center px-6 ${className}`}
     >
-      {/* Background Image with Overlay */}
-      <div className="absolute inset-0 z-0">
-        {/* Background image */}
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{
-            backgroundImage: `url(${backgroundImage})`,
-            backgroundRepeat: 'no-repeat',
-            backgroundSize: '100% auto',
-            backgroundPosition: 'center 45%',
-          }}
-          aria-hidden="true"
-        />
-      </div>
+      {/* Background Image */}
+      <img
+        src={backgroundImage}
+        alt=""
+        aria-hidden="true"
+        className="absolute inset-0 w-full h-full object-center md:object-fill"
+      />
 
       {/* Floating badges (optional) */}
       {badges.length > 0 && (
