@@ -71,7 +71,7 @@ export default function HeroSection({
         src={backgroundImage}
         alt=""
         aria-hidden="true"
-        className="absolute inset-0 w-full h-full object-center md:object-fill"
+        className="absolute inset-0 w-full h-full object-center object-contain md:object-contain"
       />
 
       {/* Floating badges (optional) */}
