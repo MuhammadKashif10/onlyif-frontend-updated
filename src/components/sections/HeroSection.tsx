@@ -90,18 +90,31 @@ export default function HeroSection({
         </div>
       )}
 
+      {/* Logo/Tagline at top left */}
+      <div className="absolute top-8 left-6 md:top-12 md:left-12 z-30">
+        <div className="bg-white/95 backdrop-blur-sm rounded-lg px-4 py-3 shadow-lg">
+          <div className="flex items-center gap-2 mb-1">
+            <div className="w-8 h-8 md:w-10 md:h-10 bg-[#FFE94F] rounded-lg flex items-center justify-center shadow-md">
+              <Check className="w-5 h-5 md:w-6 md:h-6 text-[#0C304B]" strokeWidth={3} />
+            </div>
+            <span className="text-xl md:text-2xl font-bold text-gray-900">ONLY IF</span>
+          </div>
+          <p className="text-xs md:text-sm text-gray-700 font-medium ml-0 md:ml-12">Your Home. Your Rules. Your Price.</p>
+        </div>
+      </div>
+
       {/* Content */}
-      <div className={`relative z-20 max-w-6xl mx-auto py-16 md:py-20 ${textAlignment} text-white`}>
+      <div className={`relative z-20 w-full max-w-6xl mx-auto py-16 md:py-20 ${textAlignment} text-white`}>
         <div className={`${alignment === 'center' ? 'mx-auto' : ''}`}>
           {/* Main Headline */}
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 md:mb-6 leading-tight">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6 leading-tight">
             {headline}
           </h1>
 
           {/* Subheadline */}
           {subheadline && (
             <p
-              className={`text-lg md:text-xl mb-6 text-white/90 max-w-2xl md:max-w-3xl ${
+              className={`text-base sm:text-lg md:text-xl lg:text-2xl mb-6 md:mb-8 text-white/90 max-w-3xl md:max-w-4xl leading-relaxed ${
                 alignment === 'center' ? 'mx-auto' : ''
               }`}
             >
