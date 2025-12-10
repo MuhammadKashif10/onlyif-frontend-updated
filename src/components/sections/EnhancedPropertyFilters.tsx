@@ -126,27 +126,24 @@ export default function EnhancedPropertyFilters({
 
   return (
     <>
-      <div 
-        className={`relative rounded-lg overflow-hidden ${className}`}
+      <div
+        className={`relative overflow-hidden rounded-lg ${className}`}
         style={{
           backgroundImage: 'url(/images/filter.jpg)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
-          height: '450px',
-          marginLeft: '50px',
-          marginRight: '50px'
         }}
       >
         {/* Subtle gradient overlay for better text readability */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/20 to-black/40"></div>
-        
-        {/* Container with reduced width and center alignment */}
-        <div className="relative w-[60%] mx-auto h-full flex flex-col justify-center">
-          {/* Search Bar - Centered with white background */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/20 to-black/40" />
+
+        {/* Content container */}
+        <div className="relative flex flex-col justify-center px-4 sm:px-6 lg:px-10 py-8 sm:py-12 min-h-[320px] sm:min-h-[420px] lg:min-h-[500px] max-w-6xl mx-auto w-full">
+          {/* Search Bar */}
           <div className="mb-4 flex justify-center">
-            <div className="relative w-full bg-white rounded-xl p-4 shadow-lg">
-              <div className="absolute inset-y-0 left-0 pl-7 flex items-center pointer-events-none">
+            <div className="relative w-full bg-white rounded-xl p-3 sm:p-4 shadow-lg max-w-5xl">
+              <div className="absolute inset-y-0 left-0 pl-4 sm:pl-6 flex items-center pointer-events-none">
                 <Search color="#47C96F" strokeWidth={2} size={20} aria-hidden="true" />
               </div>
               <input
@@ -154,12 +151,12 @@ export default function EnhancedPropertyFilters({
                 placeholder="Search by location, property type, or keywords..."
                 value={searchQuery}
                 onChange={handleSearchChange}
-                className="w-full pl-10 pr-10 py-2.5 border-0 rounded-md leading-5 bg-transparent placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-0 transition-colors"
+                className="w-full pl-10 pr-10 py-2.5 border-0 rounded-md leading-5 bg-transparent placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-0 transition-colors text-sm sm:text-base"
               />
               {searchQuery && (
                 <button
                   onClick={() => onSearchChange('')}
-                  className="absolute inset-y-0 right-0 pr-7 flex items-center"
+                  className="absolute inset-y-0 right-0 pr-4 sm:pr-6 flex items-center"
                   aria-label="Clear search"
                 >
                   <X className="h-4 w-4 text-gray-400 hover:text-gray-600" />
@@ -168,10 +165,10 @@ export default function EnhancedPropertyFilters({
             </div>
           </div>
 
-          {/* Filter Buttons - Centered with white background */}
+          {/* Filter Buttons */}
           <div className="flex justify-center">
-            <div className="w-full bg-white rounded-xl p-4 shadow-lg">
-              <div className="flex items-center justify-center gap-2">
+            <div className="w-full bg-white rounded-xl p-3 sm:p-4 shadow-lg max-w-5xl">
+              <div className="flex flex-wrap items-center justify-start sm:justify-center gap-2 sm:gap-3">
             {/* Price Filter Button */}
             <button
               onClick={() => openModal('price')}
@@ -250,7 +247,7 @@ export default function EnhancedPropertyFilters({
             {activeFiltersCount > 0 && (
               <button
                 onClick={clearFilters}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-lg border bg-red-50 text-red-600 border-red-200 hover:bg-red-100 transition-all whitespace-nowrap ml-2"
+                className="flex items-center gap-1.5 px-4 py-2 rounded-lg border bg-red-50 text-red-600 border-red-200 hover:bg-red-100 transition-all whitespace-nowrap"
               >
                 <X className="h-4 w-4" />
                 <span className="text-sm font-medium">Clear All</span>
