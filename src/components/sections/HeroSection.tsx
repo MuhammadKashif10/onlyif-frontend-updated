@@ -74,11 +74,11 @@ export default function HeroSection({
           style={{
             backgroundImage: `url(${backgroundImage})`,
             backgroundRepeat: 'no-repeat',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
           }}
           aria-hidden="true"
         />
-        {/* Subtle dark overlay for readability */}
-        <div className="absolute inset-0 bg-black/40" />
       </div>
 
       {/* Floating badges (optional) */}
