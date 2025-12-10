@@ -136,6 +136,7 @@ export default function HomePage() {
         description="Only If is an Australian home-selling platform that connects you with serious buyers in your neighbourhood, with transparent pricing, personalised support and a sale timeline that suits you – no pressure and no hard sell."
         secondaryCtaText="Learn More"
         secondaryCtaHref="/how-it-works"
+        showPrimary={false}
         variant="primary"
         alignment="center"
       />

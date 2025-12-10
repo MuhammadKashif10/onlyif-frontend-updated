@@ -17,6 +17,7 @@ interface CTASectionProps {
   onPrimaryCtaClick?: () => void;
   onSecondaryCtaClick?: () => void;
   className?: string;
+  showPrimary?: boolean;
 }
 
 export default function CTASection({
@@ -33,7 +34,8 @@ export default function CTASection({
   alignment = 'center',
   onPrimaryCtaClick,
   onSecondaryCtaClick,
-  className = ''
+  className = '',
+  showPrimary = true
 }: CTASectionProps) {
   const handlePrimaryCtaClick = () => {
     if (onPrimaryCtaClick) {
@@ -156,15 +158,17 @@ export default function CTASection({
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Link
-              href={primaryCtaHref}
-              onClick={handlePrimaryCtaClick}
-              className={`px-8 py-3 sm:px-10 sm:py-4 rounded-lg font-semibold text-base sm:text-lg transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${variantClasses.primaryButton}`}
-              role="button"
-              aria-label={primaryCtaText}
-            >
-              {primaryCtaText}
-            </Link>
+            {showPrimary && primaryCtaText && (
+              <Link
+                href={primaryCtaHref || '#'}
+                onClick={handlePrimaryCtaClick}
+                className={`px-8 py-3 sm:px-10 sm:py-4 rounded-lg font-semibold text-base sm:text-lg transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${variantClasses.primaryButton}`}
+                role="button"
+                aria-label={primaryCtaText}
+              >
+                {primaryCtaText}
+              </Link>
+            )}
             
             {secondaryCtaText && (
               <Link

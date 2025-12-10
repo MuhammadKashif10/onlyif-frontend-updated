@@ -49,6 +49,7 @@ export default function HowItWorksPage() {
         backgroundImage="/images/04.jpg"
         headline="How OnlyIf Works"
         subheadline="Simple, transparent, and stress-free real estate transactions"
+        primaryCtaText=""
         secondaryCtaText="Browse Homes"
         secondaryCtaHref="/browse"
       />
