@@ -23,6 +23,10 @@ interface HeroSectionProps {
   className?: string;
   variant?: 'primary' | 'secondary';
   alignment?: 'center' | 'left';
+  badges?: {
+    className: string;
+    icon?: React.ReactNode;
+  }[];
 }
 
 export default function HeroSection({
@@ -38,7 +42,8 @@ export default function HeroSection({
   onSecondaryCtaClick,
   className = '',
   variant = 'primary',
-  alignment = 'center'
+  alignment = 'center',
+  badges = [],
 }: HeroSectionProps) {
   const [showOfferForm, setShowOfferForm] = useState(false);
 
@@ -59,39 +64,50 @@ export default function HeroSection({
 
   return (
     <section
-      className={`relative min-h-[700px] sm:min-h-[900px] lg:min-h-[1300px] pt-16 md:pt-24 pb-16 md:pb-24 flex items-center justify-center ${className}`}
+      className={`relative min-h-[82vh] md:min-h-[85vh] flex items-center justify-center px-6 ${className}`}
     >
       {/* Background Image with Overlay */}
       <div className="absolute inset-0 z-0">
         {/* Background image */}
         <div
-          className="absolute inset-0 bg-no-repeat"
+          className="absolute inset-0 bg-cover bg-center"
           style={{
             backgroundImage: `url(${backgroundImage})`,
-            // Make the image feel less "zoomed in" by reducing the background size
-            // so it sits a bit further back behind the content.
-            // No extra zoom; use natural width of the (already cropped) image
-            backgroundSize: '100% auto',
-            backgroundPosition: 'center 65%',
+            backgroundRepeat: 'no-repeat',
           }}
           aria-hidden="true"
         />
-        {/* Top-to-bottom dark gradient overlay for readability */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black/70" />
+        {/* Subtle dark overlay for readability */}
+        <div className="absolute inset-0 bg-black/40" />
       </div>
 
+      {/* Floating badges (optional) */}
+      {badges.length > 0 && (
+        <div className="pointer-events-none absolute inset-0 z-10">
+          {badges.map((badge, index) => (
+            <div key={index} className={`absolute ${badge.className}`}>
+              <div className="inline-flex items-center justify-center rounded-xl bg-[#FFE94F] px-3 py-2 shadow-lg shadow-black/20 border border-black/10">
+                {badge.icon ?? (
+                  <Check className="w-6 h-6 text-[#0C304B]" strokeWidth={3} aria-hidden="true" />
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Content */}
-      <div className={`relative z-20 max-w-5xl mx-auto px-6 pb-12 md:pb-16 lg:pb-20 ${textAlignment} text-white`}>
+      <div className={`relative z-20 max-w-6xl mx-auto py-16 md:py-20 ${textAlignment} text-white`}>
         <div className={`${alignment === 'center' ? 'mx-auto' : ''}`}>
           {/* Main Headline */}
-          <h1 className="text-3xl md:text-5xl lg:text-[64px] font-semibold md:font-bold mb-4 md:mb-6 leading-tight md:leading-tight">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 md:mb-6 leading-tight">
             {headline}
           </h1>
 
           {/* Subheadline */}
           {subheadline && (
             <p
-              className={`text-lg md:text-2xl lg:text-3xl mb-6 md:mb-8 text-gray-100 max-w-4xl ${
+              className={`text-lg md:text-xl mb-6 text-white/90 max-w-2xl md:max-w-3xl ${
                 alignment === 'center' ? 'mx-auto' : ''
               }`}
             >

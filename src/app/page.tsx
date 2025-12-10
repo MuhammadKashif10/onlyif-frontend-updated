@@ -97,20 +97,29 @@ export default function HomePage() {
       
       {/* Hero Section */}
       <HeroSection
+        backgroundImage="/images/hero-home.jpg"
         headline={
           <>
-            <span className="block text-base md:text-lg font-semibold tracking-wide text-blue-100 mb-2">
-              Australia’s trusted way to buy and sell property on your terms.
+            <span className="block text-4xl sm:text-5xl lg:text-6xl font-bold text-white">
+              Australia’s trusted way to buy and
+            </span>
+            <span className="block text-4xl sm:text-5xl lg:text-6xl font-bold text-white">
+              sell property on your terms.
             </span>
           </>
         }
-        subheadline="Only If is an Australian home buying and selling platform that quietly connects local owners and serious buyers, keeping every step transparent, trusted and firmly in your control."
+        subheadline="Only If connects local owners and serious buyers quietly, transparently and in complete control – giving you a smarter way to buy and sell without the pressure or the noise."
         primaryCtaText="I'm a Seller"
         primaryCtaHref="/signin"
         secondaryCtaText="I'm a Buyer"
         secondaryCtaHref="/signin"
         onPrimaryCtaClick={handlePrimaryCtaClick}
         onSecondaryCtaClick={handleSecondaryCtaClick}
+        badges={[
+          { className: 'left-10 md:left-16 bottom-16 md:bottom-24' },
+          { className: 'left-1/2 -translate-x-1/2 bottom-20 md:bottom-28' },
+          { className: 'right-10 md:right-16 bottom-16 md:bottom-24' },
+        ]}
       />
 
       {/* Mission highlight */}
