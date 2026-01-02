@@ -75,6 +75,9 @@ export default function HeroSection({
         style={{ objectPosition: 'center 45%' }}
       />
 
+      {/* Dark Overlay */}
+      <div className="absolute inset-0 bg-black/50 z-10" />
+
       {/* Floating badges (optional) */}
       {badges.length > 0 && (
         <div className="pointer-events-none absolute inset-0 z-10">
