@@ -101,7 +101,7 @@ export default function HomePage() {
         headline={
           <>
             <span className="block text-4xl sm:text-5xl lg:text-6xl font-bold text-white">
-              Australia’s trusted way to buy and
+              Australia's trusted way to buy and
             </span>
             <span className="block text-4xl sm:text-5xl lg:text-6xl font-bold text-white">
               sell property on your terms.
@@ -115,6 +115,7 @@ export default function HomePage() {
         secondaryCtaHref="/signin"
         onPrimaryCtaClick={handlePrimaryCtaClick}
         onSecondaryCtaClick={handleSecondaryCtaClick}
+        showOverlay={false}
       />
 
       {/* Mission highlight */}

@@ -27,6 +27,7 @@ interface HeroSectionProps {
     className: string;
     icon?: React.ReactNode;
   }[];
+  showOverlay?: boolean;
 }
 
 export default function HeroSection({
@@ -44,6 +45,7 @@ export default function HeroSection({
   variant = 'primary',
   alignment = 'center',
   badges = [],
+  showOverlay = true,
 }: HeroSectionProps) {
   const [showOfferForm, setShowOfferForm] = useState(false);
 
@@ -76,7 +78,7 @@ export default function HeroSection({
       />
 
       {/* Dark Overlay */}
-      <div className="absolute inset-0 bg-black/70 z-10" />
+      {showOverlay && <div className="absolute inset-0 bg-black/70 z-10" />}
 
       {/* Floating badges (optional) */}
       {badges.length > 0 && (
