@@ -76,7 +76,7 @@ export default function HeroSection({
       />
 
       {/* Dark Overlay */}
-      <div className="absolute inset-0 bg-black/50 z-10" />
+      <div className="absolute inset-0 bg-black/70 z-10" />
 
       {/* Floating badges (optional) */}
       {badges.length > 0 && (
@@ -97,7 +97,7 @@ export default function HeroSection({
       <div className={`relative z-20 max-w-6xl mx-auto py-16 md:py-20 ${textAlignment} text-white`}>
         <div className={`${alignment === 'center' ? 'mx-auto' : ''}`}>
           {/* Main Headline */}
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 md:mb-6 leading-tight">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 md:mb-6 leading-tight text-white">
             {headline}
           </h1>
 
