@@ -41,7 +41,7 @@ const RegistrationPhase: React.FC<RegistrationPhaseProps> = ({ onNext, onBack })
     if (!data.phone.trim()) { // Changed from sellerData.phone
       newErrors.phone = 'Phone number is required';
     } else if (!/^[\d\s\-\+\(\)]{10,}$/.test(data.phone.replace(/\s/g, ''))) {
-      newErrors.phone = 'Please enter a valid phone number';
+      newErrors.phone = 'Please enter a valid Australian phone number';
     }
 
     // Password validation
@@ -132,7 +132,7 @@ const RegistrationPhase: React.FC<RegistrationPhaseProps> = ({ onNext, onBack })
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Create Your Account</h2>
-        <p className="text-gray-600">Enter your details to get started with selling your property</p>
+        <p className="text-gray-600">Enter your details to get started with selling your property in Australia.</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -162,7 +162,7 @@ const RegistrationPhase: React.FC<RegistrationPhaseProps> = ({ onNext, onBack })
           value={data.phone} // Changed from sellerData.phone
           onChange={(e) => updateData({ phone: e.target.value })} // Changed from updateSellerData
           error={errors.phone}
-          placeholder="Enter your phone number"
+          placeholder="Enter your Australian phone or mobile (e.g. 04xx xxx xxx)"
           required
         />
 
@@ -172,6 +172,7 @@ const RegistrationPhase: React.FC<RegistrationPhaseProps> = ({ onNext, onBack })
           onChange={(value) => updateData({ password: value })} // Changed from updateSellerData
           error={errors.password}
           placeholder="Create a strong password"
+          helperText="Use at least 8 characters with a mix of letters and numbers."
           showStrengthMeter
           required
         />
@@ -195,7 +196,7 @@ const RegistrationPhase: React.FC<RegistrationPhaseProps> = ({ onNext, onBack })
                 type="checkbox"
                 checked={data.termsAccepted}
                 onChange={(e) => updateData({ termsAccepted: e.target.checked })}
-                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                className="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
               />
             </div>
             <div className="ml-3 text-sm">
@@ -218,7 +219,7 @@ const RegistrationPhase: React.FC<RegistrationPhaseProps> = ({ onNext, onBack })
                 type="checkbox"
                 checked={data.legalAuthorization}
                 onChange={(e) => updateData({ legalAuthorization: e.target.checked })}
-                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                className="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
               />
             </div>
             <div className="ml-3 text-sm">
@@ -238,7 +239,7 @@ const RegistrationPhase: React.FC<RegistrationPhaseProps> = ({ onNext, onBack })
                 type="checkbox"
                 checked={data.successFeeAgreement}
                 onChange={(e) => updateData({ successFeeAgreement: e.target.checked })}
-                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                className="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
               />
             </div>
             <div className="ml-3 text-sm">
@@ -258,7 +259,7 @@ const RegistrationPhase: React.FC<RegistrationPhaseProps> = ({ onNext, onBack })
                 type="checkbox"
                 checked={data.noBypassing}
                 onChange={(e) => updateData({ noBypassing: e.target.checked })}
-                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                className="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
               />
             </div>
             <div className="ml-3 text-sm">
@@ -278,7 +279,7 @@ const RegistrationPhase: React.FC<RegistrationPhaseProps> = ({ onNext, onBack })
                 type="checkbox"
                 checked={data.upgradesAcknowledgment}
                 onChange={(e) => updateData({ upgradesAcknowledgment: e.target.checked })}
-                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                className="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
               />
             </div>
             <div className="ml-3 text-sm">
@@ -298,7 +299,7 @@ const RegistrationPhase: React.FC<RegistrationPhaseProps> = ({ onNext, onBack })
                 type="checkbox"
                 checked={data.agentPartnerHelp}
                 onChange={(e) => updateData({ agentPartnerHelp: e.target.checked })}
-                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                className="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
               />
             </div>
             <div className="ml-3 text-sm">

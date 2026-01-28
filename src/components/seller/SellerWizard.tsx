@@ -20,13 +20,18 @@ export default function SellerWizard() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-white rounded-lg shadow-lg overflow-hidden">
           {/* Header */}
-          <div className="bg-blue-600 text-white px-6 py-4">
+          <div className="bg-green-600 text-white px-6 py-4">
             <h1 className="text-2xl font-bold">Sell Your Property</h1>
-            <p className="text-blue-100 mt-1">Create your account and verify to access your Seller Dashboard</p>
+            <p className="text-green-100 mt-1">
+              Create your Only If seller account to access your Australian Seller Dashboard.
+            </p>
           </div>
 
           {/* Stepper */}
           <WizardStepper phases={phases} />
+          <p className="px-6 pt-3 pb-1 text-sm text-gray-600">
+            Step {currentPhase} of {phases.length}
+          </p>
 
           {/* Current Phase Content */}
           <div className="p-6">

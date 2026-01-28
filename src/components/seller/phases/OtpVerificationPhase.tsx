@@ -58,8 +58,11 @@ const OtpVerificationPhase: React.FC = () => {
         </h2>
         <p className="text-gray-600">
           {otpSent
-            ? `Enter the 6-digit code sent to ${data.email || data.phone}`
-            : "We'll send you a verification code"}
+            ? `Enter the 6-digit verification code sent to ${data.email || data.phone}`
+            : "We'll send you a 6-digit verification code"}
+        </p>
+        <p className="mt-1 text-sm text-gray-500">
+          Codes usually arrive within a few seconds but can take up to a minute, depending on your Australian carrier.
         </p>
       </div>
 
