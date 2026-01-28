@@ -4,27 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/main/Navbar';
 import Sidebar from '@/components/main/Sidebar';
 import { useAuth } from '@/hooks/useAuth';
-import { sellerApi, AnalyticsData, ChartData } from '@/api/seller';
-
-interface AnalyticsData {
-  totalViews: number;
-  totalInquiries: number;
-  totalOffers: number;
-  averageViewsPerListing: number;
-  conversionRate: number;
-  topPerformingListing: {
-    id: string;
-    title: string;
-    views: number;
-  } | null;
-}
-
-interface ChartData {
-  month: string;
-  views: number;
-  inquiries: number;
-  offers: number;
-}
+import { sellerApi, AnalyticsData } from '@/api/seller';
 
 export default function SellerAnalytics() {
   const { user } = useAuth();
@@ -79,9 +59,9 @@ export default function SellerAnalytics() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      <div className="flex">
+      <div className="flex flex-col md:flex-row">
         <Sidebar />
-        <main className="flex-1 p-8">
+        <main className="flex-1 md:ml-64 px-4 sm:px-6 lg:px-8 py-8">
           {/* Header */}
           <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg p-6 mb-8 text-white">
             <h1 className="text-3xl font-bold mb-2">Analytics Dashboard</h1>

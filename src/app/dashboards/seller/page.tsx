@@ -305,7 +305,7 @@ function SellerDashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar 
-logo="/images/logo.PNG"
+        logo="/images/logo.PNG"
         logoText=""
         navigationItems={[
           { label: 'Dashboard', href: '/dashboards/seller', isActive: true },
@@ -315,10 +315,10 @@ logo="/images/logo.PNG"
         ctaHref="/dashboards/seller/account"
       />
       
-      <div className="flex">
+      <div className="flex flex-col md:flex-row">
         <Sidebar userType="seller" userId="1" />
         
-        <main className="flex-1 ml-64">
+        <main className="flex-1 md:ml-64">
           <div className="pt-0">
             {/* Header Section (flat, accessible) */}
             <section className="bg-muted text-[#1E1E1E] py-10 border-b border-gray-200">
@@ -395,9 +395,11 @@ logo="/images/logo.PNG"
                   <p className="text-2xl font-bold text-green-600">{stats.acceptedOffers}</p>
                 </div>
                 <div className="bg-white p-6 rounded-lg shadow">
-                  <h3 className="text-sm font-medium text-gray-500">Average Value</h3>
+                  <h3 className="text-sm font-medium text-gray-500">Average Offer Value</h3>
                   <p className="text-2xl font-bold text-gray-900">
-                    ${stats.averageOfferValue?.toLocaleString() || '0'}
+                    {stats.averageOfferValue
+                      ? `A$${stats.averageOfferValue.toLocaleString('en-AU')}`
+                      : 'A$0'}
                   </p>
                 </div>
               </div>
@@ -434,7 +436,9 @@ logo="/images/logo.PNG"
                         
                         <div className="text-right">
                           <p className="text-xl font-bold text-gray-900">
-                            ${property.price?.toLocaleString()}
+                            {property.price != null
+                              ? `A$${property.price.toLocaleString('en-AU')}`
+                              : 'A$0'}
                           </p>
                           <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500">
                             <span>{property.views} views</span>

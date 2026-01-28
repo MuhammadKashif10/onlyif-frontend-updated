@@ -310,13 +310,13 @@ export default function BuyerDashboard() {
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header with Notifications */}
-        <div className="flex justify-between items-center mb-8">
-          <div>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+          <div className="text-center sm:text-left">
             <h1 className="text-3xl font-bold text-gray-900">Buyer Dashboard</h1>
             <p className="text-gray-600 mt-1">Welcome back, {user.name}! Track your properties and stay updated.</p>
           </div>
           
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center justify-center sm:justify-end space-x-4 w-full sm:w-auto">
             {/* Notifications Bell */}
             <div className="relative">
               <button
@@ -400,14 +400,14 @@ export default function BuyerDashboard() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             
             {/* Payment Status Card */}
-            <div className="bg-white rounded-lg shadow-md p-6 text-center hover:shadow-lg transition-shadow">
+          <div className="bg-white rounded-lg shadow-md p-6 text-center hover:shadow-lg transition-shadow">
               <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4">
                 <DollarSign className="h-6 w-6 text-green-600" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Payment Status</h3>
               <p className="text-gray-600 text-sm mb-4">Track your payment history and upcoming fees.</p>
               <div className="text-center mb-4">
-                <p className="text-2xl font-bold text-green-600">$0</p>
+                <p className="text-2xl font-bold text-green-600">A$0</p>
                 <p className="text-sm text-gray-500">Outstanding balance</p>
               </div>
               <button 
@@ -441,7 +441,8 @@ export default function BuyerDashboard() {
 
         {/* Tab Navigation */}
         <div className="bg-white rounded-t-lg shadow-sm">
-          <nav className="flex space-x-8 px-8 py-4 border-b border-gray-200">
+          <div className="border-b border-gray-200 overflow-x-auto">
+            <nav className="flex space-x-4 sm:space-x-8 px-8 py-4 whitespace-nowrap">
             {[
               { key: 'overview', label: 'Overview', icon: Home },
               { key: 'watchlist', label: 'Watchlist', icon: Star },
@@ -462,6 +463,7 @@ export default function BuyerDashboard() {
               </button>
             ))}
           </nav>
+          </div>
         </div>
 
         {/* Tab Content */}

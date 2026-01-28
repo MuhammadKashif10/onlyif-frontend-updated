@@ -1305,11 +1305,12 @@ export default function AgentDashboard() {
       <ToastNotification />
       
       <div className="relative">
-<Navbar 
+        <Navbar 
           logo="/images/logo.PNG"
           logoText=""
         />
-        <div className="absolute top-0 right-0 p-4">
+        {/* Hide floating notification panel on small screens to avoid overlapping the navbar */}
+        <div className="hidden md:block absolute top-0 right-0 p-4">
           <NotificationPanel 
             userId="agent-123" 
             userType="agent" 
@@ -1335,8 +1336,9 @@ export default function AgentDashboard() {
       <div className="flex-grow container mx-auto px-4 py-8">
         {/* Navigation Tabs */}
         <div className="mb-8">
-          <div className="border-b border-gray-200">
-            <nav className="-mb-px flex space-x-8">
+          {/* Make tabs horizontally scrollable on very small screens */}
+          <div className="border-b border-gray-200 overflow-x-auto">
+            <nav className="-mb-px flex space-x-4 sm:space-x-8 whitespace-nowrap">
               {[
                 { id: 'overview', label: 'Overview' },
                 { id: 'properties', label: 'Assigned Properties' },

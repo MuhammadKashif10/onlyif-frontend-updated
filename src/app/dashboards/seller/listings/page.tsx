@@ -149,16 +149,21 @@ export default function SellerListingsPage() {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <div className="flex justify-between items-center mb-8">
-          <div>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+          <div className="text-center sm:text-left">
             <h1 className="text-3xl font-bold text-gray-900">My Listings</h1>
             <p className="text-gray-600 mt-2">
               Manage your property listings and track their performance
             </p>
           </div>
-          <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => router.push('/dashboards/seller/add-property')}>
-            Add New Property
-          </Button>
+          <div className="flex justify-center sm:justify-end">
+            <Button
+              className="bg-blue-600 hover:bg-blue-700"
+              onClick={() => router.push('/dashboards/seller/add-property')}
+            >
+              Add New Property
+            </Button>
+          </div>
         </div>
 
         {/* Properties Grid */}
