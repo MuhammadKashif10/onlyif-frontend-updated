@@ -3,16 +3,14 @@
 import React from 'react';
 import { useSellerContext } from '@/context/SellerContext';
 import RegistrationPhase from './phases/RegistrationPhase';
-import OtpVerificationPhase from './phases/OtpVerificationPhase';
 import WizardStepper from './WizardStepper';
 
 const phases = [
-  { id: 1, title: 'Register', component: RegistrationPhase },
-  { id: 2, title: 'Verify', component: OtpVerificationPhase }
+  { id: 1, title: 'Register', component: RegistrationPhase }
 ];
 
 export default function SellerWizard() {
-  const { currentPhase, nextPhase, prevPhase } = useSellerContext();
+  const { currentPhase } = useSellerContext();
   const CurrentPhaseComponent = phases.find(p => p.id === currentPhase)?.component;
 
   return (
@@ -36,10 +34,7 @@ export default function SellerWizard() {
           {/* Current Phase Content */}
           <div className="p-6">
             {CurrentPhaseComponent && (
-              <CurrentPhaseComponent 
-                onNext={nextPhase}
-                onBack={prevPhase}
-              />
+              <CurrentPhaseComponent />
             )}
           </div>
         </div>

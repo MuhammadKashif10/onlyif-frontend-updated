@@ -3,14 +3,10 @@
 import React from 'react';
 import { useBuyerContext } from '@/context/BuyerContext';
 import RegistrationPhase from './phases/RegistrationPhase';
-import OtpVerificationPhase from './phases/OtpVerificationPhase';
-import InterestPhase from './phases/InterestPhase';
 import WizardStepper from './WizardStepper';
 
 const phases = [
-  { id: 1, title: 'Register', component: RegistrationPhase },
-  { id: 2, title: 'Verify Account', component: OtpVerificationPhase },
-  { id: 3, title: 'Express Interest', component: InterestPhase }
+  { id: 1, title: 'Register', component: RegistrationPhase }
 ];
 
 export default function BuyerWizard() {

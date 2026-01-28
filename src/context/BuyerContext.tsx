@@ -90,34 +90,25 @@ export const BuyerProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   };
 
   const setPhase = (phase: number) => {
-    if (phase >= 1 && phase <= 3 && canProceedToPhase(phase)) {
-      setCurrentPhase(phase);
+    // Single-phase registration; keep phase clamped at 1
+    if (phase === 1) {
+      setCurrentPhase(1);
     }
   };
 
   const nextPhase = () => {
-    if (currentPhase < 3 && canProceedToPhase(currentPhase + 1)) {
-      setCurrentPhase(prev => prev + 1);
-    }
+    // No-op now that registration is single-phase
+    setCurrentPhase(1);
   };
 
   const prevPhase = () => {
-    if (currentPhase > 1) {
-      setCurrentPhase(prev => prev - 1);
-    }
+    // No-op for single-phase flow
+    setCurrentPhase(1);
   };
 
-  const canProceedToPhase = (phase: number): boolean => {
-    switch (phase) {
-      case 1:
-        return true;
-      case 2:
-        return !!(buyerData.name && buyerData.email);
-      case 3:
-        return buyerData.otpVerified;
-      default:
-        return false;
-    }
+  const canProceedToPhase = (_phase: number): boolean => {
+    // Always true for single registration step
+    return true;
   };
 
   const resetBuyerData = () => {

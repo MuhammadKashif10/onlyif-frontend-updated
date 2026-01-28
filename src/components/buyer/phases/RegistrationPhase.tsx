@@ -1,16 +1,18 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useBuyerContext } from '../../../context/BuyerContext';
-import { useAuth } from '../../../context/AuthContext'; // Add this import
+import { useAuth } from '../../../context/AuthContext';
 import InputField from '../../reusable/InputField';
 import PasswordField from '../../reusable/PasswordField';
 import { Button } from '../../reusable/Button';
 import { validatePassword, validatePasswordConfirmation } from '../../../utils/passwordValidation';
 
 const RegistrationPhase: React.FC = () => {
-  const { buyerData, updateBuyerData, nextPhase } = useBuyerContext();
-  const { register } = useAuth(); // This line was causing the error
+  const { buyerData, updateBuyerData } = useBuyerContext();
+  const { register } = useAuth();
+  const router = useRouter();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
 
@@ -86,7 +88,7 @@ const RegistrationPhase: React.FC = () => {
     setErrors({});
 
     try {
-      // Register user but don't store JWT yet (will be stored after OTP verification)
+      // Register user and navigate directly to buyer dashboard on success
       await register({
         name: buyerData.name,
         email: buyerData.email,
@@ -95,8 +97,7 @@ const RegistrationPhase: React.FC = () => {
         phone: buyerData.phone
       });
 
-      // Move to OTP verification phase instead of directly to browse
-      nextPhase(); // This will go to OTP verification phase
+      router.push('/dashboards/buyer');
     } catch (error: any) {
       setErrors({ submit: error.message || 'Registration failed. Please try again.' });
     } finally {
@@ -230,7 +231,7 @@ const RegistrationPhase: React.FC = () => {
           disabled={isLoading}
           className="w-full"
         >
-          {isLoading ? 'Creating Account...' : 'Create Account & Send Verification'}
+          {isLoading ? 'Creating Account...' : 'Create Account'}
         </Button>
       </form>
     </div>

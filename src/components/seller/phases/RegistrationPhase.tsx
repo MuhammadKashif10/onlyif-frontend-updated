@@ -1,21 +1,17 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useSellerContext } from '../../../context/SellerContext';
 import InputField from '../../reusable/InputField';
 import PasswordField from '../../reusable/PasswordField';
 import Button from '../../reusable/Button';
 import { validatePassword, validatePasswordConfirmation } from '../../../utils/passwordValidation';
 import { useAuth } from '../../../context/AuthContext';
-import PrivacyPolicyModal from '../../reusable/PrivacyPolicyModal';
 
-interface RegistrationPhaseProps {
-  onNext: () => void;
-  onBack: () => void;
-}
-
-const RegistrationPhase: React.FC<RegistrationPhaseProps> = ({ onNext, onBack }) => {
+const RegistrationPhase: React.FC = () => {
   const { data, updateData } = useSellerContext();
+  const router = useRouter();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
   // Remove this line: const [showPrivacyModal, setShowPrivacyModal] = useState(false);
@@ -109,7 +105,6 @@ const RegistrationPhase: React.FC<RegistrationPhaseProps> = ({ onNext, onBack })
     setErrors({});
 
     try {
-      // Register user but do not persist JWT yet (will persist after OTP verification)
       await register({
         name: data.name,
         email: data.email,
@@ -118,8 +113,8 @@ const RegistrationPhase: React.FC<RegistrationPhaseProps> = ({ onNext, onBack })
         phone: data.phone
       });
 
-      // Proceed to OTP verification phase
-      onNext();
+      // On successful registration, navigate directly to Seller Dashboard
+      router.push('/dashboards/seller');
     } catch (error: any) {
       console.error('Registration failed:', error);
       setErrors({ submit: error.message || 'Registration failed. Please try again.' });
@@ -319,16 +314,7 @@ const RegistrationPhase: React.FC<RegistrationPhaseProps> = ({ onNext, onBack })
           </div>
         )}
 
-        <div className="flex justify-between pt-4">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onBack}
-            disabled={isLoading}
-          >
-            Back
-          </Button>
-          
+        <div className="flex justify-end pt-4">
           <Button
             type="submit"
             variant="primary"
