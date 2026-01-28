@@ -218,11 +218,10 @@ const SellerOffers = () => {
                 </div>
               )}
             </div>
-          </div>
-        </main>
+          </main>
+        </div>
       </div>
-    </div>
-  );
-};
+    );
+  };
 
 export default SellerOffers;
