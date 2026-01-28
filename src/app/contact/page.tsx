@@ -28,26 +28,26 @@ export default function ContactPage() {
   const contactMethods = [
     {
       name: 'Customer Support',
-      description: 'Get help with your account or transactions',
-      phone: '1-800-ONLYIF',
-      email: 'support@onlyif.com',
-      hours: 'Mon-Fri 9AM-6PM EST',
+      description: 'Get help with your account, listings or transactions',
+      phone: '1300 000 000',
+      email: 'support@onlyif.com.au',
+      hours: 'Mon–Fri 9am–5pm AEST',
       icon: 'phone'
     },
     {
       name: 'Sales Team',
-      description: 'Questions about buying or selling',
-      phone: '1-800-ONLYIF',
-      email: 'sales@onlyif.com',
-      hours: 'Mon-Sun 8AM-8PM EST',
+      description: 'Questions about buying or selling property in Australia',
+      phone: '1300 000 000',
+      email: 'sales@onlyif.com.au',
+      hours: 'Mon–Sun 8am–8pm AEST',
       icon: 'users'
     },
     {
       name: 'Technical Support',
       description: 'Help with our platform and tools',
-      phone: '1-800-ONLYIF',
-      email: 'tech@onlyif.com',
-      hours: 'Mon-Fri 9AM-5PM EST',
+      phone: '1300 000 000',
+      email: 'tech@onlyif.com.au',
+      hours: 'Mon–Fri 9am–5pm AEST',
       icon: 'settings'
     }
   ];
@@ -59,10 +59,10 @@ export default function ContactPage() {
       {/* Hero Section */}
       <HeroSection
         headline="Get in Touch"
-        subheadline="We're here to help - Have questions? Need support? Our team is ready to assist you with all your real estate needs."
+        subheadline="We're here to help – Have questions? Need support? Our Australian-based team is ready to assist you with all your real estate needs."
         backgroundImage="/images/contact.jpg"
-        primaryCtaText="Call Us Now"
-        primaryCtaHref="tel:1-800-ONLYIF"
+        primaryCtaText="Call our local team"
+        primaryCtaHref="tel:+611300000000"
         secondaryCtaText="Email Support"
         secondaryCtaHref="mailto:hello@onlyif.com.au"
       />
@@ -99,19 +99,10 @@ export default function ContactPage() {
           <div className="space-y-6">
             <div className="bg-gray-50 rounded-lg p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                How quickly can I get a cash offer?
-              </h3>
-              <p className="text-gray-600">
-                Most cash offers are provided within 24 hours of submitting your property information.
-              </p>
-            </div>
-            
-            <div className="bg-gray-50 rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
                 What areas do you serve?
               </h3>
               <p className="text-gray-600">
-                We currently serve major metropolitan areas in Texas, with plans to expand to additional states.
+                We currently serve major metropolitan areas across Australia, with plans to expand our coverage even further.
               </p>
             </div>
             
@@ -132,13 +123,12 @@ export default function ContactPage() {
         title="Ready to Get Started?"
         subtitle="Let's make your real estate goals a reality"
         description="Whether you're buying or selling, our team is here to help you every step of the way."
-        primaryCtaText="Get Your Cash Offer"
-        primaryCtaHref="/sell/get-offer"
         secondaryCtaText="Browse Homes"
         secondaryCtaHref="/browse"
         backgroundGradient={true}
         variant="primary"
         alignment="center"
+        showPrimary={false}
       />
 
       {/* Footer removed - now global */}
