@@ -36,6 +36,7 @@ import {
   Home
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { formatCurrency } from '@/utils/currency';
 
 interface InvoicePayment {
   amount: number;
@@ -447,13 +448,9 @@ const SellerAccount = () => {
   };
 
   // Helper functions for UI
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-AU', {
-      style: 'currency',
-      currency: 'AUD'
-    }).format(amount);
-  };
-  
+  // Use shared AUD currency formatter
+  const formatAud = (amount: number) => formatCurrency(amount);
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-AU', {
       year: 'numeric',
@@ -496,10 +493,10 @@ logo="/images/logo.PNG"
         ctaHref="/dashboards/seller/account"
       />
       
-      <div className="flex">
+      <div className="flex flex-col md:flex-row">
         <Sidebar userType="seller" />
         
-        <main className="flex-1 ml-64">
+        <main className="flex-1 md:ml-64">
           <div className="pt-16 sm:pt-20 md:pt-24">
             {/* Header Section */}
             <section className="bg-gradient-to-r from-orange-600 to-orange-700 text-white py-14 shadow-sm border-b border-orange-500/20">
@@ -928,8 +925,8 @@ logo="/images/logo.PNG"
                                 </div>
                                 
                                 <div className="mt-4 flex items-center justify-between">
-                                  <div className="text-2xl font-bold text-gray-900">
-                                    {formatCurrency(invoice.totalAmount)}
+                          <div className="text-2xl font-bold text-gray-900">
+                                    {formatAud(invoice.totalAmount)}
                                   </div>
                                   {invoice.status === 'paid' && (
                                     <div className="flex items-center text-green-600">
@@ -1002,7 +999,7 @@ logo="/images/logo.PNG"
                               <div>
                                 <p className="text-sm font-medium text-green-800">Total Paid</p>
                                 <p className="text-2xl font-bold text-green-900">
-                                  {formatCurrency(invoices.filter(i => i.status === 'paid').reduce((sum, i) => sum + i.totalAmount, 0))}
+                                  {formatAud(invoices.filter(i => i.status === 'paid').reduce((sum, i) => sum + i.totalAmount, 0))}
                                 </p>
                               </div>
                             </div>
@@ -1014,7 +1011,7 @@ logo="/images/logo.PNG"
                               <div>
                                 <p className="text-sm font-medium text-yellow-800">Amount Due</p>
                                 <p className="text-2xl font-bold text-yellow-900">
-                                  {formatCurrency(invoices.filter(i => i.status !== 'paid').reduce((sum, i) => sum + (i.amountDue || i.totalAmount), 0))}
+                                  {formatAud(invoices.filter(i => i.status !== 'paid').reduce((sum, i) => sum + (i.amountDue || i.totalAmount), 0))}
                                 </p>
                               </div>
                             </div>

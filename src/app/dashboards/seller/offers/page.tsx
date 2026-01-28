@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Navbar } from '@/components';
 import Sidebar from '@/components/main/Sidebar';
+import { formatCurrencyCompact } from '@/utils/currency';
 
 interface Offer {
   id: string;
@@ -80,7 +81,7 @@ const SellerOffers = () => {
   };
 
   return (
-    <div className="pt-4 sm:pt-6 md:pt-8">
+    <div className="min-h-screen bg-gray-50">
 <Navbar 
         logo="/images/logo.PNG"
         logoText=""
@@ -92,13 +93,12 @@ const SellerOffers = () => {
         ctaHref="/dashboards/seller/account"
       />
       
-      <div className="flex">
+      <div className="flex flex-col md:flex-row">
         <Sidebar userType="seller" userId="1" />
         
-        <main className="flex-1 ml-64">
-          <div className="pt-16 sm:pt-20 md:pt-24">
+        <main className="flex-1 md:ml-64 px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20 md:pt-24 pb-8">
             {/* Orange Header Section */}
-            <section className="bg-gradient-to-r from-orange-500 to-orange-600 text-white py-16">
+            <section className="bg-gradient-to-r from-orange-500 to-orange-600 text-white py-10 sm:py-14 md:py-16 rounded-lg shadow-sm">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="text-center">
                   <h1 className="text-4xl md:text-5xl font-bold mb-4">
@@ -112,7 +112,7 @@ const SellerOffers = () => {
             </section>
 
             {/* Main Content */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="max-w-7xl mx-auto py-8">
               {isLoading ? (
                 <div className="flex justify-center items-center py-12">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -180,7 +180,9 @@ const SellerOffers = () => {
                           </div>
                           <div>
                             <p className="text-sm text-gray-500">Offer Amount</p>
-                            <p className="font-medium text-green-600">${offer.offerAmount.toLocaleString()}</p>
+                            <p className="font-medium text-green-600">
+                              {formatCurrencyCompact(offer.offerAmount)}
+                            </p>
                           </div>
                           <div>
                             <p className="text-sm text-gray-500">Expires</p>

@@ -113,10 +113,14 @@ export default function CashOffer() {
         ctaHref="/dashboards/seller/account"
       />
       
-      <div className="flex">
+      <div className="flex flex-col md:flex-row">
         <Sidebar userType="seller" />
         
-        <main className="flex-1 lg:ml-0">
+        <main className="flex-1 md:ml-64">
+      <div className="flex flex-col md:flex-row">
+        <Sidebar userType="seller" />
+        
+        <main className="flex-1 md:ml-64">
           <div className="pt-16 sm:pt-20 md:pt-24">
             <section className="bg-gradient-to-r from-orange-600 to-orange-800 text-white py-16">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

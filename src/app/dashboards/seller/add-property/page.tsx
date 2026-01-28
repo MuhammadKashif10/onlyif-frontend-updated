@@ -204,10 +204,10 @@ export default function AddProperty() {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       
-      <div className="flex">
+      <div className="flex flex-col md:flex-row">
         <Sidebar userType="seller" />
         
-        <main className="flex-1 ml-64 p-4 lg:p-8">
+        <main className="flex-1 md:ml-64 p-4 lg:p-8">
           <div className="max-w-4xl mx-auto">
             <div className="bg-white rounded-lg shadow-md p-6 lg:p-8">
               <header className="mb-8">

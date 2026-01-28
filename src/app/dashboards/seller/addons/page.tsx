@@ -9,6 +9,7 @@ import { Button } from '@/components/reusable/Button';
 import InputField from '@/components/reusable/InputField';
 import { loadStripe } from '@stripe/stripe-js';
 import { addonsApi, Addon } from '@/api/addons';
+import { formatCurrency, formatCurrencyCompact } from '@/utils/currency';
 
 interface Addon {
   id: string;
@@ -200,10 +201,10 @@ export default function AddonsPage() {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       
-      <div className="flex">
+      <div className="flex flex-col md:flex-row">
         <Sidebar userType="seller" />
         
-        <main className="flex-1 ml-64 p-4 lg:p-8">
+        <main className="flex-1 md:ml-64 p-4 lg:p-8">
           <div className="max-w-7xl mx-auto">
             <header className="mb-8">
               <h1 className="text-3xl font-bold text-gray-900 mb-2">Marketing Add-ons & Payment</h1>
@@ -290,14 +291,18 @@ export default function AddonsPage() {
                             return addon ? (
                               <div key={addonId} className="flex justify-between text-sm">
                                 <span className="text-gray-700">{addon.title}</span>
-                                <span className="font-medium">${addon.price.toFixed(2)}</span>
+                                <span className="font-medium">
+                                  {formatCurrencyCompact(addon.price)}
+                                </span>
                               </div>
                             ) : null;
                           })}
                           <div className="border-t pt-2 mt-2">
                             <div className="flex justify-between font-semibold">
                               <span>Total:</span>
-                              <span className="text-blue-600">${calculateTotal().toFixed(2)}</span>
+                              <span className="text-blue-600">
+                                {formatCurrency(calculateTotal(), { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              </span>
                             </div>
                           </div>
                         </div>
@@ -359,7 +364,9 @@ export default function AddonsPage() {
                             disabled={isProcessing}
                             className="w-full"
                           >
-                            {isProcessing ? 'Processing...' : `Pay Now - $${calculateTotal().toFixed(2)}`}
+                            {isProcessing
+                              ? 'Processing...'
+                              : `Pay Now - ${formatCurrency(calculateTotal(), { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                           </Button>
                         </div>
                         
