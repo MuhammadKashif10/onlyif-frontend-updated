@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Navbar } from '@/components';
 import Sidebar from '@/components/main/Sidebar';
 import { Button } from '@/components/reusable/Button';
@@ -32,6 +32,7 @@ interface PropertyFormData {
   contactName: string;
   contactEmail: string;
   contactPhone: string;
+  carSpaces?: string;
 }
 
 export default function AddProperty() {
@@ -64,6 +65,20 @@ export default function AddProperty() {
   const [videoTours, setVideoTours] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [contactAutoFilled, setContactAutoFilled] = useState(false);
+
+  // Auto-fill contact details from seller's account profile
+  useEffect(() => {
+    if (user && !contactAutoFilled) {
+      setFormData((prev) => ({
+        ...prev,
+        contactName: user.name || prev.contactName,
+        contactEmail: user.email || prev.contactEmail,
+        contactPhone: (user as { phone?: string }).phone || prev.contactPhone
+      }));
+      setContactAutoFilled(true);
+    }
+  }, [user, contactAutoFilled]);
 
   const handleInputChange = (field: keyof PropertyFormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -101,6 +116,16 @@ export default function AddProperty() {
     }
   };
 
+  const moveImage = (index: number, direction: 'up' | 'down') => {
+    setPropertyImages(prev => {
+      const newArr = [...prev];
+      const targetIndex = direction === 'up' ? index - 1 : index + 1;
+      if (targetIndex < 0 || targetIndex >= newArr.length) return prev;
+      [newArr[index], newArr[targetIndex]] = [newArr[targetIndex], newArr[index]];
+      return newArr;
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -109,8 +134,8 @@ export default function AddProperty() {
       return;
     }
   
-    // Client-side validation
-    const requiredFields = ['title', 'price', 'location', 'city', 'state', 'zipCode', 'bedrooms', 'bathrooms', 'squareMeters', 'propertyType', 'contactName', 'contactEmail', 'contactPhone'];
+    // Client-side validation (title optional - auto-generated if empty)
+    const requiredFields = ['price', 'location', 'city', 'state', 'zipCode', 'bedrooms', 'bathrooms', 'squareMeters', 'propertyType', 'contactName', 'contactEmail', 'contactPhone'];
     const missingFields = requiredFields.filter(field => !formData[field as keyof typeof formData]);
     
     if (missingFields.length > 0) {
@@ -126,7 +151,7 @@ export default function AddProperty() {
       
       // Append text data
       formDataToSend.append('owner', user.id);
-      formDataToSend.append('title', formData.title);
+      if (formData.title?.trim()) formDataToSend.append('title', formData.title.trim());
       formDataToSend.append('street', formData.location);
       formDataToSend.append('city', formData.city);
       formDataToSend.append('state', formData.state);
@@ -220,20 +245,34 @@ export default function AddProperty() {
                 <section>
                   <h2 className="text-xl font-semibold text-gray-900 mb-4">Basic Information</h2>
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <InputField
-                      label="Property Title"
-                      placeholder="Enter property title"
-                      value={formData.title}
-                      onChange={(e) => handleInputChange('title', e.target.value)}
-                      required
-                      id="title"
-                      name="title"
-                    />
+                    <div>
+                      <InputField
+                        label="Property Title (optional)"
+                        placeholder="e.g. 4 Bedroom Home in Chelsea — or leave blank to auto-generate"
+                        value={formData.title}
+                        onChange={(e) => handleInputChange('title', e.target.value)}
+                        id="title"
+                        name="title"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (formData.bedrooms && formData.city && formData.propertyType) {
+                            const type = formData.propertyType.replace(/-/g, ' ');
+                            const typeLabel = type.charAt(0).toUpperCase() + type.slice(1);
+                            handleInputChange('title', `${formData.bedrooms} Bedroom ${typeLabel} in ${formData.city}`);
+                          }
+                        }}
+                        className="mt-2 text-sm text-blue-600 hover:text-blue-800"
+                      >
+                        Generate from details
+                      </button>
+                    </div>
                     
                     <InputField
-                      label="Price"
+                      label="Only If Price (trigger price)"
                       type="number"
-                      placeholder="Enter price"
+                      placeholder="The price at which you would sell"
                       value={formData.price}
                       onChange={(e) => handleInputChange('price', e.target.value)}
                       required
@@ -276,8 +315,8 @@ export default function AddProperty() {
                     />
                     
                     <InputField
-                      label="ZIP Code"
-                      placeholder="Enter ZIP code"
+                      label="Postcode"
+                      placeholder="AU: 4 digits (e.g. 3000)"
                       value={formData.zipCode}
                       onChange={(e) => handleInputChange('zipCode', e.target.value)}
                       required
@@ -338,9 +377,10 @@ export default function AddProperty() {
                   </div>
                 </section>
 
-                {/* Contact Information - ADD THIS SECTION */}
+                {/* Contact Information - auto-filled from account */}
                 <section>
                   <h2 className="text-xl font-semibold text-gray-900 mb-4">Contact Information</h2>
+                  <p className="text-sm text-gray-500 mb-4">Pre-filled from your account. You can edit if needed.</p>
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <InputField
                       label="Contact Name"
@@ -366,7 +406,7 @@ export default function AddProperty() {
                     <InputField
                       label="Contact Phone"
                       type="tel"
-                      placeholder="Enter contact phone"
+                      placeholder="e.g. 04XX XXX XXX (AU, no country code needed)"
                       value={formData.contactPhone}
                       onChange={(e) => handleInputChange('contactPhone', e.target.value)}
                       required
@@ -394,6 +434,7 @@ export default function AddProperty() {
                       onDescriptionGenerated={(description) => {
                         handleInputChange('description', description);
                       }}
+                      existingDescription={formData.description}
                       disabled={!formData.location || !formData.bedrooms || !formData.bathrooms || !formData.price}
                     />
                   </div>
@@ -428,18 +469,17 @@ export default function AddProperty() {
                     />
                     {propertyImages.length > 0 && (
                       <div className="mt-2">
-                        <p className="text-sm text-gray-600">{propertyImages.length} image(s) selected</p>
-                        <div className="flex flex-wrap gap-2 mt-2">
+                        <p className="text-sm text-gray-600">{propertyImages.length} image(s) selected. Drag order: first = primary.</p>
+                        <div className="flex flex-col gap-2 mt-2">
                           {propertyImages.map((file, index) => (
-                            <div key={index} className="flex items-center bg-gray-100 px-2 py-1 rounded">
-                              <span className="text-sm">{file.name}</span>
-                              <button
-                                type="button"
-                                onClick={() => removeFile(index, 'images')}
-                                className="ml-2 text-red-500 hover:text-red-700"
-                              >
-                                ×
-                              </button>
+                            <div key={index} className="flex items-center gap-2 bg-gray-100 px-3 py-2 rounded">
+                              <div className="flex flex-col">
+                                <button type="button" onClick={() => moveImage(index, 'up')} disabled={index === 0} className="text-gray-500 hover:text-gray-700 disabled:opacity-30">↑</button>
+                                <button type="button" onClick={() => moveImage(index, 'down')} disabled={index === propertyImages.length - 1} className="text-gray-500 hover:text-gray-700 disabled:opacity-30">↓</button>
+                              </div>
+                              <span className="text-sm flex-1">{file.name}</span>
+                              {index === 0 && <span className="text-xs bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded">Primary</span>}
+                              <button type="button" onClick={() => removeFile(index, 'images')} className="text-red-500 hover:text-red-700">×</button>
                             </div>
                           ))}
                         </div>

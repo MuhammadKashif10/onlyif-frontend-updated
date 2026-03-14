@@ -109,8 +109,8 @@ export default function HomePage() {
           </>
         }
         subheadline="Only If connects local owners and serious buyers quietly, transparently and in complete control – giving you a smarter way to buy and sell without the pressure or the noise."
-        primaryCtaText="I'm a Seller"
-        primaryCtaHref="/signin"
+        primaryCtaText="I'll sell, Only IF"
+        primaryCtaHref="/dashboards/seller/register"
         secondaryCtaText="I'm a Buyer"
         secondaryCtaHref="/signin"
         onPrimaryCtaClick={handlePrimaryCtaClick}
@@ -135,9 +135,11 @@ export default function HomePage() {
         title="Ready to Sell Your Home?"
         subtitle="Join Australian homeowners selling on their terms"
         description="Only If is an Australian home-selling platform that connects you with serious buyers in your neighbourhood, with transparent pricing, personalised support and a sale timeline that suits you – no pressure and no hard sell."
+        primaryCtaText="I'll sell, Only IF"
+        primaryCtaHref="/dashboards/seller/register"
         secondaryCtaText="Learn More"
         secondaryCtaHref="/how-it-works"
-        showPrimary={false}
+        showPrimary={true}
         variant="primary"
         alignment="center"
       />

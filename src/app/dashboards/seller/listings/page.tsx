@@ -92,16 +92,22 @@ export default function SellerListingsPage() {
   };
 
   const getStatusBadge = (status: string) => {
-    const statusConfig = {
-      public: { color: 'green' as const, text: 'Public' },
-      private: { color: 'blue' as const, text: 'Private' },
-      pending: { color: 'yellow' as const, text: 'Pending' },
-      sold: { color: 'gray' as const, text: 'Sold' },
-      withdrawn: { color: 'red' as const, text: 'Withdrawn' }
+    const statusConfig: Record<string, { variant: 'default' | 'success' | 'warning' | 'error' | 'info'; text: string }> = {
+      draft: { variant: 'default', text: 'Draft' },
+      pending: { variant: 'warning', text: 'Pending' },
+      review: { variant: 'info', text: 'Under Review' },
+      active: { variant: 'success', text: 'Live' },
+      public: { variant: 'success', text: 'Live' },
+      'buyer-interest': { variant: 'info', text: 'Buyer Interest' },
+      negotiation: { variant: 'info', text: 'Negotiation' },
+      'under-offer': { variant: 'warning', text: 'Under Offer' },
+      sold: { variant: 'default', text: 'Sold' },
+      withdrawn: { variant: 'error', text: 'Withdrawn' },
+      rejected: { variant: 'error', text: 'Rejected' },
+      private: { variant: 'info', text: 'Private' }
     };
-    
-    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.private;
-    return <Badge color={config.color}>{config.text}</Badge>;
+    const config = statusConfig[status] || statusConfig.private;
+    return <Badge variant={config.variant}>{config.text}</Badge>;
   };
 
   // Define agent handlers BEFORE JSX usage
@@ -222,7 +228,18 @@ export default function SellerListingsPage() {
                 </CardHeader>
 
                 <CardContent className="space-y-4">
-                  {/* Property Stats placeholder (removed) */}
+                  {/* Buyer Activity */}
+                  {property.buyerActivity && (
+                    <div className="bg-gray-50 rounded-lg p-3 text-sm">
+                      <p className="font-medium text-gray-700 mb-2">Buyer Activity</p>
+                      <div className="flex flex-wrap gap-3 text-gray-600">
+                        <span>{property.buyerActivity.views} views</span>
+                        <span>{property.buyerActivity.unlocks} unlocked</span>
+                        <span>{property.buyerActivity.inspectionRequests} inspections</span>
+                        <span>{property.buyerActivity.saved} saved</span>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Assigned Agent */}
                   {property.assignedAgent ? (

@@ -8,7 +8,8 @@ import { Wand2, Loader2 } from 'lucide-react';
 export default function AutoDescriptionButton({ 
   propertyData, 
   onDescriptionGenerated, 
-  disabled = false 
+  disabled = false,
+  existingDescription = ''
 }) {
   const [isGenerating, setIsGenerating] = useState(false);
 
@@ -20,6 +21,14 @@ export default function AutoDescriptionButton({
     if (missingFields.length > 0) {
       alert(`Please fill in the following fields first: ${missingFields.join(', ')}`);
       return;
+    }
+
+    // Confirm before overwriting existing description
+    if (existingDescription && existingDescription.trim().length > 0) {
+      const confirmed = window.confirm(
+        'You already have a description. Generating a new one will replace it. Do you want to continue?'
+      );
+      if (!confirmed) return;
     }
 
     setIsGenerating(true);

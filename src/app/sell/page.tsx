@@ -72,10 +72,10 @@ export default function SellPage() {
         backgroundImage="/images/filter.jpg"
         headline="Sell Your Home Fast"
         subheadline="Take control of your real estate journey with OnlyIf. Set your price, choose your timeline, and make decisions that work for you."
-        primaryCtaText="Learn More"
-        primaryCtaHref="/contact"
-        secondaryCtaText="Browse Homes"
-        secondaryCtaHref="/browse"
+        primaryCtaText="I'll sell, Only IF"
+        primaryCtaHref="/dashboards/seller/register"
+        secondaryCtaText="Learn More"
+        secondaryCtaHref="/how-it-works"
       />
 
       {/* Step-by-Step Selling Process */}
@@ -199,13 +199,13 @@ export default function SellPage() {
           <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
             Join thousands of successful sellers who have used OnlyIf to sell their properties quickly and at the best price.
           </p>
-          <Link href="/sell/onboard">
+          <Link href="/how-it-works">
             <Button 
               variant="outline" 
               size="lg" 
               className="bg-white text-blue-600 hover:bg-gray-100 border-white text-xl px-12 py-4"
             >
-              Start Selling Now
+              Learn More
             </Button>
           </Link>
           <div className="mt-8 text-blue-100">
