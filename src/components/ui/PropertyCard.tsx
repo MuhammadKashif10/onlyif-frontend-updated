@@ -113,7 +113,7 @@ export default function PropertyCard({
   // --- Render ---
   return (
     <article
-      className={`group bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 cursor-pointer ${className}`}
+      className={`group rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 cursor-pointer ${className}`}
     >
       <button
         type="button"
@@ -121,67 +121,65 @@ export default function PropertyCard({
         className="block w-full text-left focus:outline-none"
         aria-label={`View details for ${title} - ${formatSafePrice(price)}`}
       >
-        {/* --- CardContent (your existing markup unchanged) --- */}
-        <div className="relative h-48 bg-gray-200 overflow-hidden">
+        {/* Full image with strong top + bottom overlays so text is always readable */}
+        <div className="relative h-56 bg-gray-200 overflow-hidden">
           {hasValidImage ? (
             <img
               src={safeImageUrl}
               alt={`${title} - ${address}`}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              className="w-full h-full object-cover scale-105 blur-[1.5px] brightness-50 transition-transform duration-300 group-hover:scale-110"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gray-100">
               <p className="text-xs text-gray-400">No Image</p>
             </div>
           )}
+
+          {/* Optional badges (top-left) */}
           {featured && (
-            <div className="absolute top-3 left-3">
+            <div className="absolute top-2 left-2 z-20">
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                 Featured
               </span>
             </div>
           )}
           {status && (
-            <div className="absolute top-3 left-3 mt-8">
+            <div className="absolute top-2 left-2 mt-6 z-20">
               <StatusBadge status={status} size="sm" />
             </div>
           )}
-          <div className="absolute top-3 right-3 bg-white px-2.5 py-1 rounded-md shadow-sm">
-            {formatSafePrice(price)}
-          </div>
-        </div>
 
-        <div className="p-4">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-1">{title}</h3>
-          <p className="text-sm text-gray-600 mb-3 line-clamp-1">{address}</p>
-          <div className="flex items-center justify-between mt-2">
-            <span className="text-lg font-semibold text-gray-900">
-              {formatSafePrice(price)}
-            </span>
-            <div className="flex gap-4 text-sm text-gray-600">
-              {/* Number first, then colored icon */}
-              {beds != null && !isNaN(beds) && (
-                <span className="inline-flex items-center gap-1">
-                  {formatSafeNumber(beds)}
-                  <Bed className="w-4 h-4" color="#47C96F" strokeWidth={2} size={24} />
-                </span>
-              )}
-              {baths != null && !isNaN(baths) && (
-                <span className="inline-flex items-center gap-1">
-                  {formatSafeNumber(baths)}
-                  <Bath className="w-4 h-4" color="#47C96F" strokeWidth={2} size={24} />
-                </span>
-              )}
-              {carSpaces != null && !isNaN(carSpaces) && (
-                <span className="inline-flex items-center gap-1">
-                  {formatSafeNumber(carSpaces)}
-                  <Car className="w-4 h-4" color="#47C96F" strokeWidth={2} size={24} />
-                </span>
-              )}
+          {/* TOP overlay: title + bed/bath/car */}
+          <div className="absolute inset-x-0 top-0 bg-gradient-to-b from-black/95 via-black/85 to-transparent px-4 pt-3 pb-8">
+            <h3 className="text-lg font-semibold text-white mb-1 line-clamp-1 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
+              {title}
+            </h3>
+            <div className="text-xs text-white/95 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+              {[
+                beds != null && !isNaN(beds) ? `${formatSafeNumber(beds)} Bed` : null,
+                baths != null && !isNaN(baths) ? `${formatSafeNumber(baths)} Bath` : null,
+                carSpaces != null && !isNaN(carSpaces) ? `${formatSafeNumber(carSpaces)} Car` : null,
+              ]
+                .filter(Boolean)
+                .join(' | ')}
             </div>
           </div>
-          <div className="mt-4 text-blue-600 font-medium text-sm">
-            View Details →
+
+          {/* BOTTOM overlay: Seller's price + Unlock button */}
+          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/95 via-black/85 to-transparent px-4 pt-3 pb-3">
+            <div className="flex items-center justify-between text-xs text-white/90 mb-2 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+              <span>Seller&apos;s Price</span>
+              <span className="text-sm font-semibold">
+                {price == null || isNaN(price)
+                  ? 'Price on Request'
+                  : `A$${price.toLocaleString('en-AU')}`}
+              </span>
+            </div>
+            <div className="mt-1">
+              <span className="inline-flex w-full items-center justify-center px-3 py-2 rounded-sm text-sm font-semibold bg-emerald-500 hover:bg-emerald-600 text-white shadow-sm">
+                Unlock for $49
+              </span>
+            </div>
           </div>
         </div>
       </button>

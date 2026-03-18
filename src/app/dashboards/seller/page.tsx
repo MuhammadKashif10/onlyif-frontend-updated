@@ -171,12 +171,6 @@ function SellerDashboard() {
     return null; // Will redirect in useEffect
   }
 
-  // Initial data fetch
-  useEffect(() => {
-    fetchStats();
-    fetchListings();
-  }, [sellerId]);
-
   // Handle edit listing
   const handleEditListing = (propertyId: string) => {
     router.push(`/dashboards/seller/listings/${propertyId}/edit`);

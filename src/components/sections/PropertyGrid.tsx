@@ -20,6 +20,14 @@ interface PropertyGridProps {
   onPropertyClick?: (property: Property) => void;
 }
 
+function isValidProperty(property: any): property is Property {
+  return !!property &&
+    typeof property === 'object' &&
+    typeof property.id === 'string' &&
+    typeof property.title === 'string' &&
+    typeof property.address === 'string';
+}
+
 export default function PropertyGrid({
   showFilters = true,
   showPagination = true,

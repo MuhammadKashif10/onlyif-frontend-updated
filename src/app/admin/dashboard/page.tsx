@@ -52,8 +52,9 @@ const authenticatedFetch = async (url: string, options: RequestInit = {}) => {
 
 // Recent activity fetch
 const fetchRecentActivity = () => {
-  const backendBase = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || '';
-  return authenticatedFetch(`${backendBase}/admin/activity`);
+  // Use API base so we always include /api prefix (backend routes are under /api/admin)
+  const apiBase = process.env.NEXT_PUBLIC_API_URL || '';
+  return authenticatedFetch(`${apiBase}/admin/activity`);
 }
 
 interface StatsCardProps {
@@ -107,9 +108,8 @@ function StatsCard({ title, value, description, icon, trend, isLoading, error }:
 
 // Replace individual fetch functions with consolidated stats fetch
 const fetchDashboardStats = () => {
-  const backendBase = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || '';
-  console.log(backendBase,"------------------")
-  return authenticatedFetch(`${backendBase}/admin/dashboard/stats`);
+  const apiBase = process.env.NEXT_PUBLIC_API_URL || '';
+  return authenticatedFetch(`${apiBase}/admin/dashboard/stats`);
 }
 
 
@@ -217,7 +217,7 @@ export default function AdminDashboardPage() {
 
 
         {/* Quick Actions */}
-        <Card>
+        <Card className="overflow-hidden">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5" />
@@ -227,30 +227,37 @@ export default function AdminDashboardPage() {
               Manage your platform efficiently with these quick actions.
             </CardDescription>
           </CardHeader>
-          <CardContent className="grid gap-4 md:grid-cols-3">
+          {/* Make quick actions fully responsive and avoid text overlap on medium screens */}
+          <CardContent className="grid gap-3 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
             <Button 
               variant="outline" 
-              className="justify-start"
+              className="flex flex-col items-start gap-1 py-3 w-full text-left"
               onClick={() => router.push('/admin/properties')}
             >
-              Manage Properties
-              <span className="ml-auto text-xs text-muted-foreground">Review and approve new listings</span>
+              <span className="text-sm font-medium">Manage Properties</span>
+              <span className="text-xs text-muted-foreground">
+                Review and approve new listings
+              </span>
             </Button>
             <Button 
               variant="outline" 
-              className="justify-start"
+              className="flex flex-col items-start gap-1 py-3 w-full text-left"
               onClick={() => router.push('/admin/agents')}
             >
-              Manage Agents
-              <span className="ml-auto text-xs text-muted-foreground">Approve new agent registrations</span>
+              <span className="text-sm font-medium">Manage Agents</span>
+              <span className="text-xs text-muted-foreground">
+                Approve new agent registrations
+              </span>
             </Button>
             <Button 
               variant="outline" 
-              className="justify-start"
+              className="flex flex-col items-start gap-1 py-3 w-full text-left"
               onClick={() => router.push('/admin/users')}
             >
-              Manage Users
-              <span className="ml-auto text-xs text-muted-foreground">View and manage user accounts</span>
+              <span className="text-sm font-medium">Manage Users</span>
+              <span className="text-xs text-muted-foreground">
+                View and manage user accounts
+              </span>
             </Button>
           </CardContent>
         </Card>

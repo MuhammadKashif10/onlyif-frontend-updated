@@ -128,9 +128,12 @@ export default function Sidebar({ userType, className = '', userId = '1' }: Side
   const links = getLinks();
 
   return (
-    <aside id="dashboard-sidebar" className={`fixed left-0 top-[85px] bottom-0 bg-white border-r border-gray-200 transition-all duration-300 z-40 ${
+    <aside
+      id="dashboard-sidebar"
+      className={`hidden md:block fixed left-0 top-[85px] bottom-0 bg-white border-r border-gray-200 transition-all duration-300 z-40 ${
       isCollapsed ? 'w-16' : 'w-64'
-    } ${className}`}>
+    } ${className}`}
+    >
       {/* Brand header */}
       <div className="h-[5px] border-b border-gray-200" />
       {/* Toggle Button */}
