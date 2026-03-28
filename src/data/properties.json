@@ -1,0 +1,427 @@
+{
+  "properties": [
+    {
+      "id": "1",
+      "title": "Modern Family Home",
+      "address": "123 Oak Street, Austin, TX 78701",
+      "city": "Austin",
+      "state": "TX",
+      "zipCode": "78701",
+      "price": 450000,
+      "beds": 4,
+      "baths": 3,
+      "size": 2400,
+      "yearBuilt": 2018,
+      "lotSize": 0.25,
+      "propertyType": "Single Family",
+      "status": "For Sale",
+      "description": "This stunning modern family home offers the perfect blend of comfort and style. Featuring an open-concept floor plan, high-end finishes, and a beautiful backyard perfect for entertaining. The kitchen boasts granite countertops and stainless steel appliances, while the master suite includes a walk-in closet and en-suite bathroom.",
+      "features": [
+        "Open-concept floor plan",
+        "Granite countertops",
+        "Stainless steel appliances",
+        "Hardwood floors",
+        "Walk-in closet",
+        "En-suite bathroom",
+        "Backyard patio",
+        "2-car garage",
+        "Energy efficient",
+        "Smart home features"
+      ],
+      "images": [
+        "/images/01.jpg",
+        "/images/02.jpg",
+        "/images/03.jpg",
+        "/images/04.jpg",
+        "/images/05.jpg"
+      ],
+      "mainImage": "/images/01.jpg",
+      "coordinates": {
+        "lat": 30.2672,
+        "lng": -97.7431
+      },
+      "agent": {
+        "id": "agent-1",
+        "name": "Sarah Johnson",
+        "phone": "(512) 555-0123",
+        "email": "sarah.johnson@onlyif.com",
+        "avatar": "/images/agent-1.jpg",
+        "rating": 4.9,
+        "reviews": 127
+      },
+      "similarProperties": ["2", "3", "4"],
+      "featured": true,
+      "dateListed": "2024-01-15",
+      "daysOnMarket": 12
+    },
+    {
+      "id": "2",
+      "title": "Luxury Downtown Condo",
+      "address": "456 Main Street, Austin, TX 78702",
+      "city": "Austin",
+      "state": "TX",
+      "zipCode": "78702",
+      "price": 320000,
+      "beds": 3,
+      "baths": 2,
+      "size": 1800,
+      "yearBuilt": 2020,
+      "lotSize": 0.05,
+      "propertyType": "Condo",
+      "status": "For Sale",
+      "description": "Contemporary downtown condo with city views and modern amenities. Perfect for professionals or small families who want to be in the heart of the action.",
+      "features": [
+        "City views",
+        "Modern amenities",
+        "Concierge service",
+        "Fitness center",
+        "Rooftop deck",
+        "Underground parking",
+        "In-unit laundry",
+        "Balcony",
+        "High ceilings",
+        "Floor-to-ceiling windows"
+      ],
+      "images": [
+        "/images/04.jpg",
+        "/images/05.jpg",
+        "/images/06.jpg",
+        "/images/01.jpg"
+      ],
+      "mainImage": "/images/04.jpg",
+      "coordinates": {
+        "lat": 30.2672,
+        "lng": -97.7431
+      },
+      "agent": {
+        "id": "agent-2",
+        "name": "Michael Chen",
+        "phone": "(512) 555-0124",
+        "email": "michael.chen@onlyif.com",
+        "avatar": "/images/agent-2.jpg",
+        "rating": 4.8,
+        "reviews": 89
+      },
+      "similarProperties": ["1", "3", "4"],
+      "featured": false,
+      "dateListed": "2024-01-20",
+      "daysOnMarket": 7
+    },
+    {
+      "id": "3",
+      "title": "Charming Bungalow",
+      "address": "789 Elm Street, Austin, TX 78703",
+      "city": "Austin",
+      "state": "TX",
+      "zipCode": "78703",
+      "price": 380000,
+      "beds": 3,
+      "baths": 2,
+      "size": 1600,
+      "yearBuilt": 2015,
+      "lotSize": 0.3,
+      "propertyType": "Single Family",
+      "status": "For Sale",
+      "description": "Charming suburban ranch with a spacious layout and mature landscaping. This home offers the perfect balance of comfort and functionality for growing families.",
+      "features": [
+        "Spacious layout",
+        "Mature landscaping",
+        "Updated kitchen",
+        "Large backyard",
+        "Storage shed",
+        "Fresh paint",
+        "New HVAC system",
+        "Attached garage",
+        "Fenced yard",
+        "Mature trees"
+      ],
+      "images": [
+        "/images/02.jpg",
+        "/images/03.jpg",
+        "/images/05.jpg",
+        "/images/06.jpg"
+      ],
+      "mainImage": "/images/02.jpg",
+      "coordinates": {
+        "lat": 30.2672,
+        "lng": -97.7431
+      },
+      "agent": {
+        "id": "agent-3",
+        "name": "Emily Rodriguez",
+        "phone": "(512) 555-0125",
+        "email": "emily.rodriguez@onlyif.com",
+        "avatar": "/images/agent-3.jpg",
+        "rating": 4.9,
+        "reviews": 156
+      },
+      "similarProperties": ["1", "2", "4"],
+      "featured": true,
+      "dateListed": "2024-01-10",
+      "daysOnMarket": 17
+    },
+    {
+      "id": "4",
+      "title": "Spacious Townhouse",
+      "address": "321 Pine Street, Austin, TX 78704",
+      "city": "Austin",
+      "state": "TX",
+      "zipCode": "78704",
+      "price": 520000,
+      "beds": 4,
+      "baths": 3.5,
+      "size": 2200,
+      "yearBuilt": 2021,
+      "lotSize": 0.15,
+      "propertyType": "Townhouse",
+      "status": "For Sale",
+      "description": "Luxurious townhouse with premium finishes and modern design. Located in a desirable neighborhood with easy access to shopping, dining, and entertainment.",
+      "features": [
+        "Premium finishes",
+        "Modern design",
+        "Gourmet kitchen",
+        "Master suite",
+        "Private balcony",
+        "Community pool",
+        "Gym access",
+        "Security system",
+        "Smart home features",
+        "Walk-in closets"
+      ],
+      "images": [
+        "/images/01.jpg",
+        "/images/03.jpg",
+        "/images/05.jpg",
+        "/images/04.jpg"
+      ],
+      "mainImage": "/images/03.jpg",
+      "coordinates": {
+        "lat": 30.2672,
+        "lng": -97.7431
+      },
+      "agent": {
+        "id": "agent-4",
+        "name": "David Kim",
+        "phone": "(512) 555-0126",
+        "email": "david.kim@onlyif.com",
+        "avatar": "/images/agent-4.jpg",
+        "rating": 4.7,
+        "reviews": 203
+      },
+      "similarProperties": ["1", "2", "3"],
+      "featured": false,
+      "dateListed": "2024-01-25",
+      "daysOnMarket": 2
+    },
+    {
+      "id": "5",
+      "title": "Modern Loft",
+      "address": "654 Cedar Street, Austin, TX 78705",
+      "city": "Austin",
+      "state": "TX",
+      "zipCode": "78705",
+      "price": 280000,
+      "beds": 2,
+      "baths": 1,
+      "size": 1100,
+      "yearBuilt": 1950,
+      "lotSize": 0.2,
+      "propertyType": "Apartment",
+      "status": "For Sale",
+      "description": "Charming historic bungalow with character and modern updates. Perfect for first-time buyers or those looking for a unique home with personality.",
+      "features": [
+        "Historic character",
+        "Modern updates",
+        "Hardwood floors",
+        "Updated kitchen",
+        "Large windows",
+        "Front porch",
+        "Mature trees",
+        "Fenced backyard",
+        "Storage space",
+        "Character details"
+      ],
+      "images": [
+        "/images/02.jpg",
+        "/images/04.jpg",
+        "/images/06.jpg"
+      ],
+      "mainImage": "/images/06.jpg",
+      "coordinates": {
+        "lat": 30.2672,
+        "lng": -97.7431
+      },
+      "agent": {
+        "id": "agent-5",
+        "name": "Lisa Wang",
+        "phone": "(512) 555-0127",
+        "email": "lisa.wang@onlyif.com",
+        "avatar": "/images/agent-5.jpg",
+        "rating": 4.6,
+        "reviews": 78
+      },
+      "similarProperties": ["1", "2", "3"],
+      "featured": false,
+      "dateListed": "2024-01-18",
+      "daysOnMarket": 9
+    },
+    {
+      "id": "6",
+      "title": "Family Ranch",
+      "address": "987 Maple Street, Austin, TX 78706",
+      "city": "Austin",
+      "state": "TX",
+      "zipCode": "78706",
+      "price": 420000,
+      "beds": 5,
+      "baths": 4,
+      "size": 3200,
+      "yearBuilt": 2016,
+      "lotSize": 0.4,
+      "propertyType": "Single Family",
+      "status": "For Sale",
+      "description": "Spacious family ranch with plenty of room for everyone. Features include a large kitchen, multiple living areas, and a beautiful backyard perfect for entertaining.",
+      "features": [
+        "Large kitchen",
+        "Multiple living areas",
+        "Beautiful backyard",
+        "Master suite",
+        "Walk-in closets",
+        "Formal dining room",
+        "Study/office",
+        "3-car garage",
+        "Swimming pool",
+        "Covered patio"
+      ],
+      "images": [
+        "/images/01.jpg",
+        "/images/02.jpg",
+        "/images/03.jpg",
+        "/images/04.jpg"
+      ],
+      "mainImage": "/images/05.jpg",
+      "coordinates": {
+        "lat": 30.2672,
+        "lng": -97.7431
+      },
+      "agent": {
+        "id": "agent-6",
+        "name": "Robert Taylor",
+        "phone": "(512) 555-0128",
+        "email": "robert.taylor@onlyif.com",
+        "avatar": "/images/agent-6.jpg",
+        "rating": 4.8,
+        "reviews": 142
+      },
+      "similarProperties": ["1", "3", "4"],
+      "featured": true,
+      "dateListed": "2024-01-12",
+      "daysOnMarket": 15
+    },
+    {
+      "id": "7",
+      "title": "Cozy Cottage",
+      "address": "147 Birch Street, Austin, TX 78707",
+      "city": "Austin",
+      "state": "TX",
+      "zipCode": "78707",
+      "price": 350000,
+      "beds": 2,
+      "baths": 1,
+      "size": 1200,
+      "yearBuilt": 2019,
+      "lotSize": 0.18,
+      "propertyType": "Single Family",
+      "status": "For Sale",
+      "description": "Charming cottage with modern amenities and a cozy atmosphere. Perfect for couples or small families looking for a peaceful retreat.",
+      "features": [
+        "Modern amenities",
+        "Cozy atmosphere",
+        "Updated kitchen",
+        "Hardwood floors",
+        "Garden space",
+        "Front porch",
+        "Energy efficient",
+        "Quiet neighborhood",
+        "Close to parks",
+        "Move-in ready"
+      ],
+      "images": [
+        "/images/03.jpg",
+        "/images/05.jpg",
+        "/images/01.jpg"
+      ],
+      "mainImage": "/images/04.jpg",
+      "coordinates": {
+        "lat": 30.2672,
+        "lng": -97.7431
+      },
+      "agent": {
+        "id": "agent-7",
+        "name": "Jennifer Martinez",
+        "phone": "(512) 555-0129",
+        "email": "jennifer.martinez@onlyif.com",
+        "avatar": "/images/agent-7.jpg",
+        "rating": 4.9,
+        "reviews": 98
+      },
+      "similarProperties": ["5", "8"],
+      "featured": false,
+      "dateListed": "2024-01-22",
+      "daysOnMarket": 5
+    },
+    {
+      "id": "8",
+      "title": "Contemporary Villa",
+      "address": "258 Willow Street, Austin, TX 78708",
+      "city": "Austin",
+      "state": "TX",
+      "zipCode": "78708",
+      "price": 750000,
+      "beds": 4,
+      "baths": 3.5,
+      "size": 3600,
+      "yearBuilt": 2022,
+      "lotSize": 0.5,
+      "propertyType": "Single Family",
+      "status": "For Sale",
+      "description": "Stunning contemporary villa with luxury finishes and modern design. Features include a gourmet kitchen, spa-like bathrooms, and a resort-style backyard.",
+      "features": [
+        "Luxury finishes",
+        "Modern design",
+        "Gourmet kitchen",
+        "Spa-like bathrooms",
+        "Resort-style backyard",
+        "Wine cellar",
+        "Home theater",
+        "Smart home system",
+        "Solar panels",
+        "3-car garage"
+      ],
+      "images": [
+        "/images/04.jpg",
+        "/images/06.jpg",
+        "/images/02.jpg",
+        "/images/01.jpg"
+      ],
+      "mainImage": "/images/06.jpg",
+      "coordinates": {
+        "lat": 30.2672,
+        "lng": -97.7431
+      },
+      "agent": {
+        "id": "agent-8",
+        "name": "Thomas Anderson",
+        "phone": "(512) 555-0130",
+        "email": "thomas.anderson@onlyif.com",
+        "avatar": "/images/agent-8.jpg",
+        "rating": 4.7,
+        "reviews": 167
+      },
+      "similarProperties": ["1", "4", "6"],
+      "featured": true,
+      "dateListed": "2024-01-08",
+      "daysOnMarket": 19
+    }
+  ]
+}

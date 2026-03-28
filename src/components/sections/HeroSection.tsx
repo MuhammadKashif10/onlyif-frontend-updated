@@ -1,0 +1,164 @@
+'use client';
+
+import Link from 'next/link';
+import { useState } from 'react';
+import { Check } from 'lucide-react';
+
+interface TrustIndicator {
+  icon: string;
+  text: string;
+}
+
+interface HeroSectionProps {
+  backgroundImage?: string;
+  headline: React.ReactNode;
+  subheadline?: string;
+  primaryCtaText?: string;
+  primaryCtaHref?: string;
+  secondaryCtaText?: string;
+  secondaryCtaHref?: string;
+  trustIndicators?: TrustIndicator[];
+  onPrimaryCtaClick?: () => void;
+  onSecondaryCtaClick?: () => void;
+  className?: string;
+  variant?: 'primary' | 'secondary';
+  alignment?: 'center' | 'left';
+  badges?: {
+    className: string;
+    icon?: React.ReactNode;
+  }[];
+  showOverlay?: boolean;
+}
+
+export default function HeroSection({
+  backgroundImage = '/images/01.png',
+  headline,
+  subheadline,
+  primaryCtaText = 'Get Started',
+  primaryCtaHref = '#',
+  secondaryCtaText,
+  secondaryCtaHref = '#',
+  trustIndicators = [],
+  onPrimaryCtaClick,
+  onSecondaryCtaClick,
+  className = '',
+  variant = 'primary',
+  alignment = 'center',
+  badges = [],
+  showOverlay = true,
+}: HeroSectionProps) {
+  const [showOfferForm, setShowOfferForm] = useState(false);
+
+  const handlePrimaryClick = () => {
+    if (onPrimaryCtaClick) {
+      onPrimaryCtaClick();
+    }
+  };
+
+  const handleSecondaryClick = () => {
+    if (onSecondaryCtaClick) {
+      onSecondaryCtaClick();
+    }
+  };
+
+  const textAlignment = alignment === 'center' ? 'text-center' : 'text-left';
+  const justifyContent = alignment === 'center' ? 'justify-center' : 'justify-start';
+
+  return (
+    <section
+      className={`relative min-h-[85vh] flex items-center justify-center px-6 ${className}`}
+    >
+      {/* Background Image */}
+      <img
+        src={backgroundImage}
+        alt=""
+        aria-hidden="true"
+        className="absolute inset-0 w-full h-full object-center object-cover md:object-cover"
+        style={{ objectPosition: 'center 45%' }}
+      />
+
+      {/* Dark Overlay */}
+      {showOverlay && <div className="absolute inset-0 bg-black/70 z-10" />}
+
+      {/* Floating badges (optional) */}
+      {badges.length > 0 && (
+        <div className="pointer-events-none absolute inset-0 z-10">
+          {badges.map((badge, index) => (
+            <div key={index} className={`absolute ${badge.className}`}>
+              <div className="inline-flex items-center justify-center rounded-xl bg-[#FFE94F] px-3 py-2 shadow-lg shadow-black/20 border border-black/10">
+                {badge.icon ?? (
+                  <Check className="w-6 h-6 text-[#0C304B]" strokeWidth={3} aria-hidden="true" />
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Content */}
+      <div className={`relative z-20 max-w-6xl mx-auto py-16 md:py-20 ${textAlignment} text-white`}>
+        <div className={`${alignment === 'center' ? 'mx-auto' : ''}`}>
+          {/* Main Headline */}
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 md:mb-6 leading-tight text-white">
+            {headline}
+          </h1>
+
+          {/* Subheadline */}
+          {subheadline && (
+            <p
+              className={`text-lg md:text-xl mb-6 text-white/90 max-w-2xl md:max-w-3xl ${
+                alignment === 'center' ? 'mx-auto' : ''
+              }`}
+            >
+              {subheadline}
+            </p>
+          )}
+
+          {/* CTA Buttons */}
+          <div
+            className={`flex flex-col sm:flex-row gap-3 sm:gap-4 ${justifyContent} items-center mb-8 md:mb-12`}
+          >
+            {primaryCtaText && (
+              <Link
+                href={primaryCtaHref}
+                onClick={handlePrimaryClick}
+                className="bg-[#24A148] hover:bg-[#1b7f37] text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg text-base sm:text-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg inline-block w-full sm:w-auto text-center"
+              >
+                {primaryCtaText}
+              </Link>
+            )}
+            {secondaryCtaText && (
+              <Link
+                href={secondaryCtaHref}
+                onClick={handleSecondaryClick}
+                className="inline-flex items-center justify-center bg-white/95 hover:bg-white text-black px-6 sm:px-8 py-3 sm:py-4 rounded-lg text-base sm:text-lg font-semibold transition-all duration-300 border-2 border-gray-200 hover:border-gray-300 backdrop-blur-sm w-full sm:w-auto text-center"
+              >
+                {secondaryCtaText}
+              </Link>
+            )}
+          </div>
+
+          {/* Trust Indicators */}
+          {trustIndicators.length > 0 && (
+            <div
+              className={`flex flex-wrap ${justifyContent} items-center gap-4 md:gap-8 text-xs sm:text-sm text-gray-200`}
+            >
+              {trustIndicators.map((indicator, index) => (
+                <div key={index} className="flex items-center gap-2">
+                  <Check
+                    className="w-4 h-4 sm:w-5 sm:h-5"
+                    color="#47C96F"
+                    strokeWidth={2}
+                    size={24}
+                    aria-hidden="true"
+                  />
+                  <span>{indicator.text}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}

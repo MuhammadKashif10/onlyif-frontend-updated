@@ -1,0 +1,20 @@
+<svg width="120" height="40" viewBox="0 0 120 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- House Icon -->
+  <g>
+    <!-- House Base -->
+    <path d="M8 32h8V20h-8v12z" fill="#2563eb"/>
+    <!-- House Roof -->
+    <path d="M4 20l8-8 8 8H4z" fill="#1d4ed8"/>
+    <!-- Door -->
+    <rect x="10" y="26" width="4" height="6" fill="white"/>
+    <!-- Window -->
+    <rect x="9" y="22" width="2" height="2" fill="white"/>
+    <rect x="13" y="22" width="2" height="2" fill="white"/>
+  </g>
+  
+  <!-- OnlyIf Text -->
+  <g>
+    <text x="28" y="16" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#2563eb">Only</text>
+    <text x="28" y="28" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#1d4ed8">If</text>
+  </g>
+</svg>
