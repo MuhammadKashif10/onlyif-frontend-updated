@@ -2,12 +2,14 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
+type UserRole = 'buyer' | 'seller' | 'agent' | 'admin' | null;
+
 interface User {
   id: string;
   email: string;
   name: string;
-  type: 'buyer' | 'seller' | 'agent' | 'admin';
-  role: 'buyer' | 'seller' | 'agent' | 'admin';
+  type: UserRole;
+  role: UserRole;
 }
 
 interface AuthContextType {
@@ -16,6 +18,7 @@ interface AuthContextType {
   adminLogin: (email: string, password: string) => Promise<void>;
   logout: () => void;
   register: (userData: RegisterData) => Promise<void>;
+  acceptRole: (role: 'buyer' | 'seller') => Promise<void>;
   sendOtp: (email?: string, phone?: string) => Promise<void>;
   verifyOtp: (email: string | undefined, phone: string | undefined, otp: string) => Promise<void>;
   isLoading: boolean;
@@ -27,7 +30,8 @@ interface RegisterData {
   email: string;
   password: string;
   name: string;
-  type: 'buyer' | 'seller' | 'agent';
+  type?: 'buyer' | 'seller' | 'agent';
+  role?: 'buyer' | 'seller' | null;
   phone?: string;
   brokerage?: string;
   yearsOfExperience?: number;
@@ -88,10 +92,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       const data = await parseJsonSafely(response);
+      const normalizedRole: UserRole = data.data.role ?? null;
       const userData = {
         ...data.data,
-        type: data.data.role,
-        role: data.data.role,
+        type: normalizedRole,
+        role: normalizedRole,
       };
       
       setUser(userData);
@@ -155,10 +160,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const data = await parseJsonSafely(response);
       
+      const normalizedRole: UserRole = data.data.user.role ?? null;
       const userData = {
         ...data.data.user,
-        type: data.data.user.role,
-        role: data.data.user.role,
+        type: normalizedRole,
+        role: normalizedRole,
       };
       
       setUser(userData);
@@ -199,10 +205,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   
       const data = await parseJsonSafely(response);
       
+      const normalizedRole: UserRole = data.data.user.role ?? null;
       const userData = {
         ...data.data.user,
-        type: data.data.user.role,
-        role: data.data.user.role,
+        type: normalizedRole,
+        role: normalizedRole,
       };
       
       setUser(userData);
@@ -231,14 +238,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const nameParts = userData.name.trim().split(' ');
       const firstName = nameParts[0] || '';
       const lastName = nameParts.slice(1).join(' ') || '';
+
+      const desiredRole: UserRole =
+        userData.role !== undefined ? userData.role : (userData.type ?? null);
       
       const requestBody: any = {
         firstName,
         lastName,
         email: userData.email,
         password: userData.password,
-        role: userData.type,
       };
+
+      if (desiredRole) {
+        requestBody.role = desiredRole;
+      }
   
       if (userData.phone) {
         requestBody.phone = userData.phone;
@@ -265,9 +278,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   
       const data = await parseJsonSafely(response);
       
+      const normalizedRole: UserRole = data.data.user.role ?? null;
       const newUser = {
         ...data.data.user,
-        type: data.data.user.role,
+        type: normalizedRole,
+        role: normalizedRole,
       };
       
       setUser(newUser);
@@ -277,6 +292,54 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     } catch (err) {
       setError('Registration failed');
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const acceptRole = async (role: 'buyer' | 'seller') => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      if (!API_BASE_URL) {
+        throw new Error('API URL is not configured. Set NEXT_PUBLIC_API_URL in frontend .env.');
+      }
+
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      if (!token) {
+        throw new Error('You must be logged in to accept a role.');
+      }
+
+      const response = await fetch(buildApiUrl('/auth/accept-role'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ role, checkboxesAccepted: true }),
+      });
+
+      if (!response.ok) {
+        const errorData = await parseJsonSafely(response);
+        throw new Error(errorData.message || 'Failed to accept role');
+      }
+
+      const data = await parseJsonSafely(response);
+      const normalizedRole: UserRole = data.data.role ?? null;
+      const updatedUser: User = {
+        ...data.data,
+        type: normalizedRole,
+        role: normalizedRole,
+      };
+
+      setUser(updatedUser);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+      }
+    } catch (err) {
+      setError('Failed to accept role');
       throw err;
     } finally {
       setIsLoading(false);
@@ -350,10 +413,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const data = await parseJsonSafely(response);
       
+      const normalizedRole: UserRole = data.data.user.role ?? null;
       const userData = {
         ...data.data.user,
-        type: data.data.user.role,
-        role: data.data.user.role,
+        type: normalizedRole,
+        role: normalizedRole,
       };
       
       setUser(userData);
@@ -367,7 +431,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const isAdmin = user?.type === 'admin';
+  const isAdmin = user?.role === 'admin';
 
   return (
     <AuthContext.Provider value={{
@@ -376,6 +440,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       adminLogin,
       logout,
       register,
+      acceptRole,
       sendOtp,
       verifyOtp,
       isLoading,

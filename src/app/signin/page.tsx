@@ -21,6 +21,9 @@ export default function SignInPage() {
     // Redirect if already authenticated based on userType from database
     if (user) {
       switch (user.role) {
+        case null:
+          router.push('/dashboard');
+          break;
         case 'buyer':
           router.push('/dashboards/buyer');
           break;
@@ -31,7 +34,7 @@ export default function SignInPage() {
           router.push('/dashboards/agent');
           break;
         case 'admin':
-          router.push('/admin');
+          router.push('/dashboards/admin');
           break;
         default:
           router.push('/');
@@ -141,22 +144,15 @@ export default function SignInPage() {
 
             <div className="text-center">
               <p className="text-center text-sm text-gray-600 mb-4">
-                Don't have an account? Create one here:
+                Don't have an account?
               </p>
-              <div className="flex flex-row justify-center space-x-4 mt-2">
-                <Link 
-                  href="/sell/onboard" 
-                  className="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors duration-200 min-w-[80px] text-center"
+              <div className="flex justify-center mt-2">
+                <Link
+                  href="/signup"
+                  className="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors duration-200 min-w-[180px] text-center"
                 >
-                  Seller
+                  Create an Account
                 </Link>
-                <Link 
-                  href="/buy/onboard" 
-                  className="px-4 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition-colors duration-200 min-w-[80px] text-center"
-                >
-                  Buyer
-                </Link>
-                {/* Agent button removed - agents can only be created by administrators */}
               </div>
             </div>
           </form>
