@@ -98,10 +98,10 @@ export default function AgentsPage() {
 
             <div className="mt-6 flex justify-center">
               <Link
-                href="/contact"
+                href="/how-it-works"
                 className="inline-flex min-w-[180px] items-center justify-center rounded-2xl bg-[#3AB861] px-8 py-3 text-lg font-semibold text-white shadow-md transition hover:bg-[#2f9c52]"
               >
-                Learn More
+                See How It Works
               </Link>
             </div>
           </div>

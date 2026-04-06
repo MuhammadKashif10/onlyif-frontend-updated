@@ -9,6 +9,7 @@ import {
   Check,
   MessageCircle,
   Tag,
+  CheckCircle2,
 } from 'lucide-react';
 
 const EMERALD = 'text-emerald-600';
@@ -28,7 +29,7 @@ export default function HowItWorksPage() {
       />
 
       <main className="flex-1">
-        {/* Hero */}
+        {/* Hero - Intro */}
         <section className="pt-10 pb-14 sm:pt-14 sm:pb-20 px-4 sm:px-6">
           <div className="max-w-[1200px] mx-auto text-center">
             <div className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs sm:text-sm font-semibold uppercase tracking-wide border border-emerald-200 bg-emerald-50 text-[#3AB861]">
@@ -199,6 +200,53 @@ export default function HowItWorksPage() {
           </div>
         </section>
 
+        {/* Agent Involvement */}
+        <section className="py-14 sm:py-20 px-4 sm:px-6 bg-white border-t border-gray-100">
+          <div className="max-w-[1200px] mx-auto">
+            <div className="flex flex-col sm:flex-row sm:items-start gap-4 mb-10">
+              <div className="flex items-center gap-3">
+                <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700">
+                  <Handshake className="h-6 w-6" strokeWidth={2} aria-hidden />
+                </span>
+                <div>
+                  <p className={`text-xs font-bold uppercase tracking-widest ${EMERALD}`}>Agents</p>
+                  <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mt-1">
+                    Expert Support, Only When You Need It
+                  </h2>
+                </div>
+              </div>
+            </div>
+            <p className="text-gray-600 text-base sm:text-lg max-w-3xl mb-12">
+              Stay in control. When the time is right, trusted local agents will handle everything—negotiation, paperwork, and settlement—only when your price is met.
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
+              <div className="rounded-2xl border border-gray-200 bg-[#e7efe8] p-6 shadow-sm">
+                <h3 className="text-xl font-bold text-[#2d6d48] mb-4">With Only If</h3>
+                <ul className="space-y-3">
+                  {[
+                    'Test the market without committing to an agent',
+                    'Agents handle negotiation only when your price is met',
+                    'Full support with paperwork and settlement',
+                    'Pay commission only on a successful sale',
+                  ].map((item) => (
+                    <li key={item} className="flex items-start gap-2.5 text-base text-gray-800">
+                      <CheckCircle2 className="h-5 w-5 shrink-0 text-[#3AB861] mt-0.5" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="rounded-2xl border border-gray-200 bg-gray-50 p-6 shadow-sm">
+                <h3 className="text-xl font-bold text-gray-900 mb-4">Professional Guidance</h3>
+                <p className="text-gray-600 leading-relaxed">
+                  Our network of top-performing local agents are experts in their areas. They work for you to ensure that once a serious buyer meets your price, the transaction is smooth, secure, and professional.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Footer CTA */}
         <section className="py-12 sm:py-16 px-4 sm:px-6 bg-gray-100">
           <div className="max-w-[1200px] mx-auto">
@@ -215,12 +263,6 @@ export default function HowItWorksPage() {
                   className="inline-flex w-full sm:w-auto min-w-[200px] items-center justify-center rounded-xl bg-white px-8 py-3.5 text-base font-bold text-[#3AB861] shadow-md hover:bg-white/95 transition-colors"
                 >
                   Sell Only If
-                </Link>
-                <Link
-                  href="/buy"
-                  className="inline-flex w-full sm:w-auto min-w-[200px] items-center justify-center rounded-xl border-2 border-[#2a8f4e] bg-transparent px-8 py-3.5 text-base font-semibold text-white hover:bg-black/10 transition-colors"
-                >
-                  Browse Homes
                 </Link>
               </div>
             </div>
