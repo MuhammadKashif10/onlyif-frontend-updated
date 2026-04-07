@@ -366,7 +366,7 @@ function SellerDashboard() {
         {/* Left: Logo */}
         <div className="flex-shrink-0">
           <Link href="/">
-            <img src="/images/logo.PNG" alt="Only If" className="h-10 w-auto" />
+            <img src="/images/logo.PNG" alt="Only If" className="h-18 sm:h-14 md:h-16 lg:h-24 xl:h-24 w-auto transition-transform duration-200 group-hover:scale-105" />
           </Link>
         </div>
 
