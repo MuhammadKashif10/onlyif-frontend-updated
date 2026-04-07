@@ -10,7 +10,7 @@ export default function BuyerCreateAccount() {
 
   // Option 1: Redirect to the original onboard flow
   useEffect(() => {
-    router.replace('/buy/onboard');
+    router.replace('/signin');
   }, [router]);
 
   // Option 2: Or render the BuyerWizard directly here

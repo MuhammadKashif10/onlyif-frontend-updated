@@ -10,7 +10,7 @@ export default function SellerRegistration() {
 
   // Option 1: Redirect to the original onboard flow
   useEffect(() => {
-    router.replace('/sell/onboard');
+    router.replace('/signin');
   }, [router]);
 
   // Option 2: Or render the SellerWizard directly here

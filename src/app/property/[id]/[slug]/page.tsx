@@ -13,8 +13,10 @@ import { getSafeImageUrl } from '@/utils/imageUtils';
 import { Bed, Bath, Car } from 'lucide-react';
 import ChatDemo from '@/components/ui/ContactAgentModal';
 import OneToOneChat from '@/components/ui/ContactAgentModal';
+import { useAuth } from '@/context/AuthContext';
 
 export default function PropertyDetailsPage() {
+  const { user } = useAuth();
   const params = useParams();
   const router = useRouter();
   const [property, setProperty] = useState<Property | null>(null);
@@ -149,7 +151,7 @@ export default function PropertyDetailsPage() {
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Property Not Found</h1>
           <p className="text-gray-600 mb-6">The property you're looking for doesn't exist or has been removed.</p>
           <button 
-            onClick={() => router.push('/buy')}
+            onClick={() => router.push(user ? '/buy' : '/signin')}
             className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
           >
             Browse Properties

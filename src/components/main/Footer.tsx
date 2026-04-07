@@ -1,7 +1,11 @@
+'use client';
+
 import Link from 'next/link';
 import { Facebook, Twitter, Instagram, Linkedin } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
 export default function Footer() {
+  const { user } = useAuth();
   const currentYear = new Date().getFullYear();
 
   return (
@@ -33,7 +37,7 @@ export default function Footer() {
             <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
             <ul className="space-y-3">
               <li>
-                <Link href="/buy" className="text-gray-300 hover:text-white transition-colors">
+                <Link href={user ? "/buy" : "/signin"} className="text-gray-300 hover:text-white transition-colors">
                   Browse Properties
                 </Link>
               </li>

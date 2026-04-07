@@ -9,7 +9,7 @@ export default function BuyerRegistration() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace('/buy/onboard');
+    router.replace('/signin');
   }, [router]);
 
   return (

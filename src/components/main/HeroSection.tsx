@@ -2,8 +2,11 @@
 
 import Link from 'next/link';
 import { CheckCircle2 } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
 export default function HeroSection() {
+  const { user } = useAuth();
+
   return (
     <section className="relative min-h-[calc(100vh-4rem)] pt-4 sm:pt-6 md:pt-8 flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
       {/* Background Image with Overlay */}
@@ -44,7 +47,7 @@ export default function HeroSection() {
               Learn More
             </Link>
             <Link
-              href="/buy"
+              href={user ? "/buy" : "/signin"}
               className="inline-flex items-center justify-center bg-white hover:bg-gray-100 text-black px-8 py-4 rounded-lg text-lg font-semibold transition-all duration-300 border-2 border-gray-200 hover:border-gray-300 backdrop-blur-sm"
             >
               Browse Homes

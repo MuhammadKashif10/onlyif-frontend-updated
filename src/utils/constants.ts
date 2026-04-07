@@ -259,13 +259,13 @@ export const ROUTES = {
   DASHBOARDS: {
     SELLER: {
       MAIN: '/dashboards/seller',
-      REGISTER: '/sell/onboard',
+      REGISTER: '/signin',
       ADD_PROPERTY: '/dashboards/seller/add-property',
       ADDONS: '/dashboards/seller/addons',
     },
     BUYER: {
       MAIN: '/dashboards/buyer',
-      CREATE_ACCOUNT: '/buy/onboard',
+      CREATE_ACCOUNT: '/signin',
       VIEW_DETAILS: '/dashboards/buyer/view-details',
       CONTACT_ADMIN: '/dashboards/buyer/contact-admin',
     },

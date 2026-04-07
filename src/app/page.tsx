@@ -11,9 +11,11 @@ import PropertyGrid from '@/components/sections/PropertyGrid';
 import { HowItWorksUnlockButton } from '@/components/marketing/HowItWorksUnlockButton';
 import Image from 'next/image';
 import { CheckCircle2 } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
 export default function HomePage() {
   const router = useRouter();
+  const { user } = useAuth();
 
   const handlePrimaryCtaClick = () => {
     console.log('Primary CTA clicked');
@@ -45,9 +47,9 @@ export default function HomePage() {
         }
         subheadline="Only If connects local owners and serious buyers quietly, transparently and in complete control – giving you a smarter way to buy and sell without the pressure or the noise."
         primaryCtaText="I'll sell, Only IF"
-        primaryCtaHref="/dashboards/seller/register"
+        primaryCtaHref="/signin"
         secondaryCtaText="I'm a Buyer"
-        secondaryCtaHref="/signin"
+        secondaryCtaHref={user ? "/buy" : "/signin"}
         onPrimaryCtaClick={handlePrimaryCtaClick}
         onSecondaryCtaClick={handleSecondaryCtaClick}
         showOverlay={false}
@@ -69,7 +71,7 @@ export default function HomePage() {
             emptyStateMessage="Be among the first."
             emptyStateSuggestion="New properties are being added — register to get early access."
             emptyStateCtaLabel="Join as a Buyer"
-            emptyStateCtaHref="/dashboards/buyer/register"
+            emptyStateCtaHref={user ? "/buy" : "/signin"}
           />
         </div>
       </section>
@@ -224,8 +226,8 @@ export default function HomePage() {
         subtitle="Join Australian homeowners selling on their terms"
         description="Only If is an Australian home-selling platform that connects you with serious buyers in your neighbourhood, with transparent pricing, personalised support and a sale timeline that suits you – no pressure and no hard sell."
         primaryCtaText="I'll sell, Only IF"
-        primaryCtaHref="/dashboards/seller/register"
-        secondaryCtaText="Learn More"
+        primaryCtaHref="/signin"
+        secondaryCtaText="How it Works"
         secondaryCtaHref="/how-it-works"
         showPrimary={true}
         variant="primary"

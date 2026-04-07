@@ -113,15 +113,6 @@ className="h-18 sm:h-14 md:h-16 lg:h-24 xl:h-24 w-auto transition-transform dura
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center space-x-2">
-            {/* Notifications for authenticated users */}
-            {user && (
-              <EnhancedNotificationPanel 
-                userType={user.userType}
-                showAsDropdown={true}
-                className="mr-2"
-              />
-            )}
-
             {!user ? (
               <Link
                 href={ctaHref}
@@ -130,11 +121,16 @@ className="h-18 sm:h-14 md:h-16 lg:h-24 xl:h-24 w-auto transition-transform dura
                 {ctaText}
               </Link>
             ) : (
-              <div className="flex items-center space-x-3">
-                <span className="text-gray-700">Welcome, {user.name || 'User'}</span>
+              <div className="flex items-center space-x-5">
+                <Link
+                  href="/dashboard"
+                  className="text-sm font-medium text-gray-700 hover:text-[#3AB861] transition-colors duration-200"
+                >
+                  Dashboard
+                </Link>
                 <button
                   onClick={logout}
-                  className="text-gray-600 hover:text-red-600 font-medium transition-colors duration-200"
+                  className="text-sm font-medium text-gray-700 hover:text-red-600 transition-colors duration-200"
                 >
                   Sign Out
                 </button>
@@ -194,16 +190,20 @@ className="h-18 sm:h-14 md:h-16 lg:h-24 xl:h-24 w-auto transition-transform dura
             
             {/* Mobile User Menu */}
             {user && (
-              <div className="pt-4 border-t border-gray-200">
-                <div className="px-3 py-2 text-gray-700">
-                  Welcome, {user.name || 'User'}
-                </div>
+              <div className="pt-4 border-t border-gray-200 space-y-1">
+                <Link
+                  href="/dashboard"
+                  className="block px-3 py-2 text-gray-700 hover:text-[#3AB861] hover:bg-emerald-50/50 transition-colors duration-200 rounded font-medium"
+                  onClick={handleMenuClose}
+                >
+                  Dashboard
+                </Link>
                 <button
                   onClick={() => {
                     logout();
                     handleMenuClose();
                   }}
-                  className="block w-full text-left px-3 py-2 text-red-600 hover:text-red-700 hover:bg-red-50 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 rounded font-medium"
+                  className="block w-full text-left px-3 py-2 text-gray-700 hover:text-red-600 hover:bg-red-50 transition-colors duration-200 rounded font-medium"
                 >
                   Sign Out
                 </button>
