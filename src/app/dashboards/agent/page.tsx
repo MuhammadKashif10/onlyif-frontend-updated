@@ -168,6 +168,76 @@ function RealSellerAgentChat({ otherUserId, propertyId, currentUserId, currentUs
 export default function AgentDashboard() {
   const { user } = useAuth();
   const { addNotification } = useUI();
+
+  // Polling for status update if pending
+  useEffect(() => {
+    if (user?.role === 'agent' && user.agentStatus === 'pending') {
+      const interval = setInterval(() => {
+        // We can trigger a session validation or a specific status check
+        // For simplicity, we can just reload the page or call a refresh function if available
+        // Since validateSession is internal to AuthProvider, we might need to expose a refreshUser method
+        window.location.reload();
+      }, 30000); // 30 seconds polling
+      return () => clearInterval(interval);
+    }
+  }, [user]);
+
+  if (user?.role === 'agent' && user.agentStatus === 'pending') {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <Navbar />
+        <div className="flex-1 flex items-center justify-center p-4">
+          <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center border border-gray-100">
+            <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6">
+              <span className="text-4xl">⏳</span>
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">Account Under Review</h1>
+            <p className="text-gray-600 mb-8 leading-relaxed">
+              Your agent account is currently under review by our administration team. 
+              We'll notify you via email once your account has been approved.
+            </p>
+            <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 mb-8">
+              <p className="text-sm text-gray-500 italic">
+                Approval typically takes 24-48 business hours.
+              </p>
+            </div>
+            <button 
+              onClick={() => window.location.href = '/'}
+              className="w-full py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors shadow-md shadow-blue-200"
+            >
+              Return to Homepage
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (user?.role === 'agent' && user.agentStatus === 'rejected') {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <Navbar />
+        <div className="flex-1 flex items-center justify-center p-4">
+          <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center border border-red-100">
+            <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
+              <span className="text-4xl">❌</span>
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">Account Rejected</h1>
+            <p className="text-gray-600 mb-8 leading-relaxed">
+              Your agent request has been rejected. If you believe this is an error, please contact our support team.
+            </p>
+            <button 
+              onClick={() => window.location.href = '/'}
+              className="w-full py-3 bg-gray-800 text-white rounded-xl font-semibold hover:bg-gray-900 transition-colors"
+            >
+              Return to Homepage
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Use actual user ID from auth, fallback to agent with properties for testing
   const currentUserId = user?.id || "68cb627cee767de414e83407";
   const currentUserRole = 'agent';

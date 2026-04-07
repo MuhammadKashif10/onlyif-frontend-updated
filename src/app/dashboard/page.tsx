@@ -10,7 +10,7 @@ type ModalType = 'buyer' | 'seller' | 'agent' | null;
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { user, isLoading, acceptRole } = useAuth();
+  const { user, isLoading, acceptRole, requestAgentRole } = useAuth();
 
   const [modal, setModal] = useState<ModalType>(null);
 
@@ -27,6 +27,10 @@ export default function DashboardPage() {
     noBypass: false,
     upgrades: false,
     agentPartnerHelp: false,
+  });
+
+  const [agentChecks, setAgentChecks] = useState({
+    terms: false,
   });
 
   useEffect(() => {
@@ -73,6 +77,8 @@ export default function DashboardPage() {
     [sellerChecks]
   );
 
+  const agentAllChecked = useMemo(() => agentChecks.terms, [agentChecks]);
+
   const handleAcceptBuyer = async () => {
     if (!buyerAllChecked) return;
     await acceptRole('buyer');
@@ -83,6 +89,16 @@ export default function DashboardPage() {
     if (!sellerAllChecked) return;
     await acceptRole('seller');
     router.push('/dashboards/seller');
+  };
+
+  const handleAcceptAgent = async () => {
+    if (!agentAllChecked) return;
+    try {
+      await requestAgentRole();
+      router.push('/dashboards/agent');
+    } catch (error) {
+      console.error('Error requesting agent role:', error);
+    }
   };
 
   if (isLoading || !user || user.role !== null) return null;
@@ -274,6 +290,37 @@ export default function DashboardPage() {
           <div className="mt-6 flex justify-end">
             <Button variant="primary" onClick={() => setModal(null)}>
               Close
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={modal === 'agent'} onOpenChange={(open) => setModal(open ? 'agent' : null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Become an Agent</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <p className="text-sm text-gray-600">
+              By joining as an agent, you agree to our terms of service for property management and client interaction. Your account will be reviewed by an administrator before you gain full access.
+            </p>
+            <label className="flex items-start gap-3 text-sm text-gray-700">
+              <input
+                type="checkbox"
+                className="mt-1 h-4 w-4"
+                checked={agentChecks.terms}
+                onChange={(e) => setAgentChecks((p) => ({ ...p, terms: e.target.checked }))}
+              />
+              <span>I agree to the Agent Terms & Conditions and understand my account is subject to review.</span>
+            </label>
+          </div>
+
+          <div className="mt-6 flex justify-end gap-3">
+            <Button variant="secondary" onClick={() => setModal(null)}>
+              Cancel
+            </Button>
+            <Button variant="primary" disabled={!agentAllChecked} onClick={handleAcceptAgent}>
+              Accept & Continue
             </Button>
           </div>
         </DialogContent>

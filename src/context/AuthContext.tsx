@@ -10,6 +10,7 @@ interface User {
   name: string;
   type: UserRole;
   role: UserRole;
+  agentStatus?: 'pending' | 'approved' | 'rejected' | null;
 }
 
 interface AuthContextType {
@@ -19,6 +20,7 @@ interface AuthContextType {
   logout: () => void;
   register: (userData: RegisterData) => Promise<void>;
   acceptRole: (role: 'buyer' | 'seller') => Promise<void>;
+  requestAgentRole: () => Promise<void>;
   sendOtp: (email?: string, phone?: string) => Promise<void>;
   verifyOtp: (email: string | undefined, phone: string | undefined, otp: string) => Promise<void>;
   isLoading: boolean;
@@ -346,6 +348,54 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const requestAgentRole = async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      if (!API_BASE_URL) {
+        throw new Error('API URL is not configured.');
+      }
+
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      if (!token) {
+        throw new Error('You must be logged in to request agent role.');
+      }
+
+      const response = await fetch(buildApiUrl('/users/request-agent'), {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await parseJsonSafely(response);
+        throw new Error(errorData.message || 'Failed to request agent role');
+      }
+
+      const data = await parseJsonSafely(response);
+      const normalizedRole: UserRole = data.data.role ?? null;
+      const updatedUser: User = {
+        ...data.data,
+        type: normalizedRole,
+        role: normalizedRole,
+        agentStatus: data.data.agentStatus
+      };
+
+      setUser(updatedUser);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+      }
+    } catch (err) {
+      setError('Failed to request agent role');
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const logout = () => {
     setUser(null);
     setError(null);
@@ -441,6 +491,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       logout,
       register,
       acceptRole,
+      requestAgentRole,
       sendOtp,
       verifyOtp,
       isLoading,

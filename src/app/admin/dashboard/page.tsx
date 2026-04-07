@@ -5,11 +5,12 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
 import AdminLayout from '@/components/admin/AdminLayout';
+import AgentRequests from '@/components/admin/AgentRequests';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Users, Building, UserCheck, DollarSign, TrendingUp, Activity } from 'lucide-react';
 import { useAdminPaymentMonitoring } from '@/hooks/usePaymentUpdates';
-// Removed: import { toast, Toaster } from 'react-hot-toast';
+import { Toaster } from 'react-hot-toast';
 
 // Utility function for authenticated API calls
 const authenticatedFetch = async (url: string, options: RequestInit = {}) => {
@@ -156,8 +157,7 @@ export default function AdminDashboardPage() {
 
   return (
     <AdminLayout>
-      {/* Removed Toaster and all toast calls */}
-      {/* <Toaster position="top-right" /> */}
+      <Toaster position="top-right" />
 
       <div className="space-y-6">
         <div>
@@ -215,6 +215,8 @@ export default function AdminDashboardPage() {
           />
         </div>
 
+        {/* Agent Requests Section */}
+        <AgentRequests />
 
         {/* Quick Actions */}
         <Card className="overflow-hidden">
