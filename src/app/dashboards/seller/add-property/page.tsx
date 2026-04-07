@@ -56,6 +56,7 @@ export default function AddProperty() {
     propertyType: 'Single Family',
     yearBuilt: '',
     lotSize: '',
+    carSpaces: '',
     // Add missing contact fields
     contactName: '',
     contactEmail: '',
@@ -211,7 +212,7 @@ export default function AddProperty() {
       const response = await propertiesApi.createPropertyWithFiles(formDataToSend);
       
       if (response.success) {
-        toast.success('Property added successfully!');
+        toast.success('Your property has been submitted and is awaiting admin approval.');
         
         // Reset form
         setFormData({

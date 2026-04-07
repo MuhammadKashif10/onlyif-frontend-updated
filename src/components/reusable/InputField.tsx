@@ -41,7 +41,7 @@ export default function InputField({
         id={id}
         name={name}
         type={type}
-        value={value}
+        value={value ?? ''}
         onChange={onChange}
         placeholder={placeholder}
         disabled={disabled}

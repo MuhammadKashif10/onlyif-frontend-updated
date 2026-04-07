@@ -68,7 +68,7 @@ function SellerDashboard() {
   const { user, isAuthenticated, isLoading: authLoading, logout } = useAuth();
   
   // State management
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'listings' | 'account'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'listings'>('dashboard');
   const [stats, setStats] = useState<SellerStats | null>(null);
   const [activeListings, setActiveListings] = useState<EnhancedProperty[]>([]);
   const [isLoadingStats, setIsLoadingStats] = useState(true);
@@ -101,8 +101,11 @@ function SellerDashboard() {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       const tab = params.get('tab');
-      if (tab === 'listings' || tab === 'dashboard' || tab === 'account') {
+      if (tab === 'listings' || tab === 'dashboard') {
         setActiveTab(tab as any);
+      } else if (tab === 'account') {
+        // Redirect to separate account page if user specifically asks for account tab
+        router.push('/dashboards/seller/account');
       }
     }
   }, [authLoading, isAuthenticated, user, router]);
@@ -150,12 +153,12 @@ function SellerDashboard() {
       setListingsError(null);
       const response = await sellerApi.getSellerListings(sellerId, {
         page: 1,
-        limit: 10,
-        status: 'active'
+        limit: 10
+        // removed status: 'active' to show all statuses
       });
       
       // Transform properties to include additional fields - add null check
-      const enhancedProperties = (response?.properties || []).map(property => ({
+      const enhancedProperties = ((response as any)?.data || []).map((property: any) => ({
         ...property,
         inquiries: 0, // This would come from API
         pendingInquiries: 0,
@@ -316,6 +319,46 @@ function SellerDashboard() {
     (stats.totalInquiries || 0) > 0
   ));
 
+  const renderStatusBadge = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return (
+          <div className="flex items-center space-x-2 bg-amber-50 text-amber-600 px-4 py-1.5 rounded-full border border-amber-100 shadow-sm uppercase tracking-wider text-[11px] font-black">
+            <Activity className="w-3.5 h-3.5" />
+            <span>Submitted for Approval</span>
+          </div>
+        );
+      case 'active':
+        return (
+          <div className="flex items-center space-x-2 bg-emerald-50 text-emerald-600 px-4 py-1.5 rounded-full border border-emerald-100 shadow-sm uppercase tracking-wider text-[11px] font-black">
+            <Activity className="w-3.5 h-3.5" />
+            <span>Published</span>
+          </div>
+        );
+      case 'rejected':
+        return (
+          <div className="flex items-center space-x-2 bg-red-50 text-red-600 px-4 py-1.5 rounded-full border border-red-100 shadow-sm uppercase tracking-wider text-[11px] font-black">
+            <Activity className="w-3.5 h-3.5" />
+            <span>Rejected</span>
+          </div>
+        );
+      case 'sold':
+        return (
+          <div className="flex items-center space-x-2 bg-blue-50 text-blue-600 px-4 py-1.5 rounded-full border border-blue-100 shadow-sm uppercase tracking-wider text-[11px] font-black">
+            <Activity className="w-3.5 h-3.5" />
+            <span>Sold</span>
+          </div>
+        );
+      default:
+        return (
+          <div className="flex items-center space-x-2 bg-gray-50 text-gray-500 px-4 py-1.5 rounded-full border border-gray-100 shadow-sm uppercase tracking-wider text-[11px] font-black">
+            <Activity className="w-3.5 h-3.5" />
+            <span>{status}</span>
+          </div>
+        );
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Top Navbar */}
@@ -394,14 +437,10 @@ function SellerDashboard() {
                 <span>My Listings</span>
               </button>
               <button
-                onClick={() => setActiveTab('account')}
-                className={`w-full flex items-center space-x-3 px-5 py-3.5 text-sm font-bold rounded-xl transition-all duration-200 ${
-                  activeTab === 'account' 
-                    ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 shadow-sm' 
-                    : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
-                }`}
+                onClick={() => router.push('/dashboards/seller/account')}
+                className="w-full flex items-center space-x-3 px-5 py-3.5 text-sm font-bold rounded-xl transition-all duration-200 text-gray-500 hover:bg-gray-50 hover:text-gray-700"
               >
-                <Settings className={`w-5 h-5 ${activeTab === 'account' ? 'text-emerald-600' : 'text-gray-400'}`} />
+                <Settings className="w-5 h-5 text-gray-400" />
                 <span>Account Settings</span>
               </button>
             </nav>
@@ -430,62 +469,138 @@ function SellerDashboard() {
                   <div className="flex items-center justify-between">
                     <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight">My Property Snapshot</h2>
                     <div className="flex items-center space-x-4">
-                      <span className="text-sm font-bold text-gray-500 uppercase tracking-wide">Listing Setup: 0% Complete</span>
-                      <div className="w-32 h-2.5 bg-gray-200 rounded-full overflow-hidden shadow-inner">
-                        <div className="w-0 h-full bg-emerald-500 shadow-sm"></div>
-                      </div>
+                      {activeListings.length > 0 ? (
+                        <>
+                          <span className="text-sm font-bold text-gray-500 uppercase tracking-wide">Listing Setup: 100% Complete</span>
+                          <div className="w-32 h-2.5 bg-gray-200 rounded-full overflow-hidden shadow-inner">
+                            <div className="w-full h-full bg-emerald-500 shadow-sm"></div>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <span className="text-sm font-bold text-gray-500 uppercase tracking-wide">Listing Setup: 0% Complete</span>
+                          <div className="w-32 h-2.5 bg-gray-200 rounded-full overflow-hidden shadow-inner">
+                            <div className="w-0 h-full bg-emerald-500 shadow-sm"></div>
+                          </div>
+                        </>
+                      )}
                     </div>
                   </div>
 
                   <div className="bg-white rounded-[2rem] border border-gray-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300">
                     <div className="p-10">
-                      <div className="flex items-center space-x-4 mb-8">
-                        <div className="p-3 bg-gray-50 rounded-2xl shadow-sm">
-                          <Home className="w-8 h-8 text-gray-400" />
-                        </div>
-                        <h3 className="text-2xl font-extrabold text-gray-900">Not Listed Yet</h3>
-                      </div>
+                      {activeListings.length > 0 ? (
+                        (() => {
+                          const property = activeListings[0];
+                          return (
+                            <>
+                              <div className="flex items-center justify-between mb-8">
+                                <div className="flex items-center space-x-4">
+                                  <div className="p-3 bg-emerald-50 rounded-2xl shadow-sm">
+                                    <Home className="w-8 h-8 text-emerald-600" />
+                                  </div>
+                                  <div>
+                                    <h3 className="text-2xl font-extrabold text-gray-900">{property.title}</h3>
+                                    <p className="text-gray-500 font-medium">
+                                      {typeof property.address === 'object' ? 
+                                        `${property.address.street}, ${property.address.city}, ${property.address.state}` : 
+                                        property.address}
+                                    </p>
+                                  </div>
+                                </div>
+                                {renderStatusBadge(property.status)}
+                              </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-gray-100">
-                        <div className="py-4 md:py-0 md:px-8 first:pl-0">
-                          <div className="flex items-center space-x-2 text-xs font-bold text-emerald-600 uppercase tracking-widest mb-2">
-                            <Activity className="w-4 h-4" />
-                            <span>Status</span>
+                              <div className="grid grid-cols-1 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-gray-100">
+                                <div className="py-4 md:py-0 md:px-8 first:pl-0">
+                                  <div className="flex items-center space-x-2 text-xs font-bold text-emerald-600 uppercase tracking-widest mb-2">
+                                    <Activity className="w-4 h-4" />
+                                    <span>Current Status</span>
+                                  </div>
+                                  <p className="text-xl font-bold text-gray-900 capitalize">
+                                    {property.status.replace('-', ' ')}
+                                  </p>
+                                </div>
+                                <div className="py-4 md:py-0 md:px-8">
+                                  <div className="flex items-center space-x-2 text-xs font-bold text-emerald-600 uppercase tracking-widest mb-2">
+                                    <User className="w-4 h-4" />
+                                    <span>Total Views</span>
+                                  </div>
+                                  <p className="text-4xl font-black text-gray-900">{property.views || 0}</p>
+                                </div>
+                                <div className="py-4 md:py-0 md:px-8">
+                                  <div className="flex items-center space-x-2 text-xs font-bold text-emerald-600 uppercase tracking-widest mb-2">
+                                    <DollarSign className="w-4 h-4" />
+                                    <span>Inquiries</span>
+                                  </div>
+                                  <p className="text-4xl font-black text-gray-900">{property.inquiries || 0}</p>
+                                </div>
+                                <div className="py-4 md:py-0 md:px-8 last:pr-0">
+                                  <div className="flex items-center space-x-2 text-xs font-bold text-emerald-600 uppercase tracking-widest mb-2">
+                                    <DollarSign className="w-4 h-4" />
+                                    <span>Listing Price</span>
+                                  </div>
+                                  <p className="text-xl font-black text-gray-900">
+                                    {property.price ? `A$${property.price.toLocaleString('en-AU')}` : 'Not Set'}
+                                  </p>
+                                </div>
+                              </div>
+                            </>
+                          );
+                        })()
+                      ) : (
+                        <>
+                          <div className="flex items-center space-x-4 mb-8">
+                            <div className="p-3 bg-gray-50 rounded-2xl shadow-sm">
+                              <Home className="w-8 h-8 text-gray-400" />
+                            </div>
+                            <h3 className="text-2xl font-extrabold text-gray-900">Not Listed Yet</h3>
                           </div>
-                          <p className="text-xl font-bold text-gray-900 flex items-center space-x-3">
-                            <Home className="w-5 h-5 text-gray-400" />
-                            <span>Not Listed Yet</span>
-                          </p>
-                        </div>
-                        <div className="py-4 md:py-0 md:px-8">
-                          <div className="flex items-center space-x-2 text-xs font-bold text-emerald-600 uppercase tracking-widest mb-2">
-                            <User className="w-4 h-4" />
-                            <span>Buyer Interest</span>
+
+                          <div className="grid grid-cols-1 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-gray-100">
+                            <div className="py-4 md:py-0 md:px-8 first:pl-0">
+                              <div className="flex items-center space-x-2 text-xs font-bold text-emerald-600 uppercase tracking-widest mb-2">
+                                <Activity className="w-4 h-4" />
+                                <span>Status</span>
+                              </div>
+                              <p className="text-xl font-bold text-gray-900 flex items-center space-x-3">
+                                <Home className="w-5 h-5 text-gray-400" />
+                                <span>Not Listed Yet</span>
+                              </p>
+                            </div>
+                            <div className="py-4 md:py-0 md:px-8">
+                              <div className="flex items-center space-x-2 text-xs font-bold text-emerald-600 uppercase tracking-widest mb-2">
+                                <User className="w-4 h-4" />
+                                <span>Buyer Interest</span>
+                              </div>
+                              <p className="text-4xl font-black text-gray-900">0</p>
+                            </div>
+                            <div className="py-4 md:py-0 md:px-8">
+                              <div className="flex items-center space-x-2 text-xs font-bold text-emerald-600 uppercase tracking-widest mb-2">
+                                <DollarSign className="w-4 h-4" />
+                                <span>Offers</span>
+                              </div>
+                              <p className="text-4xl font-black text-gray-900">0</p>
+                            </div>
+                            <div className="py-4 md:py-0 md:px-8 last:pr-0">
+                              <div className="flex items-center space-x-2 text-xs font-bold text-emerald-600 uppercase tracking-widest mb-2">
+                                <DollarSign className="w-4 h-4" />
+                                <span>Your Price</span>
+                              </div>
+                              <p className="text-xl font-black text-gray-900">Not Set</p>
+                            </div>
                           </div>
-                          <p className="text-4xl font-black text-gray-900">0</p>
-                        </div>
-                        <div className="py-4 md:py-0 md:px-8">
-                          <div className="flex items-center space-x-2 text-xs font-bold text-emerald-600 uppercase tracking-widest mb-2">
-                            <DollarSign className="w-4 h-4" />
-                            <span>Offers</span>
-                          </div>
-                          <p className="text-4xl font-black text-gray-900">0</p>
-                        </div>
-                        <div className="py-4 md:py-0 md:px-8 last:pr-0">
-                          <div className="flex items-center space-x-2 text-xs font-bold text-emerald-600 uppercase tracking-widest mb-2">
-                            <DollarSign className="w-4 h-4" />
-                            <span>Your Price</span>
-                          </div>
-                          <p className="text-xl font-black text-gray-900">Not Set</p>
-                        </div>
-                      </div>
+                        </>
+                      )}
                     </div>
                     
                     <div className="h-3 w-full bg-gray-100 shadow-inner">
-                      <div className="h-full bg-emerald-500 w-0 transition-all duration-1000 ease-out shadow-sm"></div>
+                      <div className={`h-full bg-emerald-500 transition-all duration-1000 ease-out shadow-sm ${activeListings.length > 0 ? 'w-full' : 'w-0'}`}></div>
                     </div>
                     <div className="px-10 py-3.5 bg-gray-50/80 border-t border-gray-100 flex justify-between items-center">
-                      <span className="text-xs font-black text-gray-400 tracking-[0.2em] uppercase">0% COMPLETE</span>
+                      <span className="text-xs font-black text-gray-400 tracking-[0.2em] uppercase">
+                        {activeListings.length > 0 ? '100% COMPLETE' : '0% COMPLETE'}
+                      </span>
                     </div>
                   </div>
                 </section>
@@ -499,7 +614,7 @@ function SellerDashboard() {
                     </p>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     {/* Add Property Card */}
                     <div className="bg-white p-10 rounded-[2.5rem] border border-gray-200 shadow-sm flex flex-col items-center text-center space-y-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
                       <div className="w-20 h-20 bg-emerald-50 rounded-[2rem] flex items-center justify-center shadow-inner">
@@ -517,40 +632,20 @@ function SellerDashboard() {
                       </button>
                     </div>
 
-                    {/* Set Your Price Card */}
-                    <div className="bg-white p-10 rounded-[2.5rem] border border-gray-200 shadow-sm flex flex-col items-center text-center space-y-6 relative hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-                      <div className="absolute top-6 right-6 bg-emerald-50 text-emerald-600 text-[11px] font-black px-3 py-1.5 rounded-full border border-emerald-100 shadow-sm uppercase tracking-wider">
-                        Recommended
-                      </div>
-                      <div className="w-20 h-20 bg-emerald-50 rounded-[2rem] flex items-center justify-center shadow-inner">
-                        <DollarSign className="w-10 h-10 text-emerald-600" />
-                      </div>
-                      <div className="space-y-2">
-                        <h3 className="text-2xl font-extrabold text-gray-900">Set Your Price</h3>
-                        <p className="text-sm text-gray-500 font-medium leading-relaxed">Estimate your home&apos;s sellable price.</p>
-                      </div>
-                      <button 
-                        onClick={() => router.push('/dashboards/seller/set-price')}
-                        className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-extrabold text-lg transition-all duration-300 shadow-md hover:shadow-emerald-200 active:scale-[0.98]"
-                      >
-                        Set My Price
-                      </button>
-                    </div>
-
-                    {/* Schedule Inspection Card */}
+                    {/* View Listings Card */}
                     <div className="bg-white p-10 rounded-[2.5rem] border border-gray-200 shadow-sm flex flex-col items-center text-center space-y-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
                       <div className="w-20 h-20 bg-emerald-50 rounded-[2rem] flex items-center justify-center shadow-inner">
-                        <Calendar className="w-10 h-10 text-emerald-600" />
+                        <Building2 className="w-10 h-10 text-emerald-600" />
                       </div>
                       <div className="space-y-2">
-                        <h3 className="text-2xl font-extrabold text-gray-900">Schedule Inspection</h3>
-                        <p className="text-sm text-gray-500 font-medium leading-relaxed">Book a property inspection to get a detailed assessment.</p>
+                        <h3 className="text-2xl font-extrabold text-gray-900">View Listings</h3>
+                        <p className="text-sm text-gray-500 font-medium leading-relaxed">Manage your active and pending property listings.</p>
                       </div>
                       <button 
-                        onClick={() => router.push('/dashboards/seller/schedule-inspection')}
+                        onClick={() => setActiveTab('listings')}
                         className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-extrabold text-lg transition-all duration-300 shadow-md hover:shadow-emerald-200 active:scale-[0.98]"
                       >
-                        Schedule
+                        View My Listings
                       </button>
                     </div>
                   </div>
@@ -619,7 +714,9 @@ function SellerDashboard() {
                             </div>
                             <p className="text-gray-500 font-medium flex items-center mb-4">
                               <Home className="w-4 h-4 mr-2 opacity-50" />
-                              {property.address}
+                              {typeof property.address === 'object' ? 
+                                `${property.address.street}, ${property.address.city}, ${property.address.state}` : 
+                                property.address}
                             </p>
                             <div className="flex items-center space-x-6 text-sm font-bold text-gray-600 bg-gray-50/80 w-fit px-4 py-2 rounded-xl">
                               <span className="flex items-center"><Building2 className="w-4 h-4 mr-2 text-gray-400" />{property.beds} Beds</span>
@@ -683,51 +780,6 @@ function SellerDashboard() {
               </div>
             )}
 
-            {activeTab === 'account' && (
-              <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
-                <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight mb-8">Account Settings</h2>
-                <div className="bg-white rounded-[2rem] border border-gray-200 shadow-sm p-10 max-w-2xl">
-                  <div className="space-y-8">
-                    <div className="flex items-center space-x-6 pb-8 border-b border-gray-100">
-                      <div className="w-24 h-24 rounded-[2rem] bg-emerald-600 flex items-center justify-center text-white font-black text-3xl shadow-lg shadow-emerald-100">
-                        {user?.name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'S'}
-                      </div>
-                      <div className="space-y-1">
-                        <h3 className="text-2xl font-extrabold text-gray-900">{user?.name || 'Seller Name'}</h3>
-                        <p className="text-gray-500 font-medium">{user?.email}</p>
-                        <span className="inline-block px-3 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase tracking-[0.2em] rounded-full border border-emerald-100 mt-2">
-                          Verified Seller
-                        </span>
-                      </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 gap-8">
-                      <div className="space-y-2">
-                        <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Full Name</label>
-                        <div className="bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4 text-gray-900 font-bold">
-                          {user?.name}
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Email Address</label>
-                        <div className="bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4 text-gray-900 font-bold">
-                          {user?.email}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="pt-6">
-                      <button 
-                        onClick={() => router.push('/dashboards/seller/account/edit')}
-                        className="w-full sm:w-auto px-10 py-4 bg-gray-900 text-white rounded-2xl font-extrabold text-lg hover:bg-black transition-all shadow-md active:scale-[0.98]"
-                      >
-                        Edit Profile Details
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
           </main>
         </div>
       </div>

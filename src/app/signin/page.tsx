@@ -78,8 +78,8 @@ export default function SignInPage() {
       <div className="flex-grow flex items-center justify-center pt-4 sm:pt-6 md:pt-8 pb-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8">
           <div>
-            <div className="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-blue-100">
-              <svg className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-emerald-100">
+              <svg className="h-6 w-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
             </div>
@@ -126,7 +126,7 @@ export default function SignInPage() {
 
             <div className="flex items-center justify-between">
               <div className="text-sm">
-                <Link href="/forgot-password" className="font-medium text-blue-600 hover:text-blue-500">
+                <Link href="/forgot-password" className="font-medium text-emerald-600 hover:text-emerald-500">
                   Forgot your password?
                 </Link>
               </div>
@@ -137,7 +137,7 @@ export default function SignInPage() {
               variant="primary"
               size="lg"
               disabled={isSubmitting || isLoading || !validateForm()}
-              className="w-full"
+              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-2xl shadow-md transition-all active:scale-[0.98]"
             >
               {isSubmitting ? 'Signing in...' : 'Sign In'}
             </Button>
@@ -149,7 +149,7 @@ export default function SignInPage() {
               <div className="flex justify-center mt-2">
                 <Link
                   href="/signup"
-                  className="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors duration-200 min-w-[180px] text-center"
+                  className="px-4 py-2 bg-emerald-600 text-white text-sm rounded-md hover:bg-emerald-700 transition-colors duration-200 min-w-[180px] text-center font-bold"
                 >
                   Create an Account
                 </Link>
