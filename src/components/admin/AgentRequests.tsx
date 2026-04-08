@@ -84,98 +84,92 @@ export default function AgentRequests() {
 
   if (loading && requests.length === 0) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Agent Requests</CardTitle>
-          <CardDescription>Loading pending requests...</CardDescription>
-        </CardHeader>
-        <CardContent className="flex justify-center py-10">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        </CardContent>
-      </Card>
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-50 p-6 sm:p-10 flex justify-center items-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+      </div>
     );
   }
 
   return (
-    <Card className="col-span-full">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <UserCheck className="h-5 w-5 text-blue-600" />
-          Agent Requests
-        </CardTitle>
-        <CardDescription>
-          Review and approve new real estate agent registration requests.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-50 overflow-hidden">
+      <div className="p-4 sm:p-6 border-b border-gray-50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gray-50/30">
+        <div>
+          <h3 className="text-base sm:text-lg font-bold text-gray-900 flex items-center gap-2">
+            <UserCheck className="w-5 h-5 text-green-600" />
+            Pending Agent Requests
+          </h3>
+          <p className="text-[10px] sm:text-xs text-gray-500 font-medium mt-0.5 sm:mt-1">Review and approve new real estate agent registration requests.</p>
+        </div>
+        <div className="self-start sm:self-center px-3 py-1 bg-green-100 text-green-700 text-[10px] sm:text-xs font-bold rounded-full whitespace-nowrap">
+          {requests.length} Pending
+        </div>
+      </div>
+      <div className="overflow-x-auto">
         {requests.length === 0 ? (
-          <div className="text-center py-10 bg-gray-50 rounded-lg border border-dashed border-gray-200">
-            <User className="h-10 w-10 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-500">No pending agent requests at the moment.</p>
+          <div className="text-center py-12 sm:py-16 px-4 sm:px-6">
+            <div className="w-12 h-12 sm:w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4 border border-gray-100">
+              <User className="h-6 w-6 sm:h-8 sm:w-8 text-gray-300" />
+            </div>
+            <p className="text-gray-900 font-bold text-sm sm:text-base">No pending agent requests</p>
+            <p className="text-gray-500 text-xs sm:text-sm mt-1 font-medium">No pending agent requests at the moment.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left">
-              <thead className="text-xs text-gray-700 uppercase bg-gray-50">
-                <tr>
-                  <th className="px-4 py-3">Agent Info</th>
-                  <th className="px-4 py-3">Contact</th>
-                  <th className="px-4 py-3">Requested Date</th>
-                  <th className="px-4 py-3 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {requests.map((request) => (
-                  <tr key={request._id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-4 py-4">
-                      <div className="font-semibold text-gray-900">{request.name}</div>
-                      <div className="text-xs text-gray-500">ID: {request._id || (request as any).id}</div>
-                    </td>
-                    <td className="px-4 py-4">
-                      <div className="flex flex-col gap-1">
-                        <div className="flex items-center gap-2 text-gray-600">
-                          <Mail className="h-3 w-3" /> {request.email}
+          <table className="w-full text-sm text-left min-w-[600px]">
+            <thead>
+              <tr className="bg-gray-50/50">
+                <th className="px-4 sm:px-6 py-3 sm:py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Agent Info</th>
+                <th className="px-4 sm:px-6 py-3 sm:py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Contact</th>
+                <th className="px-4 sm:px-6 py-3 sm:py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Requested Date</th>
+                <th className="px-4 sm:px-6 py-3 sm:py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {requests.map((request) => (
+                <tr key={request._id} className="hover:bg-gray-50 transition-colors group">
+                  <td className="px-4 sm:px-6 py-3 sm:py-4">
+                    <div className="font-bold text-gray-900 group-hover:text-green-600 transition-colors">{request.name}</div>
+                    <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-0.5">ID: {request._id || (request as any).id}</div>
+                  </td>
+                  <td className="px-4 sm:px-6 py-3 sm:py-4">
+                    <div className="flex flex-col gap-1 sm:gap-1.5">
+                      <div className="flex items-center gap-2 text-gray-600 font-medium text-xs">
+                        <Mail className="h-3.5 w-3.5 opacity-40" /> {request.email}
+                      </div>
+                      {request.phone && (
+                        <div className="flex items-center gap-2 text-gray-600 font-medium text-xs">
+                          <Phone className="h-3.5 w-3.5 opacity-40" /> {request.phone}
                         </div>
-                        {request.phone && (
-                          <div className="flex items-center gap-2 text-gray-600">
-                            <Phone className="h-3 w-3" /> {request.phone}
-                          </div>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-4 py-4">
-                      <div className="flex items-center gap-2 text-gray-500">
-                        <Clock className="h-3 w-3" />
-                        {new Date(request.createdAt).toLocaleDateString()}
-                      </div>
-                    </td>
-                    <td className="px-4 py-4 text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
-                          className="text-red-600 border-red-200 hover:bg-red-50"
-                          onClick={() => handleStatusUpdate(request._id || (request as any).id, 'rejected')}
-                        >
-                          <UserX className="h-4 w-4 mr-1" /> Reject
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="default" 
-                          className="bg-green-600 hover:bg-green-700 text-white"
-                          onClick={() => handleStatusUpdate(request._id || (request as any).id, 'approved')}
-                        >
-                          <UserCheck className="h-4 w-4 mr-1" /> Approve
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-4 sm:px-6 py-3 sm:py-4">
+                    <div className="flex items-center gap-2 text-gray-500 font-bold text-[10px] sm:text-xs">
+                      <Clock className="h-3.5 w-3.5 opacity-40" />
+                      {new Date(request.createdAt).toLocaleDateString()}
+                    </div>
+                  </td>
+                  <td className="px-4 sm:px-6 py-3 sm:py-4 text-right">
+                    <div className="flex justify-end gap-2 sm:gap-3">
+                      <button 
+                        className="px-3 sm:px-4 py-1.5 sm:py-2 text-[10px] sm:text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-all active:scale-95 whitespace-nowrap"
+                        onClick={() => handleStatusUpdate(request._id || (request as any).id, 'rejected')}
+                      >
+                        Reject
+                      </button>
+                      <button 
+                        className="px-3 sm:px-4 py-1.5 sm:py-2 text-[10px] sm:text-xs font-bold text-white bg-green-600 hover:bg-green-700 rounded-lg shadow-sm shadow-green-100 transition-all active:scale-95 whitespace-nowrap"
+                        onClick={() => handleStatusUpdate(request._id || (request as any).id, 'approved')}
+                      >
+                        Approve
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

@@ -6,11 +6,24 @@ import { useAuth } from '@/hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
 import AdminLayout from '@/components/admin/AdminLayout';
 import AgentRequests from '@/components/admin/AgentRequests';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Users, Building, UserCheck, DollarSign, TrendingUp, Activity } from 'lucide-react';
+import { 
+  Users, 
+  Building, 
+  UserCheck, 
+  TrendingUp, 
+  Activity, 
+  ChevronRight, 
+  ArrowRight,
+  PlusCircle,
+  Settings as SettingsIcon,
+  ShieldCheck,
+  Building2,
+  Users2
+} from 'lucide-react';
 import { useAdminPaymentMonitoring } from '@/hooks/usePaymentUpdates';
 import { Toaster } from 'react-hot-toast';
+import Link from 'next/link';
 
 // Utility function for authenticated API calls
 const authenticatedFetch = async (url: string, options: RequestInit = {}) => {
@@ -33,7 +46,6 @@ const authenticatedFetch = async (url: string, options: RequestInit = {}) => {
 
   // Handle unauthorized responses
   if (response.status === 401) {
-    // Token is invalid/expired, clear storage and redirect to login
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     window.location.href = '/admin/login';
@@ -53,58 +65,8 @@ const authenticatedFetch = async (url: string, options: RequestInit = {}) => {
 
 // Recent activity fetch
 const fetchRecentActivity = () => {
-  // Use API base so we always include /api prefix (backend routes are under /api/admin)
   const apiBase = process.env.NEXT_PUBLIC_API_URL || '';
   return authenticatedFetch(`${apiBase}/admin/activity`);
-}
-
-interface StatsCardProps {
-  title: string;
-  value: string | number;
-  description: string;
-  icon: React.ReactNode;
-  trend?: string;
-  isLoading?: boolean;
-  error?: string;
-}
-
-function StatsCard({ title, value, description, icon, trend, isLoading, error }: StatsCardProps) {
-  if (error) {
-    return (
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">{title}</CardTitle>
-          {icon}
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold text-red-600">Error</div>
-          <p className="text-xs text-muted-foreground">{error}</p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        {icon}
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">
-          {isLoading ? 'Loading...' : value}
-        </div>
-        <p className="text-xs text-muted-foreground">
-          {description}
-          {trend && (
-            <span className="text-green-600 ml-1">
-              <TrendingUp className="inline h-3 w-3" /> {trend}
-            </span>
-          )}
-        </p>
-      </CardContent>
-    </Card>
-  );
 }
 
 // Replace individual fetch functions with consolidated stats fetch
@@ -113,9 +75,8 @@ const fetchDashboardStats = () => {
   return authenticatedFetch(`${apiBase}/admin/dashboard/stats`);
 }
 
-
 export default function AdminDashboardPage() {
-  const { user, isLoading: authLoading } = useAuth();
+  const { user } = useAuth();
   const router = useRouter();
   
   // Initialize real-time payment monitoring
@@ -131,14 +92,13 @@ export default function AdminDashboardPage() {
   });
 
   // Add missing query for recent activity
-  const { data: activityData, isLoading: activityLoading, error: activityError } = useQuery({
+  const { data: activityData, isLoading: activityLoading } = useQuery({
     queryKey: ['admin-recent-activity'],
     queryFn: fetchRecentActivity,
     enabled: !!user && user.type === 'admin',
     retry: 1,
     refetchOnWindowFocus: false
   });
-
 
   // Track previous activity IDs to detect new events (no notifications)
   const prevActivityIdsRef = useRef<Set<string>>(new Set());
@@ -150,7 +110,6 @@ export default function AdminDashboardPage() {
       return;
     }
 
-    // Update tracker only; no toast notifications
     const currentIds = new Set<string>(activities.map((a: any) => a.id));
     prevActivityIdsRef.current = currentIds;
   }, [activityData]);
@@ -159,154 +118,198 @@ export default function AdminDashboardPage() {
     <AdminLayout>
       <Toaster position="top-right" />
 
-      <div className="space-y-6">
-        <div>
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-3xl font-bold tracking-tight">Dashboard Overview</h2>
-              <p className="text-muted-foreground">
-                Welcome back! Here's what's happening with your platform.
-              </p>
-            </div>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <div className={`w-2 h-2 rounded-full ${
-                isConnected ? 'bg-green-500' : 'bg-red-500'
-              }`}></div>
-              <span>
-                {isConnected ? 'Live updates connected' : 'Connecting...'}
-              </span>
-            </div>
+      <div className="space-y-6 sm:space-y-10 pb-10">
+        {/* Welcome Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
+              Welcome back, {user?.name || 'Admin'}! 👋
+            </h1>
+            <p className="text-sm sm:text-lg text-gray-500 font-medium mt-1">
+              Here's an overview of how Only If is performing.
+            </p>
+          </div>
+          <div className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-100 rounded-full shadow-sm self-start md:self-center">
+            <div className={`w-2.5 h-2.5 rounded-full ${
+              isConnected ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]' : 'bg-red-500'
+            }`}></div>
+            <span className="text-xs sm:text-sm font-bold text-gray-600">
+              {isConnected ? 'Live updates connected' : 'Connecting...'}
+            </span>
           </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <StatsCard
-            title="OnlyIf Properties"
-            value={dashboardData?.data?.totalProperties || 0}
-            description="Properties listed on platform"
-            icon={<Building className="h-4 w-4 text-muted-foreground" />}
-            isLoading={dashboardLoading}
-            error={dashboardError ? 'Failed to load' : undefined}
-          />
-          <StatsCard
-            title="OnlyIf Agents"
-            value={dashboardData?.data?.totalAgents || 0}
-            description="Registered real estate agents"
-            icon={<UserCheck className="h-4 w-4 text-muted-foreground" />}
-            isLoading={dashboardLoading}
-            error={dashboardError ? 'Failed to load' : undefined}
-          />
-          <StatsCard
-            title="OnlyIf Users"
-            value={dashboardData?.data?.totalUsers || 0}
-            description="Registered buyers and sellers"
-            icon={<Users className="h-4 w-4 text-muted-foreground" />}
-            isLoading={dashboardLoading}
-            error={dashboardError ? 'Failed to load' : undefined}
-          />
-          <StatsCard
-            title="Monthly Revenue"
-            value={`$${(dashboardData?.data?.monthlyRevenue || 0).toLocaleString()}`}
-            description="Revenue this month"
-            icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
-            isLoading={dashboardLoading}
-            error={dashboardError ? 'Failed to load' : undefined}
-          />
-        </div>
+        {/* Agent Requests Section with Stats */}
+        <section className="space-y-4 sm:space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg sm:text-xl font-bold text-gray-900 flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 text-green-600" />
+              Agent Requests
+            </h2>
+          </div>
+          
+          <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+            {/* OnlyIf Properties */}
+            <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-gray-50 hover:shadow-md transition-shadow group">
+              <div className="flex items-center justify-between mb-3 sm:mb-4">
+                <div className="p-2.5 sm:p-3 bg-blue-50 rounded-xl group-hover:scale-110 transition-transform">
+                  <Building2 className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
+                </div>
+              </div>
+              <div>
+                <p className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">
+                  {dashboardLoading ? '...' : (dashboardData?.data?.totalProperties || 0)}
+                </p>
+                <p className="text-xs sm:text-sm font-bold text-gray-900 mt-1">OnlyIf Properties</p>
+                <p className="text-[10px] sm:text-xs text-gray-400 font-medium mt-1">Active properties listed on platform</p>
+              </div>
+            </div>
 
-        {/* Agent Requests Section */}
-        <AgentRequests />
+            {/* OnlyIf Agents */}
+            <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-gray-50 hover:shadow-md transition-shadow group">
+              <div className="flex items-center justify-between mb-3 sm:mb-4">
+                <div className="p-2.5 sm:p-3 bg-purple-50 rounded-xl group-hover:scale-110 transition-transform">
+                  <UserCheck className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
+                </div>
+              </div>
+              <div>
+                <p className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">
+                  {dashboardLoading ? '...' : (dashboardData?.data?.totalAgents || 0)}
+                </p>
+                <p className="text-xs sm:text-sm font-bold text-gray-900 mt-1">OnlyIf Agents</p>
+                <p className="text-[10px] sm:text-xs text-gray-400 font-medium mt-1">Registered real estate agents</p>
+              </div>
+            </div>
+
+            {/* OnlyIf Users */}
+            <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-gray-50 hover:shadow-md transition-shadow group sm:col-span-2 lg:col-span-1">
+              <div className="flex items-center justify-between mb-3 sm:mb-4">
+                <div className="p-2.5 sm:p-3 bg-teal-50 rounded-xl group-hover:scale-110 transition-transform">
+                  <Users2 className="w-5 h-5 sm:w-6 sm:h-6 text-teal-600" />
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-green-600 font-bold hover:bg-green-50 rounded-lg text-xs"
+                  onClick={() => router.push('/admin/users')}
+                >
+                  More
+                </Button>
+              </div>
+              <div>
+                <p className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">
+                  {dashboardLoading ? '...' : (dashboardData?.data?.totalUsers || 0)}
+                </p>
+                <p className="text-xs sm:text-sm font-bold text-gray-900 mt-1">OnlyIf Users</p>
+                <p className="text-[10px] sm:text-xs text-gray-400 font-medium mt-1">Registered buyers and sellers</p>
+              </div>
+            </div>
+          </div>
+
+          <AgentRequests />
+        </section>
 
         {/* Quick Actions */}
-        <Card className="overflow-hidden">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5" />
-              Quick Actions
-            </CardTitle>
-            <CardDescription>
-              Manage your platform efficiently with these quick actions.
-            </CardDescription>
-          </CardHeader>
-          {/* Make quick actions fully responsive and avoid text overlap on medium screens */}
-          <CardContent className="grid gap-3 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
-            <Button 
-              variant="outline" 
-              className="flex flex-col items-start gap-1 py-3 w-full text-left"
+        <section className="space-y-4 sm:space-y-6">
+          <h2 className="text-lg sm:text-xl font-bold text-gray-900 flex items-center gap-2">
+            <PlusCircle className="w-5 h-5 text-green-600" />
+            Quick Actions
+          </h2>
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-50 overflow-hidden divide-y divide-gray-50">
+            <button 
               onClick={() => router.push('/admin/properties')}
+              className="w-full flex items-center justify-between p-4 sm:p-6 hover:bg-gray-50 transition-colors group"
             >
-              <span className="text-sm font-medium">Manage Properties</span>
-              <span className="text-xs text-muted-foreground">
-                Review and approve new listings
-              </span>
-            </Button>
-            <Button 
-              variant="outline" 
-              className="flex flex-col items-start gap-1 py-3 w-full text-left"
-              onClick={() => router.push('/admin/agents')}
-            >
-              <span className="text-sm font-medium">Manage Agents</span>
-              <span className="text-xs text-muted-foreground">
-                Approve new agent registrations
-              </span>
-            </Button>
-            <Button 
-              variant="outline" 
-              className="flex flex-col items-start gap-1 py-3 w-full text-left"
-              onClick={() => router.push('/admin/users')}
-            >
-              <span className="text-sm font-medium">Manage Users</span>
-              <span className="text-xs text-muted-foreground">
-                View and manage user accounts
-              </span>
-            </Button>
-          </CardContent>
-        </Card>
+              <div className="flex items-center gap-3 sm:gap-4 text-left">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
+                  <Building className="w-5 h-5 sm:w-6 sm:h-6" />
+                </div>
+                <div>
+                  <p className="text-xs sm:text-sm font-bold text-gray-900">Manage Properties</p>
+                  <p className="text-[10px] sm:text-xs text-gray-500 font-medium">Review and approve new listings</p>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-300 group-hover:text-green-600 group-hover:translate-x-1 transition-all" />
+            </button>
 
+            <button 
+              onClick={() => router.push('/admin/agents')}
+              className="w-full flex items-center justify-between p-4 sm:p-6 hover:bg-gray-50 transition-colors group"
+            >
+              <div className="flex items-center gap-3 sm:gap-4 text-left">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600 group-hover:scale-110 transition-transform">
+                  <UserCheck className="w-5 h-5 sm:w-6 sm:h-6" />
+                </div>
+                <div>
+                  <p className="text-xs sm:text-sm font-bold text-gray-900">Manage Agents</p>
+                  <p className="text-[10px] sm:text-xs text-gray-500 font-medium">Approve new agent registrations</p>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-300 group-hover:text-green-600 group-hover:translate-x-1 transition-all" />
+            </button>
+
+            <button 
+              onClick={() => router.push('/admin/users')}
+              className="w-full flex items-center justify-between p-4 sm:p-6 hover:bg-gray-50 transition-colors group"
+            >
+              <div className="flex items-center gap-3 sm:gap-4 text-left">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-teal-50 flex items-center justify-center text-teal-600 group-hover:scale-110 transition-transform">
+                  <Users className="w-5 h-5 sm:w-6 sm:h-6" />
+                </div>
+                <div>
+                  <p className="text-xs sm:text-sm font-bold text-gray-900">Manage Users</p>
+                  <p className="text-[10px] sm:text-xs text-gray-500 font-medium">View and manage user accounts</p>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-300 group-hover:text-green-600 group-hover:translate-x-1 transition-all" />
+            </button>
+          </div>
+        </section>
 
         {/* Recent Activity */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Activity className="h-5 w-5" />
+        <section className="space-y-4 sm:space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg sm:text-xl font-bold text-gray-900 flex items-center gap-2">
+              <Activity className="w-5 h-5 text-green-600" />
               Recent Activity
-            </CardTitle>
-            <CardDescription>
-              Latest actions and updates on your platform
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+            </h2>
+            <Link 
+              href="/admin/activity" 
+              className="text-xs sm:text-sm font-bold text-green-600 hover:text-green-700 flex items-center gap-1 group"
+            >
+              View All Activity
+              <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-50 p-4 sm:p-6">
             {activityLoading ? (
-              <div className="text-center py-4">
-                <div className="text-sm text-muted-foreground">Loading recent activity...</div>
-              </div>
-            ) : activityError ? (
-              <div className="text-center py-4">
-                <div className="text-sm text-red-600">Failed to load recent activity</div>
+              <div className="flex justify-center py-10">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
               </div>
             ) : !activityData?.data?.activities || activityData.data.activities.length === 0 ? (
-              <div className="text-center py-8">
-                <div className="text-sm text-muted-foreground">No recent activity to display</div>
+              <div className="text-center py-10">
+                <p className="text-gray-400 font-medium">No recent activity to display</p>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {activityData.data.activities.slice(0, 5).map((activity: any, index: number) => (
-                  <div key={index} className="flex items-center space-x-4">
-                    <div className={`w-2 h-2 rounded-full ${
+                  <div key={index} className="flex items-start gap-4 group">
+                    <div className={`mt-1.5 w-2.5 h-2.5 rounded-full flex-shrink-0 shadow-sm ${
                       activity.type === 'property' ? 'bg-blue-500' :
                       activity.type === 'user' ? 'bg-green-500' :
-                      activity.type === 'agent' ? 'bg-yellow-500' :
-                      activity.type === 'payment' ? 'bg-purple-500' :
+                      activity.type === 'agent' ? 'bg-purple-500' :
+                      activity.type === 'payment' ? 'bg-amber-500' :
                       'bg-gray-400'
                     }`}></div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">{activity.action || activity.message}</p>
-                      <p className="text-xs text-muted-foreground">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-bold text-gray-900 group-hover:text-green-600 transition-colors">
+                        {activity.action || activity.message}
+                      </p>
+                      <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mt-1">
                         {(() => {
                           const ts = activity.timestamp;
-                          const date = typeof ts === 'string' || typeof ts === 'number' ? new Date(ts) : ts;
-                          return isNaN(date?.getTime?.() ?? NaN) ? 'Unknown time' : date.toLocaleString();
+                          const date = new Date(ts);
+                          return isNaN(date.getTime()) ? 'Unknown time' : date.toLocaleString();
                         })()}
                       </p>
                     </div>
@@ -314,8 +317,8 @@ export default function AdminDashboardPage() {
                 ))}
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </section>
       </div>
     </AdminLayout>
   );
