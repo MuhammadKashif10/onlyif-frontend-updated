@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { Heart, Bed, Bath, Car } from 'lucide-react';
 import { getSafeImageUrl } from '@/utils/imageUtils';
 import { StatusBadge } from '@/components/reusable';
 import { formatCurrencyCompact } from '@/utils/currency';
@@ -25,6 +26,8 @@ interface PropertyCardProps {
   className?: string;
   onClick?: () => void;
   carSpaces?: number | null | undefined;
+  isWatched?: boolean;
+  onToggleWatchlist?: (e: React.MouseEvent) => void;
 }
 
 export default function PropertyCard({
@@ -41,7 +44,9 @@ export default function PropertyCard({
   featured = false,
   className = '',
   onClick,
-  carSpaces
+  carSpaces,
+  isWatched,
+  onToggleWatchlist
 }: PropertyCardProps) {
   const [targetPath, setTargetPath] = useState('/signin');
 
@@ -113,7 +118,7 @@ export default function PropertyCard({
   // --- Render ---
   return (
     <article
-      className={`group rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 cursor-pointer ${className}`}
+      className={`group relative rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 cursor-pointer ${className}`}
     >
       <button
         type="button"
@@ -183,8 +188,27 @@ export default function PropertyCard({
           </div>
         </div>
       </button>
+
+      {/* Watchlist Heart (top-right) - Moved outside the checkout button to prevent event conflicts */}
+      {onToggleWatchlist && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            onToggleWatchlist(e);
+          }}
+          className="absolute top-3 right-3 z-30 p-2 rounded-full bg-white/90 backdrop-blur-sm shadow-md transition-all hover:bg-white hover:scale-110 active:scale-95"
+          aria-label={isWatched ? "Remove from watchlist" : "Add to watchlist"}
+        >
+          <Heart 
+            className={`w-5 h-5 transition-all duration-300 ${
+              isWatched ? 'scale-110' : 'hover:scale-110'
+            }`}
+            stroke={isWatched ? "#ef4444" : "#9ca3af"}
+            fill={isWatched ? "#ef4444" : "transparent"}
+          />
+        </button>
+      )}
     </article>
   );
 }
-// Module imports
-import { Bed, Bath, Car } from 'lucide-react'

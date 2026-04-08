@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import EnhancedNotificationPanel from '@/components/reusable/EnhancedNotificationPanel';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, ArrowRight, LayoutDashboard } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface NavbarProps {
@@ -79,7 +79,7 @@ export default function Navbar({
                 <img 
                   src={logo} 
                   alt="OnlyIf logo" 
-className="h-18 sm:h-14 md:h-16 lg:h-24 xl:h-24 w-auto transition-transform duration-200 group-hover:scale-105"
+                  className="h-10 sm:h-12 md:h-14 lg:h-16 w-auto transition-transform duration-200 group-hover:scale-105"
                 />
                 {logoText && (
                   <span className="text-base font-bold text-gray-900 group-hover:text-blue-600">{logoText}</span>
@@ -90,12 +90,12 @@ className="h-18 sm:h-14 md:h-16 lg:h-24 xl:h-24 w-auto transition-transform dura
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-5">
+          <nav className="hidden lg:flex items-center space-x-6">
             {navigationItems.map((item) => (
               <Link
                 key={item.label}
                 href={item.href}
-                className={`text-sm font-medium transition-colors duration-200 relative group ${
+                className={`text-sm font-semibold transition-colors duration-200 relative group ${
                   item.isActive
                     ? 'text-[#3AB861]'
                     : 'text-gray-700 hover:text-[#3AB861]'
@@ -112,25 +112,25 @@ className="h-18 sm:h-14 md:h-16 lg:h-24 xl:h-24 w-auto transition-transform dura
           </nav>
 
           {/* Desktop Actions */}
-          <div className="hidden md:flex items-center space-x-2">
+          <div className="hidden lg:flex items-center space-x-4">
             {!user ? (
               <Link
                 href={ctaHref}
-                className="bg-[#3AB861] text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-[#329d56] transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[#3AB861] focus:ring-offset-2"
+                className="bg-[#3AB861] text-white px-5 py-2.5 rounded-lg text-sm font-bold hover:bg-[#329d56] transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[#3AB861] focus:ring-offset-2 shadow-sm"
               >
                 {ctaText}
               </Link>
             ) : (
-              <div className="flex items-center space-x-5">
+              <div className="flex items-center space-x-6">
                 <Link
                   href="/dashboard"
-                  className="text-sm font-medium text-gray-700 hover:text-[#3AB861] transition-colors duration-200"
+                  className="text-sm font-bold text-[#3AB861] hover:text-[#329d56] transition-colors duration-200"
                 >
                   Dashboard
                 </Link>
                 <button
                   onClick={logout}
-                  className="text-sm font-medium text-gray-700 hover:text-red-600 transition-colors duration-200"
+                  className="text-sm font-bold text-gray-600 hover:text-red-600 transition-colors duration-200"
                 >
                   Sign Out
                 </button>
@@ -142,16 +142,16 @@ className="h-18 sm:h-14 md:h-16 lg:h-24 xl:h-24 w-auto transition-transform dura
           <button
             ref={menuButtonRef}
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="md:hidden p-2 text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-lg"
+            className="lg:hidden p-2 text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 rounded-lg transition-colors"
             aria-label="Toggle menu"
           >
             {isMenuOpen ? (
-              <motion.div whileHover={{ scale: 1.1 }}>
-                <X color="#47C96F" strokeWidth={2} size={24} />
+              <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                <X color="#3AB861" strokeWidth={2.5} size={28} />
               </motion.div>
             ) : (
-              <motion.div whileHover={{ scale: 1.1 }}>
-                <Menu color="#47C96F" strokeWidth={2} size={24} />
+              <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                <Menu color="#3AB861" strokeWidth={2.5} size={28} />
               </motion.div>
             )}
           </button>
@@ -159,56 +159,58 @@ className="h-18 sm:h-14 md:h-16 lg:h-24 xl:h-24 w-auto transition-transform dura
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <div ref={menuRef} className="md:hidden py-4 border-t border-gray-200">
-            {navigationItems.map((item) => (
-              <Link
-                key={item.label}
-                href={item.href}
-                className={`block px-3 py-2 transition-colors duration-200 rounded ${
-                  item.isActive
-                    ? 'text-[#3AB861] bg-emerald-50 font-semibold'
-                    : 'text-gray-700 hover:text-[#3AB861] hover:bg-emerald-50/50'
-                }`}
-                onClick={handleMenuClose}
-              >
-                {item.label}
-              </Link>
-            ))}
+          <div ref={menuRef} className="lg:hidden py-6 border-t border-gray-100 animate-in slide-in-from-top duration-300">
+            <div className="space-y-2 mb-6">
+              {navigationItems.map((item) => (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  className={`flex items-center justify-between px-4 py-3.5 transition-colors duration-200 rounded-xl ${
+                    item.isActive
+                      ? 'text-[#3AB861] bg-emerald-50 font-bold'
+                      : 'text-gray-700 hover:text-[#3AB861] hover:bg-emerald-50/50 font-semibold'
+                  }`}
+                  onClick={handleMenuClose}
+                >
+                  {item.label}
+                  <ArrowRight className={`w-4 h-4 ${item.isActive ? 'text-emerald-400' : 'text-gray-300'}`} />
+                </Link>
+              ))}
+            </div>
             
-            {/* Mobile Sign In */}
-            {!user && (
-              <div className="pt-4 border-t border-gray-200">
+            {/* Mobile Actions */}
+            <div className="pt-6 border-t border-gray-100 space-y-3 px-2">
+              {!user ? (
                 <Link
                   href={ctaHref}
-                  className="block w-full text-left px-3 py-2 bg-[#3AB861] text-white hover:bg-[#329d56] transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[#3AB861] focus:ring-offset-2 rounded-lg font-semibold"
+                  className="flex items-center justify-center w-full px-4 py-4 bg-[#3AB861] text-white hover:bg-[#329d56] transition-colors duration-200 rounded-2xl font-bold shadow-lg shadow-emerald-100"
                   onClick={handleMenuClose}
                 >
                   {ctaText}
                 </Link>
-              </div>
-            )}
-            
-            {/* Mobile User Menu */}
-            {user && (
-              <div className="pt-4 border-t border-gray-200 space-y-1">
-                <Link
-                  href="/dashboard"
-                  className="block px-3 py-2 text-gray-700 hover:text-[#3AB861] hover:bg-emerald-50/50 transition-colors duration-200 rounded font-medium"
-                  onClick={handleMenuClose}
-                >
-                  Dashboard
-                </Link>
-                <button
-                  onClick={() => {
-                    logout();
-                    handleMenuClose();
-                  }}
-                  className="block w-full text-left px-3 py-2 text-gray-700 hover:text-red-600 hover:bg-red-50 transition-colors duration-200 rounded font-medium"
-                >
-                  Sign Out
-                </button>
-              </div>
-            )}
+              ) : (
+                <>
+                  <Link
+                    href="/dashboard"
+                    className="flex items-center justify-between px-4 py-4 text-[#3AB861] bg-emerald-50 hover:bg-emerald-100 transition-colors duration-200 rounded-2xl font-bold"
+                    onClick={handleMenuClose}
+                  >
+                    Dashboard
+                    <LayoutDashboard className="w-5 h-5" />
+                  </Link>
+                  <button
+                    onClick={() => {
+                      logout();
+                      handleMenuClose();
+                    }}
+                    className="flex items-center justify-between w-full px-4 py-4 text-red-600 bg-red-50 hover:bg-red-100 transition-colors duration-200 rounded-2xl font-bold"
+                  >
+                    Sign Out
+                    <X className="w-5 h-5" />
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         )}
       </div>

@@ -212,7 +212,6 @@ export default function SettingsPage() {
           <nav className="flex space-x-8">
             {[
               { id: 'general', name: 'General' },
-              { id: 'pricing', name: 'Pricing' },
               { id: 'contact', name: 'Contact Info' },
               { id: 'notifications', name: 'Notifications' },
               { id: 'security', name: 'Security' }
@@ -337,56 +336,6 @@ export default function SettingsPage() {
                         {isChangingPassword ? 'Changing Password...' : 'Change Password'}
                       </button>
                     </form>
-                  </div>
-                </div>
-              )}
-
-              {/* Pricing Settings */}
-              {activeTab === 'pricing' && (
-                <div className="space-y-6">
-                  <h3 className="text-lg font-medium text-gray-900">Pricing Configuration</h3>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Commission Rate (%)
-                      </label>
-                      <input
-                        type="number"
-                        step="0.1"
-                        min="0"
-                        max="10"
-                        value={settings.commissionRate}
-                        onChange={(e) => handleInputChange('commissionRate', parseFloat(e.target.value))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Platform Fee ($)
-                      </label>
-                      <input
-                        type="number"
-                        min="0"
-                        value={settings.platformFee}
-                        onChange={(e) => handleInputChange('platformFee', parseInt(e.target.value))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Listing Fee ($)
-                      </label>
-                      <input
-                        type="number"
-                        min="0"
-                        value={settings.listingFee}
-                        onChange={(e) => handleInputChange('listingFee', parseInt(e.target.value))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
-                    </div>
                   </div>
                 </div>
               )}

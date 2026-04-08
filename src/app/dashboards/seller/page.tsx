@@ -21,7 +21,10 @@ import {
   ChevronRight,
   User,
   Activity,
-  Search
+  Search,
+  Menu,
+  X,
+  ArrowRight
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, Button } from '@/components/reusable';
 
@@ -78,6 +81,7 @@ function SellerDashboard() {
   const [isAddingProperty, setIsAddingProperty] = useState(false);
   const [statsError, setStatsError] = useState<string | null>(null);
   const [listingsError, setListingsError] = useState<string | null>(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   // Role switch modal state
   const [isBuyerModalOpen, setBuyerModalOpen] = useState(false);
@@ -399,11 +403,11 @@ function SellerDashboard() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Top Navbar */}
-      <header className="h-20 bg-white border-b border-gray-200 flex items-center justify-between px-8 sticky top-0 z-30 w-full">
+      <header className="h-16 sm:h-20 bg-white border-b border-gray-200 flex items-center justify-between px-4 sm:px-8 sticky top-0 z-50 w-full">
         {/* Left: Logo */}
         <div className="flex-shrink-0">
           <Link href="/">
-            <img src="/images/logo.PNG" alt="Only If" className="h-18 sm:h-14 md:h-16 lg:h-24 xl:h-24 w-auto transition-transform duration-200 group-hover:scale-105" />
+            <img src="/images/logo.PNG" alt="Only If" className="h-8 sm:h-10 md:h-12 lg:h-14 w-auto transition-transform duration-200" />
           </Link>
         </div>
 
@@ -416,34 +420,34 @@ function SellerDashboard() {
         </nav>
 
         {/* Right: Dashboard & Sign Out */}
-        <div className="flex items-center space-x-6">
+        <div className="flex items-center space-x-2 sm:space-x-6">
           {/* Switch to Buyer Button */}
           <button
             onClick={handleSwitchToBuyer}
-            className="flex items-center space-x-2 bg-blue-50 text-blue-600 border border-blue-200 px-4 py-2 rounded-lg hover:bg-blue-100 transition-colors font-semibold"
+            className="hidden md:flex items-center space-x-2 bg-blue-50 text-blue-600 border border-blue-200 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition-colors font-semibold text-sm"
           >
-            <Search className="h-5 w-5" />
+            <Search className="h-4 w-4" />
             <span>Switch to Buyer</span>
           </button>
 
           <Link 
             href="/dashboard"
-            className="text-sm font-semibold text-emerald-600 hover:text-emerald-700 transition-colors"
+            className="hidden sm:block text-sm font-semibold text-emerald-600 hover:text-emerald-700 transition-colors"
           >
             Dashboard
           </Link>
           <button 
             onClick={logout}
-            className="text-sm font-semibold text-gray-600 hover:text-red-600 transition-colors"
+            className="hidden sm:block text-sm font-semibold text-gray-600 hover:text-red-600 transition-colors"
           >
             Sign Out
           </button>
-          <div className="flex items-center space-x-3 pl-4 border-l border-gray-200">
-            <button className="p-2 text-gray-400 hover:text-gray-600 relative">
+          <div className="flex items-center space-x-2 sm:space-x-3 sm:pl-4 sm:border-l border-gray-200">
+            <button className="p-1.5 sm:p-2 text-gray-400 hover:text-gray-600 relative">
               <Bell className="w-5 h-5" />
-              <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
             </button>
-            <div className="w-9 h-9 rounded-full bg-gray-200 overflow-hidden border border-gray-100 flex-shrink-0">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gray-200 overflow-hidden border border-gray-100 flex-shrink-0">
               <img 
                 src="/images/user-avatar.jpg" 
                 alt="User" 
@@ -451,13 +455,115 @@ function SellerDashboard() {
                 onError={(e) => (e.currentTarget.src = `https://ui-avatars.com/api/?name=${user?.name || 'S'}&background=10b981&color=fff`)} 
               />
             </div>
+            
+            {/* Mobile Menu Button */}
+            <button 
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="lg:hidden p-2 text-gray-400 hover:text-gray-600"
+            >
+              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
           </div>
         </div>
       </header>
 
+      {/* Mobile Menu Overlay */}
+      {isMobileMenuOpen && (
+        <div className="lg:hidden fixed inset-0 z-40 bg-white overflow-y-auto pb-20">
+          <div className="pt-20 px-6 space-y-8">
+            <nav className="flex flex-col space-y-2">
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] px-1 mb-2">Main Menu</p>
+              <Link href="/buy" className="text-lg font-bold text-gray-900 py-3.5 border-b border-gray-50 flex items-center justify-between group" onClick={() => setIsMobileMenuOpen(false)}>
+                Buy <ArrowRight className="w-4 h-4 text-gray-300 group-active:text-emerald-500 transition-colors" />
+              </Link>
+              <Link href="/signin" className="text-lg font-bold text-gray-900 py-3.5 border-b border-gray-50 flex items-center justify-between group" onClick={() => setIsMobileMenuOpen(false)}>
+                Sell <ArrowRight className="w-4 h-4 text-gray-300 group-active:text-emerald-500 transition-colors" />
+              </Link>
+              <Link href="/how-it-works" className="text-lg font-bold text-gray-900 py-3.5 border-b border-gray-50 flex items-center justify-between group" onClick={() => setIsMobileMenuOpen(false)}>
+                How it Works <ArrowRight className="w-4 h-4 text-gray-300 group-active:text-emerald-500 transition-colors" />
+              </Link>
+              <Link href="/agents" className="text-lg font-bold text-gray-900 py-3.5 border-b border-gray-50 flex items-center justify-between group" onClick={() => setIsMobileMenuOpen(false)}>
+                Agents <ArrowRight className="w-4 h-4 text-gray-300 group-active:text-emerald-500 transition-colors" />
+              </Link>
+
+              <div className="pt-8 space-y-2">
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] px-1 mb-2">Dashboard Menu</p>
+                <button 
+                  onClick={() => { setActiveTab('dashboard'); setIsMobileMenuOpen(false); }} 
+                  className={`w-full flex items-center justify-between py-4 px-2 rounded-xl transition-all ${
+                    activeTab === 'dashboard' 
+                      ? 'bg-emerald-50 text-emerald-600 font-bold border border-emerald-100 shadow-sm' 
+                      : 'text-gray-900 font-bold border-b border-gray-50'
+                  }`}
+                >
+                  <span className="flex items-center gap-3">
+                    <LayoutDashboard className={`w-5 h-5 ${activeTab === 'dashboard' ? 'text-emerald-600' : 'text-gray-400'}`} />
+                    Dashboard
+                  </span>
+                  {activeTab === 'dashboard' && <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full shadow-sm"></div>}
+                </button>
+                <button 
+                  onClick={() => { setActiveTab('listings'); setIsMobileMenuOpen(false); }} 
+                  className={`w-full flex items-center justify-between py-4 px-2 rounded-xl transition-all ${
+                    activeTab === 'listings' 
+                      ? 'bg-emerald-50 text-emerald-600 font-bold border border-emerald-100 shadow-sm' 
+                      : 'text-gray-900 font-bold border-b border-gray-50'
+                  }`}
+                >
+                  <span className="flex items-center gap-3">
+                    <Building2 className={`w-5 h-5 ${activeTab === 'listings' ? 'text-emerald-600' : 'text-gray-400'}`} />
+                    My Listings
+                  </span>
+                  {activeTab === 'listings' && <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full shadow-sm"></div>}
+                </button>
+                <Link 
+                  href="/dashboards/seller/account" 
+                  className="w-full flex items-center justify-between py-4 px-2 border-b border-gray-50 text-gray-900 font-bold" 
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <span className="flex items-center gap-3">
+                    <Settings className="w-5 h-5 text-gray-400" />
+                    Account Settings
+                  </span>
+                </Link>
+              </div>
+
+              <div className="pt-8">
+                <button
+                  onClick={() => { handleSwitchToBuyer(); setIsMobileMenuOpen(false); }}
+                  className="w-full flex items-center justify-center space-x-3 bg-blue-50 text-blue-600 border border-blue-200 py-4 rounded-2xl font-bold shadow-sm active:scale-[0.98] transition-all"
+                >
+                  <Search className="h-5 w-5" />
+                  <span>Switch to Buyer Mode</span>
+                </button>
+              </div>
+
+              <button 
+                onClick={() => {
+                  logout();
+                  setIsMobileMenuOpen(false);
+                }}
+                className="w-full text-left text-lg font-bold text-red-600 py-6 flex items-center justify-between group"
+              >
+                Sign Out <X className="w-5 h-5 text-red-300 group-active:text-red-500 transition-colors" />
+              </button>
+            </nav>
+            
+            <div className="pt-2">
+              <button 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="w-full py-4 bg-gray-900 text-white font-bold rounded-2xl shadow-xl active:scale-[0.98] transition-all"
+              >
+                Close Menu
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-1 relative">
         {/* Sidebar - Fixed Position */}
-        <aside className="w-72 bg-white border-r border-gray-200 flex flex-col fixed left-0 top-20 bottom-0 z-20 overflow-y-auto">
+        <aside className="hidden lg:flex w-72 bg-white border-r border-gray-200 flex-col fixed left-0 top-20 bottom-0 z-20 overflow-y-auto">
           <div className="p-8 flex-1">
             <nav className="space-y-2">
               <button
@@ -506,26 +612,37 @@ function SellerDashboard() {
         </aside>
 
         {/* Main Content Area - Scrollable */}
-        <div className="flex-1 ml-72 flex flex-col">
-          <main className="p-10 w-full max-w-7xl mx-auto min-h-[calc(100vh-5rem)]">
+        <div className="flex-1 lg:ml-72 flex flex-col w-full">
+          <main className="p-4 sm:p-6 lg:p-10 w-full max-w-7xl mx-auto min-h-[calc(100vh-5rem)]">
             {activeTab === 'dashboard' && (
-              <div className="space-y-10 animate-in fade-in slide-in-from-bottom-2 duration-500">
+              <div className="space-y-8 sm:space-y-10 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                {/* Mobile Switch to Buyer Button */}
+                <div className="md:hidden w-full mb-2">
+                  <button
+                    onClick={handleSwitchToBuyer}
+                    className="w-full flex items-center justify-center space-x-2 bg-blue-50 text-blue-600 border border-blue-200 py-3 rounded-xl font-bold text-sm shadow-sm"
+                  >
+                    <Search className="h-4 w-4" />
+                    <span>Switch to Buyer Mode</span>
+                  </button>
+                </div>
+
                 {/* My Property Snapshot Section */}
-                <section className="space-y-5">
-                  <div className="flex items-center justify-between">
-                    <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight">My Property Snapshot</h2>
-                    <div className="flex items-center space-x-4">
+                <section className="space-y-4 sm:space-y-5">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0">
+                    <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900 tracking-tight">My Property Snapshot</h2>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:space-x-4">
                       {activeListings.length > 0 ? (
                         <>
-                          <span className="text-sm font-bold text-gray-500 uppercase tracking-wide">Listing Setup: 100% Complete</span>
-                          <div className="w-32 h-2.5 bg-gray-200 rounded-full overflow-hidden shadow-inner">
+                          <span className="text-[10px] sm:text-sm font-bold text-gray-500 uppercase tracking-wide">Listing Setup: 100% Complete</span>
+                          <div className="w-full sm:w-32 h-2 sm:h-2.5 bg-gray-200 rounded-full overflow-hidden shadow-inner">
                             <div className="w-full h-full bg-emerald-500 shadow-sm"></div>
                           </div>
                         </>
                       ) : (
                         <>
-                          <span className="text-sm font-bold text-gray-500 uppercase tracking-wide">Listing Setup: 0% Complete</span>
-                          <div className="w-32 h-2.5 bg-gray-200 rounded-full overflow-hidden shadow-inner">
+                          <span className="text-[10px] sm:text-sm font-bold text-gray-500 uppercase tracking-wide">Listing Setup: 0% Complete</span>
+                          <div className="w-full sm:w-32 h-2 sm:h-2.5 bg-gray-200 rounded-full overflow-hidden shadow-inner">
                             <div className="w-0 h-full bg-emerald-500 shadow-sm"></div>
                           </div>
                         </>
@@ -533,60 +650,62 @@ function SellerDashboard() {
                     </div>
                   </div>
 
-                  <div className="bg-white rounded-[2rem] border border-gray-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300">
-                    <div className="p-10">
+                  <div className="bg-white rounded-xl sm:rounded-[2rem] border border-gray-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300">
+                    <div className="p-4 sm:p-10">
                       {activeListings.length > 0 ? (
                         (() => {
                           const property = activeListings[0];
                           return (
                             <>
-                              <div className="flex items-center justify-between mb-8">
-                                <div className="flex items-center space-x-4">
-                                  <div className="p-3 bg-emerald-50 rounded-2xl shadow-sm">
-                                    <Home className="w-8 h-8 text-emerald-600" />
+                              <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 gap-4">
+                                <div className="flex items-center space-x-3 sm:space-x-4">
+                                  <div className="p-2 sm:p-3 bg-emerald-50 rounded-lg sm:rounded-2xl shadow-sm flex-shrink-0">
+                                    <Home className="w-6 h-6 sm:w-8 sm:h-8 text-emerald-600" />
                                   </div>
-                                  <div>
-                                    <h3 className="text-2xl font-extrabold text-gray-900">{property.title}</h3>
-                                    <p className="text-gray-500 font-medium">
+                                  <div className="min-w-0">
+                                    <h3 className="text-lg sm:text-2xl font-extrabold text-gray-900 truncate">{property.title}</h3>
+                                    <p className="text-xs sm:text-gray-500 font-medium truncate">
                                       {typeof property.address === 'object' ? 
                                         `${property.address.street}, ${property.address.city}, ${property.address.state}` : 
                                         property.address}
                                     </p>
                                   </div>
                                 </div>
-                                {renderStatusBadge(property.status)}
+                                <div className="self-start sm:self-auto">
+                                  {renderStatusBadge(property.status)}
+                                </div>
                               </div>
 
-                              <div className="grid grid-cols-1 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-gray-100">
-                                <div className="py-4 md:py-0 md:px-8 first:pl-0">
-                                  <div className="flex items-center space-x-2 text-xs font-bold text-emerald-600 uppercase tracking-widest mb-2">
-                                    <Activity className="w-4 h-4" />
-                                    <span>Current Status</span>
+                              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-0 divide-y md:divide-y-0 md:divide-x divide-gray-100">
+                                <div className="py-2 sm:py-0 sm:px-8 first:pl-0 border-none">
+                                  <div className="flex items-center space-x-1.5 sm:space-x-2 text-[10px] sm:text-xs font-bold text-emerald-600 uppercase tracking-widest mb-1 sm:mb-2">
+                                    <Activity className="w-3 h-3 sm:w-4 sm:h-4" />
+                                    <span>Status</span>
                                   </div>
-                                  <p className="text-xl font-bold text-gray-900 capitalize">
+                                  <p className="text-sm sm:text-xl font-bold text-gray-900 capitalize truncate">
                                     {property.status.replace('-', ' ')}
                                   </p>
                                 </div>
-                                <div className="py-4 md:py-0 md:px-8">
-                                  <div className="flex items-center space-x-2 text-xs font-bold text-emerald-600 uppercase tracking-widest mb-2">
-                                    <User className="w-4 h-4" />
-                                    <span>Total Views</span>
+                                <div className="py-2 sm:py-0 sm:px-8 border-none">
+                                  <div className="flex items-center space-x-1.5 sm:space-x-2 text-[10px] sm:text-xs font-bold text-emerald-600 uppercase tracking-widest mb-1 sm:mb-2">
+                                    <User className="w-3 h-3 sm:w-4 sm:h-4" />
+                                    <span>Views</span>
                                   </div>
-                                  <p className="text-4xl font-black text-gray-900">{property.views || 0}</p>
+                                  <p className="text-xl sm:text-4xl font-black text-gray-900">{property.views || 0}</p>
                                 </div>
-                                <div className="py-4 md:py-0 md:px-8">
-                                  <div className="flex items-center space-x-2 text-xs font-bold text-emerald-600 uppercase tracking-widest mb-2">
-                                    <DollarSign className="w-4 h-4" />
+                                <div className="py-2 sm:py-0 sm:px-8 border-none">
+                                  <div className="flex items-center space-x-1.5 sm:space-x-2 text-[10px] sm:text-xs font-bold text-emerald-600 uppercase tracking-widest mb-1 sm:mb-2">
+                                    <DollarSign className="w-3 h-3 sm:w-4 sm:h-4" />
                                     <span>Inquiries</span>
                                   </div>
-                                  <p className="text-4xl font-black text-gray-900">{property.inquiries || 0}</p>
+                                  <p className="text-xl sm:text-4xl font-black text-gray-900">{property.inquiries || 0}</p>
                                 </div>
-                                <div className="py-4 md:py-0 md:px-8 last:pr-0">
-                                  <div className="flex items-center space-x-2 text-xs font-bold text-emerald-600 uppercase tracking-widest mb-2">
-                                    <DollarSign className="w-4 h-4" />
-                                    <span>Listing Price</span>
+                                <div className="py-2 sm:py-0 sm:px-8 last:pr-0 border-none">
+                                  <div className="flex items-center space-x-1.5 sm:space-x-2 text-[10px] sm:text-xs font-bold text-emerald-600 uppercase tracking-widest mb-1 sm:mb-2">
+                                    <DollarSign className="w-3 h-3 sm:w-4 sm:h-4" />
+                                    <span>Price</span>
                                   </div>
-                                  <p className="text-xl font-black text-gray-900">
+                                  <p className="text-sm sm:text-xl font-black text-gray-900 truncate">
                                     {property.price ? `A$${property.price.toLocaleString('en-AU')}` : 'Not Set'}
                                   </p>
                                 </div>
@@ -596,55 +715,55 @@ function SellerDashboard() {
                         })()
                       ) : (
                         <>
-                          <div className="flex items-center space-x-4 mb-8">
-                            <div className="p-3 bg-gray-50 rounded-2xl shadow-sm">
-                              <Home className="w-8 h-8 text-gray-400" />
+                          <div className="flex items-center space-x-3 sm:space-x-4 mb-6 sm:mb-8">
+                            <div className="p-2 sm:p-3 bg-gray-50 rounded-lg sm:rounded-2xl shadow-sm">
+                              <Home className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400" />
                             </div>
-                            <h3 className="text-2xl font-extrabold text-gray-900">Not Listed Yet</h3>
+                            <h3 className="text-lg sm:text-2xl font-extrabold text-gray-900">Not Listed Yet</h3>
                           </div>
 
-                          <div className="grid grid-cols-1 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-gray-100">
-                            <div className="py-4 md:py-0 md:px-8 first:pl-0">
-                              <div className="flex items-center space-x-2 text-xs font-bold text-emerald-600 uppercase tracking-widest mb-2">
-                                <Activity className="w-4 h-4" />
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-0 divide-y md:divide-y-0 md:divide-x divide-gray-100">
+                            <div className="py-2 sm:py-0 sm:px-8 first:pl-0 border-none">
+                              <div className="flex items-center space-x-1.5 sm:space-x-2 text-[10px] sm:text-xs font-bold text-emerald-600 uppercase tracking-widest mb-1 sm:mb-2">
+                                <Activity className="w-3 h-3 sm:w-4 sm:h-4" />
                                 <span>Status</span>
                               </div>
-                              <p className="text-xl font-bold text-gray-900 flex items-center space-x-3">
-                                <Home className="w-5 h-5 text-gray-400" />
-                                <span>Not Listed Yet</span>
+                              <p className="text-sm sm:text-xl font-bold text-gray-900 flex items-center space-x-2">
+                                <Home className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-gray-400" />
+                                <span>None</span>
                               </p>
                             </div>
-                            <div className="py-4 md:py-0 md:px-8">
-                              <div className="flex items-center space-x-2 text-xs font-bold text-emerald-600 uppercase tracking-widest mb-2">
-                                <User className="w-4 h-4" />
-                                <span>Buyer Interest</span>
+                            <div className="py-2 sm:py-0 sm:px-8 border-none">
+                              <div className="flex items-center space-x-1.5 sm:space-x-2 text-[10px] sm:text-xs font-bold text-emerald-600 uppercase tracking-widest mb-1 sm:mb-2">
+                                <User className="w-3 h-3 sm:w-4 sm:h-4" />
+                                <span>Interest</span>
                               </div>
-                              <p className="text-4xl font-black text-gray-900">0</p>
+                              <p className="text-xl sm:text-4xl font-black text-gray-900">0</p>
                             </div>
-                            <div className="py-4 md:py-0 md:px-8">
-                              <div className="flex items-center space-x-2 text-xs font-bold text-emerald-600 uppercase tracking-widest mb-2">
-                                <DollarSign className="w-4 h-4" />
+                            <div className="py-2 sm:py-0 sm:px-8 border-none">
+                              <div className="flex items-center space-x-1.5 sm:space-x-2 text-[10px] sm:text-xs font-bold text-emerald-600 uppercase tracking-widest mb-1 sm:mb-2">
+                                <DollarSign className="w-3 h-3 sm:w-4 sm:h-4" />
                                 <span>Offers</span>
                               </div>
-                              <p className="text-4xl font-black text-gray-900">0</p>
+                              <p className="text-xl sm:text-4xl font-black text-gray-900">0</p>
                             </div>
-                            <div className="py-4 md:py-0 md:px-8 last:pr-0">
-                              <div className="flex items-center space-x-2 text-xs font-bold text-emerald-600 uppercase tracking-widest mb-2">
-                                <DollarSign className="w-4 h-4" />
-                                <span>Your Price</span>
+                            <div className="py-2 sm:py-0 sm:px-8 last:pr-0 border-none">
+                              <div className="flex items-center space-x-1.5 sm:space-x-2 text-[10px] sm:text-xs font-bold text-emerald-600 uppercase tracking-widest mb-1 sm:mb-2">
+                                <DollarSign className="w-3 h-3 sm:w-4 sm:h-4" />
+                                <span>Price</span>
                               </div>
-                              <p className="text-xl font-black text-gray-900">Not Set</p>
+                              <p className="text-sm sm:text-xl font-black text-gray-900">Not Set</p>
                             </div>
                           </div>
                         </>
                       )}
                     </div>
                     
-                    <div className="h-3 w-full bg-gray-100 shadow-inner">
+                    <div className="h-2 sm:h-3 w-full bg-gray-100 shadow-inner">
                       <div className={`h-full bg-emerald-500 transition-all duration-1000 ease-out shadow-sm ${activeListings.length > 0 ? 'w-full' : 'w-0'}`}></div>
                     </div>
-                    <div className="px-10 py-3.5 bg-gray-50/80 border-t border-gray-100 flex justify-between items-center">
-                      <span className="text-xs font-black text-gray-400 tracking-[0.2em] uppercase">
+                    <div className="px-4 sm:px-10 py-2 sm:py-3.5 bg-gray-50/80 border-t border-gray-100 flex justify-between items-center">
+                      <span className="text-[10px] sm:text-xs font-black text-gray-400 tracking-[0.2em] uppercase">
                         {activeListings.length > 0 ? '100% COMPLETE' : '0% COMPLETE'}
                       </span>
                     </div>
@@ -652,44 +771,44 @@ function SellerDashboard() {
                 </section>
 
                 {/* Get Started Section */}
-                <section className="space-y-6">
+                <section className="space-y-4 sm:space-y-6">
                   <div className="space-y-1">
-                    <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight">Get Started</h2>
-                    <p className="text-gray-500 text-base">
+                    <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900 tracking-tight">Get Started</h2>
+                    <p className="text-sm sm:text-base text-gray-500">
                       You&apos;re in control <span className="font-bold text-gray-900">of your sale</span> – track interest, manage buyers, and move only when the price is right.
                     </p>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8">
                     {/* Add Property Card */}
-                    <div className="bg-white p-10 rounded-[2.5rem] border border-gray-200 shadow-sm flex flex-col items-center text-center space-y-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-                      <div className="w-20 h-20 bg-emerald-50 rounded-[2rem] flex items-center justify-center shadow-inner">
-                        <Home className="w-10 h-10 text-emerald-600" />
+                    <div className="bg-white p-6 sm:p-10 rounded-xl sm:rounded-[2.5rem] border border-gray-200 shadow-sm flex flex-col items-center text-center space-y-4 sm:space-y-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                      <div className="w-12 h-12 sm:w-20 sm:h-20 bg-emerald-50 rounded-lg sm:rounded-[2rem] flex items-center justify-center shadow-inner">
+                        <Home className="w-6 h-6 sm:w-10 sm:h-10 text-emerald-600" />
                       </div>
-                      <div className="space-y-2">
-                        <h3 className="text-2xl font-extrabold text-gray-900">Add Property</h3>
-                        <p className="text-sm text-gray-500 font-medium leading-relaxed">Start your listing – photos, price, and details.</p>
+                      <div className="space-y-1 sm:space-y-2">
+                        <h3 className="text-lg sm:text-2xl font-extrabold text-gray-900">Add Property</h3>
+                        <p className="text-xs sm:text-sm text-gray-500 font-medium leading-relaxed">Start your listing – photos, price, and details.</p>
                       </div>
                       <button 
                         onClick={() => router.push('/dashboards/seller/add-property')}
-                        className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-extrabold text-lg transition-all duration-300 shadow-md hover:shadow-emerald-200 active:scale-[0.98]"
+                        className="w-full py-3 sm:py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg sm:rounded-2xl font-extrabold text-base sm:text-lg transition-all duration-300 shadow-md hover:shadow-emerald-200 active:scale-[0.98]"
                       >
                         Create Listing
                       </button>
                     </div>
 
                     {/* View Listings Card */}
-                    <div className="bg-white p-10 rounded-[2.5rem] border border-gray-200 shadow-sm flex flex-col items-center text-center space-y-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-                      <div className="w-20 h-20 bg-emerald-50 rounded-[2rem] flex items-center justify-center shadow-inner">
-                        <Building2 className="w-10 h-10 text-emerald-600" />
+                    <div className="bg-white p-6 sm:p-10 rounded-xl sm:rounded-[2.5rem] border border-gray-200 shadow-sm flex flex-col items-center text-center space-y-4 sm:space-y-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                      <div className="w-12 h-12 sm:w-20 sm:h-20 bg-emerald-50 rounded-lg sm:rounded-[2rem] flex items-center justify-center shadow-inner">
+                        <Building2 className="w-6 h-6 sm:w-10 sm:h-10 text-emerald-600" />
                       </div>
-                      <div className="space-y-2">
-                        <h3 className="text-2xl font-extrabold text-gray-900">View Listings</h3>
-                        <p className="text-sm text-gray-500 font-medium leading-relaxed">Manage your active and pending property listings.</p>
+                      <div className="space-y-1 sm:space-y-2">
+                        <h3 className="text-lg sm:text-2xl font-extrabold text-gray-900">View Listings</h3>
+                        <p className="text-xs sm:text-sm text-gray-500 font-medium leading-relaxed">Manage your active and pending property listings.</p>
                       </div>
                       <button 
                         onClick={() => setActiveTab('listings')}
-                        className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-extrabold text-lg transition-all duration-300 shadow-md hover:shadow-emerald-200 active:scale-[0.98]"
+                        className="w-full py-3 sm:py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg sm:rounded-2xl font-extrabold text-base sm:text-lg transition-all duration-300 shadow-md hover:shadow-emerald-200 active:scale-[0.98]"
                       >
                         View My Listings
                       </button>
@@ -717,11 +836,11 @@ function SellerDashboard() {
 
             {activeTab === 'listings' && (
               <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
-                <div className="flex items-center justify-between mb-8">
-                  <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">My Listings</h2>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
+                  <h2 className="text-xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">My Listings</h2>
                   <button 
                     onClick={() => router.push('/dashboards/seller/add-property')}
-                    className="flex items-center space-x-2 bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-emerald-700 transition-all shadow-md hover:shadow-emerald-100"
+                    className="w-full sm:w-auto flex items-center justify-center space-x-2 bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-emerald-700 transition-all shadow-md hover:shadow-emerald-100 text-sm sm:text-base"
                   >
                     <Plus className="w-5 h-5" />
                     <span>New Listing</span>
@@ -729,15 +848,15 @@ function SellerDashboard() {
                 </div>
                 
                 {isLoadingListings ? (
-                  <div className="flex flex-col items-center justify-center py-32 space-y-4">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
-                    <p className="text-gray-500 font-medium">Fetching your properties...</p>
+                  <div className="flex flex-col items-center justify-center py-16 sm:py-32 space-y-4">
+                    <div className="animate-spin rounded-full h-10 sm:h-12 w-10 sm:w-12 border-b-2 border-emerald-600"></div>
+                    <p className="text-sm sm:text-base text-gray-500 font-medium">Fetching your properties...</p>
                   </div>
                 ) : activeListings.length > 0 ? (
-                  <div className="grid grid-cols-1 gap-6">
+                  <div className="grid grid-cols-1 gap-4 sm:gap-6">
                     {activeListings.map((property) => (
-                      <div key={property.id} className="bg-white rounded-[2rem] border border-gray-200 shadow-sm p-8 hover:shadow-md transition-all duration-300 flex flex-col md:flex-row items-center md:items-stretch gap-8 group">
-                        <div className="w-full md:w-48 h-48 rounded-2xl overflow-hidden flex-shrink-0 shadow-sm">
+                      <div key={property.id} className="bg-white rounded-xl sm:rounded-[2rem] border border-gray-200 shadow-sm p-4 sm:p-8 hover:shadow-md transition-all duration-300 flex flex-col md:flex-row items-center md:items-stretch gap-4 sm:gap-8 group">
+                        <div className="w-full md:w-48 h-40 sm:h-48 rounded-lg sm:rounded-2xl overflow-hidden flex-shrink-0 shadow-sm">
                           <img 
                             src={property.primaryImage || '/images/default-property.jpg'} 
                             alt={property.title}
@@ -745,56 +864,51 @@ function SellerDashboard() {
                             onError={(e) => (e.currentTarget.src = '/images/01.jpg')}
                           />
                         </div>
-                        <div className="flex-1 flex flex-col justify-between py-2 w-full">
-                          <div>
-                            <div className="flex items-center justify-between mb-2">
-                              <h4 className="text-2xl font-extrabold text-gray-900">{property.title}</h4>
-                              <span className={`px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest ${
-                                property.status === 'active' ? 'bg-emerald-100 text-emerald-700' :
-                                property.status === 'pending' ? 'bg-amber-100 text-amber-700' :
-                                property.status === 'sold' ? 'bg-blue-100 text-blue-700' :
-                                'bg-gray-100 text-gray-700'
-                              }`}>
-                                {property.status}
-                              </span>
+                        <div className="flex-1 flex flex-col justify-between py-1 sm:py-2 w-full">
+                          <div className="space-y-2 sm:space-y-0">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                              <h4 className="text-lg sm:text-2xl font-extrabold text-gray-900 truncate">{property.title}</h4>
+                              <div className="self-start sm:self-auto">
+                                {renderStatusBadge(property.status)}
+                              </div>
                             </div>
-                            <p className="text-gray-500 font-medium flex items-center mb-4">
-                              <Home className="w-4 h-4 mr-2 opacity-50" />
+                            <p className="text-xs sm:text-gray-500 font-medium flex items-center mb-3 sm:mb-4 truncate">
+                              <Home className="w-3.5 h-3.5 mr-2 opacity-50" />
                               {typeof property.address === 'object' ? 
                                 `${property.address.street}, ${property.address.city}, ${property.address.state}` : 
                                 property.address}
                             </p>
-                            <div className="flex items-center space-x-6 text-sm font-bold text-gray-600 bg-gray-50/80 w-fit px-4 py-2 rounded-xl">
-                              <span className="flex items-center"><Building2 className="w-4 h-4 mr-2 text-gray-400" />{property.beds} Beds</span>
-                              <span className="flex items-center"><Activity className="w-4 h-4 mr-2 text-gray-400" />{property.baths} Baths</span>
-                              <span className="flex items-center"><LayoutDashboard className="w-4 h-4 mr-2 text-gray-400" />{property.size} m²</span>
+                            <div className="flex items-center space-x-3 sm:space-x-6 text-[10px] sm:text-sm font-bold text-gray-600 bg-gray-50/80 w-fit px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl">
+                              <span className="flex items-center"><Building2 className="w-3.5 h-3.5 mr-1.5 sm:mr-2 text-gray-400" />{property.beds}</span>
+                              <span className="flex items-center"><Activity className="w-3.5 h-3.5 mr-1.5 sm:mr-2 text-gray-400" />{property.baths}</span>
+                              <span className="flex items-center"><LayoutDashboard className="w-3.5 h-3.5 mr-1.5 sm:mr-2 text-gray-400" />{property.size} m²</span>
                             </div>
                           </div>
                         </div>
-                        <div className="flex flex-col justify-center items-end space-y-4 w-full md:w-auto md:border-l border-gray-100 md:pl-8">
-                          <div className="text-right">
-                            <p className="text-3xl font-black text-gray-900">
+                        <div className="flex flex-col justify-center items-stretch sm:items-end space-y-3 sm:space-y-4 w-full md:w-auto md:border-l border-gray-100 md:pl-8">
+                          <div className="text-left sm:text-right">
+                            <p className="text-xl sm:text-3xl font-black text-gray-900">
                               {property.price != null
                                 ? `A$${property.price.toLocaleString('en-AU')}`
                                 : 'A$0'}
                             </p>
-                            <div className="flex items-center justify-end space-x-4 mt-2 text-xs font-bold text-gray-400 uppercase tracking-wider">
+                            <div className="flex items-center justify-start sm:justify-end space-x-3 sm:space-x-4 mt-1 sm:mt-2 text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider">
                               <span>{property.views} views</span>
                               <span>•</span>
                               <span>{property.inquiries} inquiries</span>
                             </div>
                           </div>
-                          <div className="flex items-center space-x-3 w-full md:w-auto">
+                          <div className="flex items-center space-x-2 sm:space-x-3 w-full md:w-auto">
                             <button 
                               onClick={() => handleEditListing(property.id)}
-                              className="flex-1 md:flex-none px-6 py-2.5 bg-gray-900 text-white rounded-xl font-bold text-sm hover:bg-black transition-colors shadow-sm"
+                              className="flex-1 md:flex-none px-4 sm:px-6 py-2 sm:py-2.5 bg-gray-900 text-white rounded-lg sm:rounded-xl font-bold text-xs sm:text-sm hover:bg-black transition-colors shadow-sm"
                             >
                               Edit
                             </button>
                             <select 
                               value={property.status}
                               onChange={(e) => handleStatusChange(property.id, e.target.value)}
-                              className="flex-1 md:flex-none bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-bold focus:ring-2 focus:ring-emerald-500 outline-none transition-all cursor-pointer"
+                              className="flex-1 md:flex-none bg-gray-50 border border-gray-200 rounded-lg sm:rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-bold focus:ring-2 focus:ring-emerald-500 outline-none transition-all cursor-pointer"
                             >
                               <option value="draft">Draft</option>
                               <option value="pending">Pending</option>
@@ -807,17 +921,17 @@ function SellerDashboard() {
                     ))}
                   </div>
                 ) : (
-                  <div className="bg-white rounded-[2rem] border border-gray-100 flex flex-col items-center justify-center py-32 px-6 text-center space-y-6">
-                    <div className="w-20 h-20 bg-gray-50 rounded-[2rem] flex items-center justify-center">
-                      <Building2 className="w-10 h-10 text-gray-300" />
+                  <div className="bg-white rounded-xl sm:rounded-[2rem] border border-gray-100 flex flex-col items-center justify-center py-16 sm:py-32 px-6 text-center space-y-4 sm:space-y-6">
+                    <div className="w-12 h-12 sm:w-20 sm:h-20 bg-gray-50 rounded-lg sm:rounded-[2rem] flex items-center justify-center">
+                      <Building2 className="w-6 h-6 sm:w-10 sm:h-10 text-gray-300" />
                     </div>
-                    <div className="space-y-2">
-                      <h3 className="text-xl font-bold text-gray-900">No properties yet</h3>
-                      <p className="text-gray-400 font-medium max-w-xs mx-auto">You haven't added any properties to your account yet.</p>
+                    <div className="space-y-1 sm:space-y-2">
+                      <h3 className="text-lg sm:text-xl font-bold text-gray-900">No properties yet</h3>
+                      <p className="text-xs sm:text-sm text-gray-400 font-medium max-w-xs mx-auto">You haven't added any properties to your account yet.</p>
                     </div>
                     <button 
                       onClick={() => router.push('/dashboards/seller/add-property')}
-                      className="bg-emerald-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-emerald-700 transition-all shadow-md"
+                      className="w-full sm:w-auto bg-emerald-600 text-white px-8 py-3 rounded-lg sm:rounded-xl font-bold hover:bg-emerald-700 transition-all shadow-md text-sm sm:text-base"
                     >
                       Add Your First Property
                     </button>

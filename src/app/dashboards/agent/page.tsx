@@ -1,10 +1,35 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { Navbar } from '@/components';
+import Sidebar from '@/components/main/Sidebar';
 import { AgentProvider, useAgentContext } from '@/context/AgentContext';
 import { useAuth } from '@/context/AuthContext';
 import { useUI } from '@/context/UIContext';
 import Image from 'next/image';
+import Link from 'next/link';
+import { 
+  LayoutDashboard, 
+  Building2, 
+  Settings, 
+  Users, 
+  MessageSquare, 
+  Home, 
+  Search, 
+  ArrowRight, 
+  ChevronRight,
+  Menu,
+  X,
+  Plus,
+  Activity,
+  DollarSign,
+  User,
+  Calendar,
+  Clock,
+  CheckCircle,
+  AlertCircle,
+  Bell,
+  MapPin
+} from 'lucide-react';
 import { Button } from '@/components/reusable/Button';
 import InputField from '@/components/reusable/InputField';
 import InspectionManager from '@/components/agent/InspectionManager';
@@ -249,6 +274,7 @@ export default function AgentDashboard() {
   // Fix: Use dynamic user name instead of hardcoded value
   const [agentName, setAgentName] = useState(user?.name || 'Agent');
   const [activeTab, setActiveTab] = useState('overview');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [ assignments, setAssignments] = useState<PropertyAssignment[]>([]);
   console.log("🚀 ~ AgentDashboard ~ assignments:", assignments)
   const [inspections, setInspections] = useState<Inspection[]>([]);
@@ -1370,792 +1396,833 @@ export default function AgentDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Toast Notifications */}
       <ToastNotification />
       
-      <div className="relative">
-        <Navbar 
-          logo="/images/logo.PNG"
-          logoText=""
-        />
-        {/* Hide floating notification panel on small screens to avoid overlapping the navbar */}
-        <div className="hidden md:block absolute top-0 right-0 p-4">
-          <NotificationPanel 
-            userId="agent-123" 
-            userType="agent" 
-            className="mr-4"
-          />
-        </div>
-      </div>
-      
-      {/* Welcome Section */}
-      <section className="bg-gradient-to-r from-green-50 to-green-100 text-gray-900 py-12 pt-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h1 className="text-3xl md:text-4xl font-bold mb-4">
-              Welcome back, {agentName}!
-            </h1>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Manage your properties, inspections, and client communications.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <div className="flex-grow container mx-auto px-4 py-8">
-        {/* Navigation Tabs */}
-        <div className="mb-8">
-          {/* Make tabs horizontally scrollable on very small screens */}
-          <div className="border-b border-gray-200 overflow-x-auto">
-            <nav className="-mb-px flex space-x-4 sm:space-x-8 whitespace-nowrap">
-              {[
-                { id: 'overview', label: 'Overview' },
-                { id: 'properties', label: 'Assigned Properties' },
-                { id: 'inspections', label: 'Inspections' },
-                { id: 'notes', label: 'Notes' }
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                    activeTab === tab.id
-                      ? 'border-green-500 text-green-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </nav>
-          </div>
+      {/* Top Navbar */}
+      <header className="h-16 sm:h-20 bg-white border-b border-gray-200 flex items-center justify-between px-4 sm:px-8 sticky top-0 z-50 w-full">
+        {/* Left: Logo */}
+        <div className="flex-shrink-0">
+          <Link href="/">
+            <img src="/images/logo.PNG" alt="Only If" className="h-8 sm:h-10 md:h-12 lg:h-14 w-auto transition-transform duration-200" />
+          </Link>
         </div>
 
-        {/* Overview Tab */}
-        {activeTab === 'overview' && (
-          <div>
-            {/* Platform Commission Invoice Card (shows after settlement) */}
-            {platformInvoice && (
-              <div className="bg-white rounded-lg shadow-md p-6 mb-6 max-w-2xl mx-auto border-l-4 border-green-500">
-                <h3 className="text-lg font-semibold mb-2">Platform Commission Invoice</h3>
-                <p className="text-sm text-gray-600 mb-1">Invoice No: {platformInvoice.invoiceNumber}</p>
-                <p className="text-sm text-gray-600 mb-1">Amount Due: <span className="font-semibold">A${(platformInvoice.amount || 0).toLocaleString('en-AU')}</span></p>
-                <p className="text-sm text-gray-600 mb-4">Due Date: {new Date(platformInvoice.dueDate).toLocaleDateString('en-AU')}</p>
-                <div className="flex gap-2">
-                  <Button onClick={async () => {
-                    try {
-                      const token = localStorage.getItem('token');
-                      const backendBase = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || '';
-                      const resp = await fetch(`${backendBase}/api/payment/initialize`, {
-                        method: 'POST',
-                        headers: {
-                          'Authorization': `Bearer ${token}`,
-                          'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ invoiceId: platformInvoice.invoiceId, amount: platformInvoice.amount })
-                      });
-                      const data = await resp.json();
-                      if (data?.success && data?.data?.paymentUrl) {
-                        window.location.href = data.data.paymentUrl;
-                      } else {
-                        addNotification({ type: 'error', title: 'Payment Init Failed', message: data?.message || 'Unable to start payment.' });
-                      }
-                    } catch (e:any) {
-                      addNotification({ type: 'error', title: 'Payment Error', message: e?.message || 'Unable to start payment.' });
-                    }
-                  }}>Pay Now</Button>
-                  <Button variant="outline" onClick={() => setPlatformInvoice(null)}>Dismiss</Button>
-                </div>
-              </div>
-            )}
+        {/* Center: Main Site Navigation */}
+        <nav className="hidden lg:flex items-center space-x-8">
+          <Link href="/buy" className="text-sm font-semibold text-gray-700 hover:text-emerald-600 transition-colors">Buy</Link>
+          <Link href="/sell" className="text-sm font-semibold text-gray-700 hover:text-emerald-600 transition-colors">Sell</Link>
+          <Link href="/how-it-works" className="text-sm font-semibold text-gray-700 hover:text-emerald-600 transition-colors">How it Works</Link>
+          <Link href="/agents" className="text-sm font-semibold text-gray-700 hover:text-emerald-600 transition-colors">Agents</Link>
+        </nav>
 
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-1 gap-6 mb-8 max-w-md mx-auto">
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <div className="text-center">
-                  {statsLoading ? (
-                    <div className="text-3xl font-bold text-gray-400">...</div>
-                  ) : (
-                    <div className="text-3xl font-bold text-green-600">{stats.assignedProperties}</div>
-                  )}
-                  <div className="text-gray-600">Assigned Properties</div>
-                  {statsError && (
-                    <div className="text-xs text-red-500 mt-1">Failed to load</div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Refresh Stats Button */}
-            {/* {statsError && (
-              <div className="mb-6 text-center">
-                <Button
-                  onClick={fetchAgentStats}
-                  disabled={statsLoading}
-                  className="bg-blue-600 hover:bg-blue-700"
-                >
-                  {statsLoading ? 'Loading...' : 'Retry Loading Stats'}
-                </Button>
-              </div>
-            )} */}
-
-            {/* Your Invoices */}
-            <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-lg font-semibold">Your Invoices</h3>
-                <span className="text-sm text-gray-500">A$</span>
-              </div>
-              {agentInvoices.length === 0 ? (
-                <div className="text-gray-500 text-sm">No invoices yet. They will appear here after settlement.</div>
-              ) : (
-                <div className="divide-y">
-                  {agentInvoices.map(inv => (
-                    <div key={inv.invoiceId} className="py-3 flex items-center justify-between">
-                      <div>
-                        <div className="text-sm text-gray-700">Invoice {inv.invoiceNumber}</div>
-                        <div className="text-xs text-gray-500">Due {new Date(inv.dueDate).toLocaleDateString('en-AU')}</div>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <div className="font-semibold">A${Number(inv.amount || 0).toLocaleString('en-AU')}</div>
-                        <Button onClick={async () => {
-                          try {
-                            const token = localStorage.getItem('token');
-                            const backendBase = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || '';
-                            const resp = await fetch(`${backendBase}/api/payment/initialize`, {
-                              method: 'POST',
-                              headers: {
-                                'Authorization': `Bearer ${token}`,
-                                'Content-Type': 'application/json'
-                              },
-                              body: JSON.stringify({ invoiceId: inv.invoiceId, amount: inv.amount })
-                            });
-                            const data = await resp.json();
-                            if (data?.success && data?.data?.paymentUrl) {
-                              window.location.href = data.data.paymentUrl;
-                            } else {
-                              addNotification({ type: 'error', title: 'Payment Init Failed', message: data?.message || 'Unable to start payment.' });
-                            }
-                          } catch (e:any) {
-                            addNotification({ type: 'error', title: 'Payment Error', message: e?.message || 'Unable to start payment.' });
-                          }
-                        }}>Pay Now</Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Recent Activity */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold">Recent Activity</h3>
-                <Button
-                  onClick={fetchAgentActivities}
-                  variant="outline"
-                  className="text-sm px-3 py-1"
-                  disabled={activitiesLoading}
-                >
-                  {activitiesLoading ? 'Refreshing...' : 'Refresh'}
-                </Button>
-              </div>
-              {activitiesLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                  <span className="ml-2 text-gray-600">Loading activities...</span>
-                </div>
-              ) : activitiesError ? (
-                <div className="text-center py-8">
-                  <p className="text-red-600 mb-2">{activitiesError}</p>
-                  <Button 
-                    onClick={fetchAgentActivities}
-                    className="text-sm px-4 py-2"
-                  >
-                    Retry
-                  </Button>
-                </div>
-              ) : activities.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  No recent activities found
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {activities.map((activity) => (
-                    <div key={activity.id} className="flex items-start space-x-3 p-3 hover:bg-gray-50 rounded-lg transition-colors">
-                      <div className={`w-3 h-3 rounded-full ${getActivityIconColor(activity.type)} mt-1 flex-shrink-0`}></div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-gray-700 text-sm font-medium">{activity.title}</p>
-                        <p className="text-gray-500 text-xs mt-1">{formatTimestamp(activity.timestamp)}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+        {/* Right: User Info & Menu */}
+        <div className="flex items-center space-x-2 sm:space-x-6">
+          <div className="hidden sm:flex items-center space-x-4">
+            <div className="flex flex-col items-end">
+              <p className="text-sm font-bold text-gray-900">{agentName}</p>
+              <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Agent Dashboard</p>
             </div>
           </div>
-        )}
-
-        {/* Properties Tab */}
-        {activeTab === 'properties' && (
-          <div>
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">Assigned Properties</h2>
-              <Button
-                onClick={fetchAgentProperties}
-                variant="outline"
-                className="text-sm"
-                disabled={assignmentsLoading}
-              >
-                {assignmentsLoading ? 'Loading...' : 'Refresh'}
-              </Button>
-            </div>
+          
+          <div className="flex items-center space-x-2 sm:space-x-3 sm:pl-4 sm:border-l border-gray-200">
+            <button className="p-1.5 sm:p-2 text-gray-400 hover:text-gray-600 relative">
+              <Bell className="w-5 h-5" />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+            </button>
             
-            {assignmentsLoading ? (
-              <div className="flex items-center justify-center py-12">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                <span className="ml-2 text-gray-600">Loading properties...</span>
-              </div>
-            ) : assignments.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                  <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No properties available right now</h3>
-                <p className="text-gray-500 mb-4">Properties will automatically appear here when sellers assign them to you.</p>
-                <Button 
-                  onClick={fetchAgentProperties}
-                  variant="outline"
-                  disabled={assignmentsLoading}
-                >
-                  Check for Updates
-                </Button>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {Array.isArray(assignments) && assignments.map((assignment) => {
-  // Safely resolve an image URL from various possible shapes
-  const primaryImage = assignment?.mainImage?.url
-    ?? (typeof (assignment as any)?.mainImage === 'string' ? (assignment as any).mainImage : undefined)
-    ?? (Array.isArray((assignment as any)?.images) ? ((assignment as any).images[0]?.url ?? (assignment as any).images[0]) : undefined)
-    ?? assignment?.image;
-  const safeImageUrl = primaryImage ? getSafeImageUrl(primaryImage as string, "property") : "/images/default-property.jpg";
-  const propertyId = assignment._id || assignment.id; // Handle both _id and id formats
-
-  return (
-    <div
-      key={propertyId}
-      className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
-    >
-      <div className="relative h-48">
-        <img
-          src={safeImageUrl}
-          alt={`${assignment.title} - ${typeof assignment.address === "string" ? assignment.address : `${assignment.address.street || ''}, ${assignment.address.city || ''}`}`}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          onError={(e) => {
-            const target = e.target as HTMLImageElement;
-            target.src = "/images/default-property.jpg"; // fallback image
-          }}
-        />
-        <div className="absolute top-2 right-2">
-          <span
-            className={`px-2 py-1 text-xs font-semibold rounded-full ${getPriorityColor(
-              assignment.priority
-            )}`}
-          >
-            {assignment.priority}
-          </span>
-        </div>
-      </div>
-      <div className="p-4">
-        <h3 className="font-semibold text-lg mb-2">{assignment.title}</h3>
-        <p className="text-gray-600 text-sm mb-2">
-          {typeof assignment.address === "string"
-            ? assignment.address
-            : `${assignment.address.street}, ${assignment.address.city}, ${assignment.address.state} ${assignment.address.zipCode}`}
-        </p>
-        <div className="flex justify-between items-center mb-3">
-          <span className="text-2xl font-bold text-green-600">
-            {formatCurrencyCompact(assignment.price)}
-          </span>
-          <span
-            className={`px-2 py-1 text-xs font-medium rounded ${
-              assignment.status === "active"
-                ? "bg-green-100 text-green-800"
-                : assignment.status === "pending"
-                ? "bg-yellow-100 text-yellow-800"
-                : "bg-gray-100 text-gray-800"
-            }`}
-          >
-            {assignment.status}
-          </span>
-        </div>
-        <div className="flex justify-between text-sm text-gray-500 mb-3">
-          <span>{assignment.beds} beds</span>
-          <span>{assignment.baths} baths</span>
-          <span>{assignment.size} sqft</span>
-        </div>
-        {/* Professional Sales Status Selector */}
-        <div className="mb-3 p-3 bg-gray-50 rounded-md">
-          <SalesStatusSelector
-            propertyId={assignment._id || assignment.id}
-            propertyTitle={assignment.title}
-            currentStatus={assignment.salesStatus || null}
-            onStatusUpdate={handleStatusUpdate}
-          />
-        </div>
-        
-        <div className="flex flex-col gap-2">
-          <div className="flex space-x-2">
-            <Button
-              onClick={() => handleSelectProperty(assignment)}
-              variant="primary"
-              className="flex-1 text-sm"
+            {/* Mobile Menu Button */}
+            <button 
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="lg:hidden p-2 text-gray-400 hover:text-gray-600"
             >
-              View Details
-            </Button>
-            <Button
-              onClick={handleShowInspectionForm}
-              variant="outline"
-              className="flex-1 text-sm"
-            >
-              Schedule Inspection
-            </Button>
+              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
           </div>
-          <Button
-            onClick={async () => {
-              // Try to get seller from multiple possible fields
-              let seller = assignment.seller || assignment.owner;
-              
-              // If seller is just an ID string, fetch the user details
-              if (typeof seller === 'string' || !seller?.name) {
-                const sellerId = typeof seller === 'string' ? seller : (seller?.id || seller?._id || assignment.owner);
-                
-                if (!sellerId) {
-                  addNotification({
-                    type: 'warning',
-                    message: 'Seller information not available for this property'
-                  });
-                  return;
-                }
-                
-                try {
-                  // Fetch seller details from backend
-                  const token = localStorage.getItem('token');
-                  const backendBase = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || '';
-                  const response = await fetch(`${backendBase}/api/admin/users/${sellerId}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                  });
-                  
-                  if (response.ok) {
-                    const data = await response.json();
-                    seller = data.data || data;
-                  } else {
-                    // Use sellerId directly if fetch fails
-                    seller = { 
-                      id: sellerId, 
-                      name: 'Property Owner',
-                      email: 'owner@example.com'
-                    };
-                  }
-                } catch (error) {
-                  console.error('Error fetching seller:', error);
-                  seller = { 
-                    id: sellerId, 
-                    name: 'Property Owner',
-                    email: 'owner@example.com'
-                  };
-                }
-              }
-              
-              console.log('📨 Opening chat with seller:', seller);
-              setSelectedSeller({ 
-                id: seller.id || seller._id,
-                name: seller.name || 'Property Owner', 
-                email: seller.email || 'owner@example.com', 
-                avatar: seller.avatar 
-              });
-              setSelectedProperty(assignment);
-              setShowSellerChat(true);
-            }}
-            variant="outline"
-            className="w-full text-sm"
-            disabled={!assignment.seller && !assignment.owner}
-          >
-            Message Seller
-          </Button>
         </div>
-      </div>
-    </div>
-  );
-})}
+      </header>
 
+      {/* Mobile Menu Overlay */}
+      {isMobileMenuOpen && (
+        <div className="lg:hidden fixed inset-0 z-40 bg-white overflow-y-auto pb-20">
+          <div className="pt-20 px-6 space-y-8">
+            <nav className="flex flex-col space-y-2">
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] px-1 mb-2">Main Menu</p>
+              <Link href="/buy" className="text-lg font-bold text-gray-900 py-3.5 border-b border-gray-50 flex items-center justify-between group" onClick={() => setIsMobileMenuOpen(false)}>
+                Buy <ArrowRight className="w-4 h-4 text-gray-300 group-active:text-emerald-500 transition-colors" />
+              </Link>
+              <Link href="/sell" className="text-lg font-bold text-gray-900 py-3.5 border-b border-gray-50 flex items-center justify-between group" onClick={() => setIsMobileMenuOpen(false)}>
+                Sell <ArrowRight className="w-4 h-4 text-gray-300 group-active:text-emerald-500 transition-colors" />
+              </Link>
+              <Link href="/how-it-works" className="text-lg font-bold text-gray-900 py-3.5 border-b border-gray-50 flex items-center justify-between group" onClick={() => setIsMobileMenuOpen(false)}>
+                How it Works <ArrowRight className="w-4 h-4 text-gray-300 group-active:text-emerald-500 transition-colors" />
+              </Link>
+              <Link href="/agents" className="text-lg font-bold text-gray-900 py-3.5 border-b border-gray-50 flex items-center justify-between group" onClick={() => setIsMobileMenuOpen(false)}>
+                Agents <ArrowRight className="w-4 h-4 text-gray-300 group-active:text-emerald-500 transition-colors" />
+              </Link>
 
-{isContactModalOpen && selectedProperty && (
-  <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-    <div className="bg-white rounded-xl w-full max-w-2xl">
-      <div className="flex items-center justify-between p-4 border-b">
-        <h2 className="text-xl font-semibold">
-          {selectedBuyer ? `Chat with ${selectedBuyer.name}` : "Select a Buyer"}
-        </h2>
-        <button onClick={() => {
-          setIsContactModalOpen(false);
-          setSelectedBuyer(null);
-        }}>✕</button>
-      </div>
-
-      <div className="p-4">
-        {!selectedBuyer ? (
-          <div className="space-y-4">
-            <div>
-              <h3 className="text-sm font-medium text-gray-700 mb-2">Buyer</h3>
-              {buyers.length > 0 ? (
-                <ul className="space-y-2">
-                  {buyers.map((b) => (
-                    <li key={b.id}>
-                      <button
-                        onClick={() => setSelectedBuyer(b.user)}
-                        className="w-full text-left px-4 py-2 border rounded-lg hover:bg-gray-50"
-                      >
-                        <p className="font-medium">{b.user.name}</p>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-gray-500">No buyers yet for this property.</p>
-              )}
-            </div>
-
-          </div>
-        ) : (
-          <OneToOneChat
-            agent={{ id: selectedBuyer._id, name: selectedBuyer.name, email: selectedBuyer.email }}
-            propertyTitle={selectedProperty.title}
-          />
-        )}
-      </div>
-    </div>
-  </div>
-)}
-
-{/* Seller Chat Modal (front-end only) */}
-{showSellerChat && selectedSeller && (
-  <Modal isOpen={showSellerChat} onClose={() => setShowSellerChat(false)} title={`Chat with ${selectedSeller.name}`} size="lg">
-    <div className="h-[70vh] max-h-[80vh]">
-      {(() => {
-        const sellerId = selectedSeller.id;
-        return (
-          <RealSellerAgentChat
-            otherUserId={sellerId}
-            propertyId={selectedProperty?._id || selectedProperty?.id}
-            currentUserId={currentUserId}
-            currentUserRole="agent"
-            otherName={selectedSeller.name}
-            otherAvatar={selectedSeller.avatar}
-          />
-        );
-      })()}
-    </div>
-  </Modal>
-)}
-
-{/* {isContactModalOpen && selectedProperty?.agents?.length > 0 && (
-  <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-    <div className="bg-white rounded-xl w-full max-w-2xl">
-      <div className="flex items-center justify-between p-4 border-b">
-        <h2 className="text-xl font-semibold">Chat with buyer</h2>
-        <button onClick={() => setIsContactModalOpen(false)}>✕</button>
-      </div>
-      <div className="p-4">
-        <OneToOneChat
-          agent={userObj}
-          propertyTitle={selectedProperty.title}
-        />
-      </div>
-    </div>
-  </div>
-)} */}
-
-
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Inspections Tab */}
-        {activeTab === 'inspections' && (
-          <div>
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">Manage Inspections</h2>
-              <Button
-                onClick={() => setShowInspectionForm(true)}
-                variant="primary"
-              >
-                Schedule Inspection
-              </Button>
-            </div>
-
-            {/* Inspection Form Modal */}
-            {showInspectionForm && (
-              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                <div className="bg-white rounded-lg p-6 w-full max-w-md">
-                  <h3 className="text-lg font-semibold mb-4">Schedule New Inspection</h3>
-                  <div className="space-y-4">
-                    <InputField
-                      label="Date"
-                      type="date"
-                      value={inspectionForm.date}
-                      onChange={(e) => setInspectionForm({...inspectionForm, date: e.target.value})}
-                    />
-                    <InputField
-                      label="Time"
-                      type="time"
-                      value={inspectionForm.time}
-                      onChange={(e) => setInspectionForm({...inspectionForm, time: e.target.value})}
-                    />
-                    <InputField
-                      label="Inspector"
-                      value={inspectionForm.inspector}
-                      onChange={(e) => setInspectionForm({...inspectionForm, inspector: e.target.value})}
-                    />
-                    <InputField
-                      label="Client"
-                      value={inspectionForm.client}
-                      onChange={(e) => setInspectionForm({...inspectionForm, client: e.target.value})}
-                    />
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
-                      <textarea
-                        value={inspectionForm.notes}
-                        onChange={(e) => setInspectionForm({...inspectionForm, notes: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                        rows={3}
-                      />
-                    </div>
-                  </div>
-                  <div className="flex space-x-3 mt-6">
-                    <Button onClick={handleAddInspection} variant="primary" className="flex-1">
-                      Schedule
-                    </Button>
-                    <Button onClick={() => setShowInspectionForm(false)} variant="secondary" className="flex-1">
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Inspections List */}
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Property</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date & Time</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Inspector</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {inspections.map((inspection) => (
-                      <tr key={inspection.id}>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div>
-                            <div className="text-sm font-medium text-gray-900">{inspection.propertyName}</div>
-                            <div className="text-sm text-gray-500">{inspection.address}</div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {inspection.date} at {inspection.time}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {inspection.inspector}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {inspection.client}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                            getStatusColor(inspection.status)
-                          }`}>
-                            {inspection.status}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Messages Tab */}
-        {activeTab === 'messages' && (
-          <div>
-            <div className="bg-white rounded-lg shadow-lg" style={{ height: '600px' }}>
-              <MessagesInterface
-                currentUserId={currentUserId}
-                currentUserRole={currentUserRole}
-                className="h-full"
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Notes Tab */}
-        {activeTab === 'notes' && (
-          <div>
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">Notes & Documentation</h2>
-              <Button
-                onClick={() => setShowNoteForm(true)}
-                variant="primary"
-              >
-                Add Note
-              </Button>
-            </div>
-
-            {/* Note Form Modal */}
-            {showNoteForm && (
-              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                <div className="bg-white rounded-lg p-6 w-full max-w-md">
-                  <h3 className="text-lg font-semibold mb-4">Add New Note</h3>
-                  <div className="space-y-4">
-                    <InputField
-                      label="Title"
-                      value={noteForm.title}
-                      onChange={(e) => setNoteForm({...noteForm, title: e.target.value})}
-                    />
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Content</label>
-                      <textarea
-                        value={noteForm.content}
-                        onChange={(e) => setNoteForm({...noteForm, content: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                        rows={4}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
-                      <select
-                        value={noteForm.type}
-                        onChange={(e) => setNoteForm({...noteForm, type: e.target.value as 'property' | 'inspection' | 'general'})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                      >
-                        <option value="property">Property</option>
-                        <option value="inspection">Inspection</option>
-                        <option value="general">General</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
-                      <select
-                        value={noteForm.priority}
-                        onChange={(e) => setNoteForm({...noteForm, priority: e.target.value as 'high' | 'medium' | 'low'})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                      >
-                        <option value="low">Low</option>
-                        <option value="medium">Medium</option>
-                        <option value="high">High</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div className="flex space-x-3 mt-6">
-                    <Button onClick={handleAddNote} variant="primary" className="flex-1">
-                      Add Note
-                    </Button>
-                    <Button onClick={() => setShowNoteForm(false)} variant="secondary" className="flex-1">
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Notes List */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {notes.map((note) => (
-                <div key={note.id} className="bg-white rounded-lg shadow-md p-6">
-                  <div className="flex justify-between items-start mb-3">
-                    <h3 className="font-semibold text-lg">{note.title}</h3>
-                    <div className="flex space-x-2">
-                      <span className={`px-2 py-1 text-xs font-medium rounded ${
-                        getPriorityColor(note.priority)
-                      }`}>
-                        {note.priority}
-                      </span>
-                      <span className="px-2 py-1 text-xs font-medium rounded bg-gray-100 text-gray-600">
-                        {note.type}
-                      </span>
-                    </div>
-                  </div>
-                  <p className="text-gray-700 mb-3">{note.content}</p>
-                  <p className="text-gray-500 text-sm">
-                    {new Date(note.createdAt).toLocaleDateString()}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Settlement Modal */}
-      {showSettlementModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">Select Buyer for Settlement</h3>
-                <button
-                  onClick={() => setShowSettlementModal(false)}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-              
-              <p className="text-gray-600 mb-4">
-                Multiple buyers are interested in this property. Please select the buyer who will be purchasing the property.
-              </p>
-              
-              <div className="space-y-2">
-                {settlementBuyers.map((buyer) => (
-                  <button
-                    key={buyer._id}
-                    onClick={() => {
-                      if (settlementPropertyId) {
-                        proceedWithSettlement(settlementPropertyId, buyer._id, settlementDetails);
-                      }
-                    }}
-                    className="w-full text-left p-3 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-green-300 transition-colors"
+              <div className="pt-8 space-y-2">
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] px-1 mb-2">Dashboard Menu</p>
+                {[
+                  { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+                  { id: 'properties', label: 'Properties', icon: Building2 },
+                  { id: 'inspections', label: 'Inspections', icon: Calendar },
+                  { id: 'notes', label: 'Notes', icon: MessageSquare }
+                ].map((item) => (
+                  <button 
+                    key={item.id}
+                    onClick={() => { setActiveTab(item.id); setIsMobileMenuOpen(false); }} 
+                    className={`w-full flex items-center justify-between py-4 px-2 rounded-xl transition-all ${
+                      activeTab === item.id 
+                        ? 'bg-emerald-50 text-emerald-600 font-bold border border-emerald-100 shadow-sm' 
+                        : 'text-gray-900 font-bold border-b border-gray-50'
+                    }`}
                   >
-                    <div className="font-medium text-gray-900">{buyer.name}</div>
-                    <div className="text-sm text-gray-500">{buyer.email}</div>
+                    <span className="flex items-center gap-3">
+                      <item.icon className={`w-5 h-5 ${activeTab === item.id ? 'text-emerald-600' : 'text-gray-400'}`} />
+                      {item.label}
+                    </span>
+                    {activeTab === item.id && <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full shadow-sm"></div>}
                   </button>
                 ))}
               </div>
-              
-              <div className="mt-6 flex justify-end space-x-3">
-                <button
-                  onClick={() => setShowSettlementModal(false)}
-                  className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-              </div>
+            </nav>
+            
+            <div className="pt-4">
+              <button 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="w-full py-4 bg-gray-900 text-white font-bold rounded-2xl shadow-xl active:scale-[0.98] transition-all"
+              >
+                Close Menu
+              </button>
             </div>
           </div>
         </div>
       )}
 
+      <div className="flex flex-1 relative">
+        {/* Sidebar - Consistent with other dashboards */}
+        <aside className="hidden lg:flex w-72 bg-white border-r border-gray-200 flex-col fixed left-0 top-20 bottom-0 z-20 overflow-y-auto">
+          <div className="p-8 flex-1">
+            <nav className="space-y-2">
+              {[
+                { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+                { id: 'properties', label: 'Assigned Properties', icon: Building2 },
+                { id: 'inspections', label: 'Manage Inspections', icon: Calendar },
+                { id: 'notes', label: 'Notes & Updates', icon: MessageSquare }
+              ].map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveTab(item.id)}
+                  className={`w-full flex items-center space-x-3 px-5 py-3.5 text-sm font-bold rounded-xl transition-all duration-200 ${
+                    activeTab === item.id 
+                      ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 shadow-sm' 
+                      : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
+                  }`}
+                >
+                  <item.icon className={`w-5 h-5 ${activeTab === item.id ? 'text-emerald-600' : 'text-gray-400'}`} />
+                  <span>{item.label}</span>
+                </button>
+              ))}
+            </nav>
+          </div>
+
+          <div className="p-6 border-t border-gray-100 bg-gray-50/50">
+            <div className="flex items-center space-x-4 p-2">
+              <div className="w-11 h-11 rounded-full bg-emerald-600 flex items-center justify-center text-white font-bold text-base shadow-sm">
+                {agentName.split(' ').map(n => n[0]).join('').toUpperCase()}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-gray-900 truncate">{agentName}</p>
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Licensed Agent</p>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        {/* Main Content Area */}
+        <div className="flex-1 lg:ml-72 flex flex-col w-full">
+          <main className="p-4 sm:p-6 lg:p-10 w-full max-w-7xl mx-auto min-h-[calc(100vh-5rem)]">
+            {/* Welcome Section */}
+            <section className="mb-10 animate-in fade-in slide-in-from-bottom-2 duration-500">
+              <div className="bg-white rounded-2xl sm:rounded-[2rem] border border-gray-200 p-6 sm:p-10 shadow-sm relative overflow-hidden">
+                <div className="relative z-10">
+                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 tracking-tight mb-3">
+                    Welcome back, {agentName}! 👋
+                  </h1>
+                  <p className="text-sm sm:text-lg text-gray-500 font-medium max-w-2xl leading-relaxed">
+                    You have <span className="text-emerald-600 font-bold">{stats.assignedProperties} properties</span> currently under your management.
+                  </p>
+                </div>
+                {/* Background Decoration */}
+                <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-50 rounded-full -mr-32 -mt-32 opacity-50"></div>
+              </div>
+            </section>
+
+            {/* Content Tabs (Overview, Properties, etc.) */}
+            <div className="space-y-8">
+              {activeTab === 'overview' && (
+                <div className="space-y-10">
+                  {/* Stats Cards - Stacking on mobile */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+                    <div className="bg-white p-4 sm:p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                      <div className="flex items-center gap-4">
+                        <div className="p-2 sm:p-3 bg-emerald-50 rounded-xl">
+                          <Building2 className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600" />
+                        </div>
+                        <div>
+                          <p className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-widest">Assigned</p>
+                          <p className="text-xl sm:text-2xl font-black text-gray-900">{stats.assignedProperties}</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="bg-white p-4 sm:p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                      <div className="flex items-center gap-4">
+                        <div className="p-2 sm:p-3 bg-blue-50 rounded-xl">
+                          <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
+                        </div>
+                        <div>
+                          <p className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-widest">Pending</p>
+                          <p className="text-xl sm:text-2xl font-black text-gray-900">{stats.pendingInspections || 0}</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="bg-white p-4 sm:p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                      <div className="flex items-center gap-4">
+                        <div className="p-2 sm:p-3 bg-purple-50 rounded-xl">
+                          <MessageSquare className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
+                        </div>
+                        <div>
+                          <p className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-widest">Messages</p>
+                          <p className="text-xl sm:text-2xl font-black text-gray-900">{stats.newMessages || 0}</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="bg-white p-4 sm:p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                      <div className="flex items-center gap-4">
+                        <div className="p-2 sm:p-3 bg-amber-50 rounded-xl">
+                          <Activity className="w-5 h-5 sm:w-6 sm:h-6 text-amber-600" />
+                        </div>
+                        <div>
+                          <p className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-widest">Completed</p>
+                          <p className="text-xl sm:text-2xl font-black text-gray-900">{stats.completedInspections || 0}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    {/* Recent Activity */}
+                    <div className="lg:col-span-8 bg-white rounded-2xl sm:rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+                      <div className="p-6 sm:p-8 border-b border-gray-50 flex items-center justify-between">
+                        <h3 className="text-xl font-bold text-gray-900">Recent Activity</h3>
+                        <Button variant="outline" size="sm" onClick={fetchAgentActivities} disabled={activitiesLoading}>
+                          {activitiesLoading ? '...' : 'Refresh'}
+                        </Button>
+                      </div>
+                      <div className="p-6 sm:p-8">
+                        {activitiesLoading ? (
+                          <div className="flex justify-center py-12">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
+                          </div>
+                        ) : activities.length === 0 ? (
+                          <div className="text-center py-12">
+                            <p className="text-gray-400 font-medium">No recent activity found.</p>
+                          </div>
+                        ) : (
+                          <div className="space-y-6">
+                            {activities.slice(0, 5).map((activity) => (
+                              <div key={activity.id} className="flex items-start gap-4">
+                                <div className={`mt-1.5 w-2.5 h-2.5 rounded-full flex-shrink-0 ${getActivityIconColor(activity.type)}`}></div>
+                                <div className="min-w-0">
+                                  <p className="text-sm font-bold text-gray-900 truncate">{activity.title}</p>
+                                  <p className="text-xs font-medium text-gray-400 mt-1">{formatTimestamp(activity.timestamp)}</p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Quick Invoices */}
+                    <div className="lg:col-span-4 bg-white rounded-2xl sm:rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+                      <div className="p-6 sm:p-8 border-b border-gray-50">
+                        <h3 className="text-xl font-bold text-gray-900">Recent Invoices</h3>
+                      </div>
+                      <div className="p-6 sm:p-8">
+                        {agentInvoices.length === 0 ? (
+                          <div className="text-center py-12">
+                            <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                              <DollarSign className="w-8 h-8 text-gray-300" />
+                            </div>
+                            <p className="text-sm font-medium text-gray-400">No invoices generated yet.</p>
+                          </div>
+                        ) : (
+                          <div className="space-y-4">
+                            {agentInvoices.slice(0, 3).map(inv => (
+                              <div key={inv.invoiceId} className="p-4 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-between">
+                                <div className="min-w-0">
+                                  <p className="text-sm font-bold text-gray-900 truncate">#{inv.invoiceNumber}</p>
+                                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">
+                                    A${Number(inv.amount || 0).toLocaleString('en-AU')}
+                                  </p>
+                                </div>
+                                <ArrowRight className="w-4 h-4 text-gray-300" />
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'properties' && (
+                <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">Your Properties</h2>
+                    <Button onClick={fetchAgentProperties} variant="outline" size="sm" disabled={assignmentsLoading} className="w-full sm:w-auto">
+                      {assignmentsLoading ? 'Refreshing...' : 'Refresh List'}
+                    </Button>
+                  </div>
+
+                  {assignmentsLoading ? (
+                    <div className="flex flex-col items-center justify-center py-20 gap-4">
+                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
+                      <p className="text-gray-500 font-medium">Fetching properties...</p>
+                    </div>
+                  ) : assignments.length === 0 ? (
+                    <div className="bg-white rounded-3xl border border-dashed border-gray-200 py-20 px-6 text-center">
+                      <div className="w-20 h-20 bg-gray-50 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                        <Home className="w-10 h-10 text-gray-300" />
+                      </div>
+                      <h3 className="text-xl font-bold text-gray-900 mb-2">No Properties Assigned</h3>
+                      <p className="text-gray-500 max-w-sm mx-auto mb-8 font-medium">Properties will automatically appear here when they are assigned to you by sellers.</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-8">
+                      {assignments.map((assignment) => {
+                        const primaryImage = assignment?.mainImage?.url
+                          ?? (typeof (assignment as any)?.mainImage === 'string' ? (assignment as any).mainImage : undefined)
+                          ?? (Array.isArray((assignment as any)?.images) ? ((assignment as any).images[0]?.url ?? (assignment as any).images[0]) : undefined)
+                          ?? assignment?.image;
+                        const safeImageUrl = primaryImage ? getSafeImageUrl(primaryImage as string, "property") : "/images/default-property.jpg";
+                        
+                        return (
+                          <div key={assignment._id || assignment.id} className="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden group hover:shadow-xl transition-all duration-300 flex flex-col">
+                            <div className="relative h-56 sm:h-64 overflow-hidden">
+                              <img
+                                src={safeImageUrl}
+                                alt={assignment.title}
+                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                              />
+                              <div className="absolute top-4 right-4">
+                                <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm ${getPriorityColor(assignment.priority)}`}>
+                                  {assignment.priority} Priority
+                                </span>
+                              </div>
+                              <div className="absolute bottom-4 left-4">
+                                <span className="bg-white/90 backdrop-blur-md px-4 py-1.5 rounded-xl text-lg font-black text-emerald-600 shadow-sm">
+                                  {formatCurrencyCompact(assignment.price)}
+                                </span>
+                              </div>
+                            </div>
+                            
+                            <div className="p-6 sm:p-8 flex-1 flex flex-col">
+                              <div className="flex-1">
+                                <div className="flex items-center justify-between mb-2">
+                                  <h3 className="text-xl font-bold text-gray-900 truncate">{assignment.title}</h3>
+                                  <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
+                                    assignment.status === "active" ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-700"
+                                  }`}>
+                                    {assignment.status}
+                                  </span>
+                                </div>
+                                <p className="text-sm font-medium text-gray-500 mb-6 flex items-center gap-1.5 truncate">
+                                  <MapPin className="w-4 h-4 opacity-50" />
+                                  {typeof assignment.address === "string" ? assignment.address : `${assignment.address.street}, ${assignment.address.city}`}
+                                </p>
+                                
+                                <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-8">
+                                  <div className="bg-gray-50 rounded-2xl p-2 sm:p-3 text-center">
+                                    <p className="text-base sm:text-lg font-black text-gray-900">{assignment.beds}</p>
+                                    <p className="text-[8px] sm:text-[10px] font-black text-gray-400 uppercase tracking-widest">Beds</p>
+                                  </div>
+                                  <div className="bg-gray-50 rounded-2xl p-2 sm:p-3 text-center">
+                                    <p className="text-base sm:text-lg font-black text-gray-900">{assignment.baths}</p>
+                                    <p className="text-[8px] sm:text-[10px] font-black text-gray-400 uppercase tracking-widest">Baths</p>
+                                  </div>
+                                  <div className="bg-gray-50 rounded-2xl p-2 sm:p-3 text-center">
+                                    <p className="text-base sm:text-lg font-black text-gray-900">{assignment.size}</p>
+                                    <p className="text-[8px] sm:text-[10px] font-black text-gray-400 uppercase tracking-widest">Sqft</p>
+                                  </div>
+                                </div>
+
+                                <div className="mb-8 p-4 bg-emerald-50 rounded-2xl border border-emerald-100">
+                                  <p className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.2em] mb-3">Sales Status</p>
+                                  <SalesStatusSelector
+                                    propertyId={assignment._id || assignment.id}
+                                    propertyTitle={assignment.title}
+                                    currentStatus={assignment.salesStatus || null}
+                                    onStatusUpdate={handleStatusUpdate}
+                                  />
+                                </div>
+                              </div>
+
+                              <div className="space-y-3">
+                                <div className="flex flex-col sm:flex-row gap-3">
+                                  <button onClick={() => handleSelectProperty(assignment)} className="w-full sm:flex-1 py-3 bg-gray-900 text-white rounded-xl font-bold text-sm hover:bg-black transition-colors shadow-sm active:scale-[0.98]">
+                                    View Details
+                                  </button>
+                                  <button onClick={handleShowInspectionForm} className="w-full sm:flex-1 py-3 border-2 border-gray-100 text-gray-900 rounded-xl font-bold text-sm hover:bg-gray-50 transition-colors active:scale-[0.98]">
+                                    Inspection
+                                  </button>
+                                </div>
+                                <button
+                                  disabled={!assignment.seller && !assignment.owner}
+                                  onClick={async () => {
+                                    let seller = assignment.seller || assignment.owner;
+                                    if (typeof seller === 'string' || !seller?.name) {
+                                      const sellerId = typeof seller === 'string' ? seller : (seller?.id || seller?._id || assignment.owner);
+                                      if (!sellerId) return;
+                                      try {
+                                        const token = localStorage.getItem('token');
+                                        const backendBase = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || '';
+                                        const response = await fetch(`${backendBase}/api/admin/users/${sellerId}`, {
+                                          headers: { 'Authorization': `Bearer ${token}` }
+                                        });
+                                        if (response.ok) {
+                                          const data = await response.json();
+                                          seller = data.data || data;
+                                        } else {
+                                          seller = { id: sellerId, name: 'Property Owner', email: 'owner@example.com' };
+                                        }
+                                      } catch (error) {
+                                        seller = { id: sellerId, name: 'Property Owner', email: 'owner@example.com' };
+                                      }
+                                    }
+                                    setSelectedSeller({ 
+                                      id: seller.id || seller._id,
+                                      name: seller.name || 'Property Owner', 
+                                      email: seller.email || 'owner@example.com', 
+                                      avatar: seller.avatar 
+                                    });
+                                    setSelectedProperty(assignment);
+                                    setShowSellerChat(true);
+                                  }}
+                                  className="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold text-sm hover:bg-emerald-700 transition-colors shadow-sm active:scale-[0.98] disabled:opacity-50"
+                                >
+                                  Message Seller
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {activeTab === 'inspections' && (
+                <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">Inspections</h2>
+                    <Button onClick={() => setShowInspectionForm(true)} className="w-full sm:w-auto">
+                      <Plus className="w-4 h-4 mr-2" /> Schedule Inspection
+                    </Button>
+                  </div>
+
+                  <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+                    {/* Desktop Table View */}
+                    <div className="hidden sm:block overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-100">
+                        <thead>
+                          <tr className="bg-gray-50/50">
+                            <th className="px-8 py-5 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Property</th>
+                            <th className="px-8 py-5 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Schedule</th>
+                            <th className="px-8 py-5 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Parties</th>
+                            <th className="px-8 py-5 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-50">
+                          {inspections.length === 0 ? (
+                            <tr>
+                              <td colSpan={4} className="px-8 py-20 text-center text-gray-400 font-medium">No inspections scheduled yet.</td>
+                            </tr>
+                          ) : (
+                            inspections.map((inspection) => (
+                              <tr key={inspection.id} className="hover:bg-gray-50/50 transition-colors group">
+                                <td className="px-8 py-6">
+                                  <p className="text-sm font-bold text-gray-900 group-hover:text-emerald-600 transition-colors">{inspection.propertyName}</p>
+                                  <p className="text-xs text-gray-400 mt-1 truncate max-w-[200px]">{inspection.address}</p>
+                                </td>
+                                <td className="px-8 py-6">
+                                  <div className="flex flex-col">
+                                    <span className="text-sm font-bold text-gray-900">{inspection.date}</span>
+                                    <span className="text-xs text-gray-400 mt-1 flex items-center gap-1"><Clock className="w-3 h-3" /> {inspection.time}</span>
+                                  </div>
+                                </td>
+                                <td className="px-8 py-6">
+                                  <div className="flex flex-col">
+                                    <span className="text-sm font-bold text-gray-900">{inspection.inspector}</span>
+                                    <span className="text-xs text-gray-400 mt-1">{inspection.client}</span>
+                                  </div>
+                                </td>
+                                <td className="px-8 py-6">
+                                  <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${getStatusColor(inspection.status)}`}>
+                                    {inspection.status}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Mobile Card View */}
+                    <div className="sm:hidden divide-y divide-gray-50">
+                      {inspections.length === 0 ? (
+                        <div className="px-6 py-12 text-center text-gray-400 font-medium">No inspections scheduled yet.</div>
+                      ) : (
+                        inspections.map((inspection) => (
+                          <div key={inspection.id} className="p-6 space-y-4">
+                            <div className="flex justify-between items-start">
+                              <div className="min-w-0 pr-4">
+                                <p className="text-sm font-bold text-gray-900 truncate">{inspection.propertyName}</p>
+                                <p className="text-xs text-gray-400 mt-1 truncate">{inspection.address}</p>
+                              </div>
+                              <span className={`px-2 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${getStatusColor(inspection.status)} flex-shrink-0`}>
+                                {inspection.status}
+                              </span>
+                            </div>
+                            
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="space-y-1">
+                                <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Schedule</p>
+                                <div className="flex flex-col">
+                                  <span className="text-xs font-bold text-gray-900">{inspection.date}</span>
+                                  <span className="text-[10px] text-gray-400 flex items-center gap-1"><Clock className="w-3 h-3" /> {inspection.time}</span>
+                                </div>
+                              </div>
+                              <div className="space-y-1">
+                                <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Parties</p>
+                                <div className="flex flex-col">
+                                  <span className="text-xs font-bold text-gray-900 truncate">{inspection.inspector}</span>
+                                  <span className="text-[10px] text-gray-400 truncate">{inspection.client}</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'notes' && (
+                <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">Notes & Updates</h2>
+                    <Button onClick={() => setShowNoteForm(true)} className="w-full sm:w-auto">
+                      <Plus className="w-4 h-4 mr-2" /> Add New Note
+                    </Button>
+                  </div>
+
+                  {notes.length === 0 ? (
+                    <div className="bg-white rounded-3xl border border-dashed border-gray-200 py-20 text-center">
+                      <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <MessageSquare className="w-8 h-8 text-gray-300" />
+                      </div>
+                      <p className="text-gray-400 font-medium">Keep track of property details and updates here.</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {notes.map((note) => (
+                        <div key={note.id} className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+                          <div className={`absolute top-0 left-0 w-1.5 h-full ${
+                            note.priority === 'high' ? 'bg-red-500' : note.priority === 'medium' ? 'bg-amber-500' : 'bg-emerald-500'
+                          }`}></div>
+                          <div className="flex justify-between items-start mb-4">
+                            <h3 className="text-lg font-bold text-gray-900">{note.title}</h3>
+                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                              {new Date(note.createdAt).toLocaleDateString()}
+                            </span>
+                          </div>
+                          <p className="text-gray-500 text-sm leading-relaxed mb-6">{note.content}</p>
+                          <div className="flex items-center gap-2">
+                            <span className="px-3 py-1 rounded-full bg-gray-50 text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                              {note.type}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </main>
+        </div>
+      </div>
+
+      {/* Existing Modals & Overlays - Ensure they are responsive */}
+      {/* Settlement selection modal */}
+      {showSettlementModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-[100] animate-in fade-in duration-200">
+          <div className="bg-white rounded-[2rem] w-full max-w-lg shadow-2xl overflow-hidden">
+            <div className="p-8 border-b border-gray-50 flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight">Confirm Sale</h2>
+                <p className="text-sm font-medium text-gray-400 mt-1">Select the final buyer for this property</p>
+              </div>
+              <button onClick={() => setShowSettlementModal(false)} className="p-2 hover:bg-gray-50 rounded-full transition-colors">
+                <X className="w-6 h-6 text-gray-400" />
+              </button>
+            </div>
+
+            <div className="p-8 space-y-4 max-h-[60vh] overflow-y-auto">
+              {settlementBuyers.map((buyer) => (
+                <button
+                  key={buyer._id}
+                  onClick={() => proceedWithSettlement(settlementPropertyId!, buyer._id, settlementDetails)}
+                  className="w-full text-left p-5 border-2 border-gray-50 rounded-2xl hover:border-emerald-500 hover:bg-emerald-50/50 transition-all group flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 font-bold group-hover:bg-emerald-100 group-hover:text-emerald-600 transition-colors">
+                      {buyer.name[0].toUpperCase()}
+                    </div>
+                    <div>
+                      <p className="font-bold text-gray-900">{buyer.name}</p>
+                      <p className="text-xs text-gray-400 font-medium">{buyer.email}</p>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-emerald-500 transition-colors" />
+                </button>
+              ))}
+            </div>
+            
+            <div className="p-8 bg-gray-50/50 border-t border-gray-50">
+              <Button onClick={() => setShowSettlementModal(false)} variant="outline" className="w-full">
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Inspection Form Modal */}
+      {showInspectionForm && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-[100] animate-in fade-in duration-200">
+          <div className="bg-white rounded-[2rem] p-8 w-full max-w-md shadow-2xl">
+            <div className="flex items-center justify-between mb-8">
+              <h3 className="text-2xl font-extrabold text-gray-900 tracking-tight">Schedule Inspection</h3>
+              <button onClick={() => setShowInspectionForm(false)} className="p-2 hover:bg-gray-50 rounded-full transition-colors">
+                <X className="w-6 h-6 text-gray-400" />
+              </button>
+            </div>
+            <div className="space-y-5">
+              <InputField
+                label="Date"
+                type="date"
+                value={inspectionForm.date}
+                onChange={(e) => setInspectionForm({...inspectionForm, date: e.target.value})}
+              />
+              <InputField
+                label="Time"
+                type="time"
+                value={inspectionForm.time}
+                onChange={(e) => setInspectionForm({...inspectionForm, time: e.target.value})}
+              />
+              <InputField
+                label="Inspector Name"
+                value={inspectionForm.inspector}
+                onChange={(e) => setInspectionForm({...inspectionForm, inspector: e.target.value})}
+              />
+              <InputField
+                label="Client Name"
+                value={inspectionForm.client}
+                onChange={(e) => setInspectionForm({...inspectionForm, client: e.target.value})}
+              />
+              <div>
+                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Notes</label>
+                <textarea
+                  value={inspectionForm.notes}
+                  onChange={(e) => setInspectionForm({...inspectionForm, notes: e.target.value})}
+                  className="w-full px-4 py-3 border-2 border-gray-50 rounded-2xl focus:outline-none focus:border-emerald-500 bg-gray-50/50 min-h-[100px] transition-colors"
+                  placeholder="Additional details..."
+                />
+              </div>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-4 mt-10">
+              <Button onClick={() => setShowInspectionForm(false)} variant="outline" className="w-full sm:flex-1">
+                Cancel
+              </Button>
+              <Button onClick={handleAddInspection} variant="primary" className="w-full sm:flex-1">
+                Schedule
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Note Form Modal */}
+      {showNoteForm && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-[100] animate-in fade-in duration-200">
+          <div className="bg-white rounded-[2rem] p-8 w-full max-w-md shadow-2xl">
+            <div className="flex items-center justify-between mb-8">
+              <h3 className="text-2xl font-extrabold text-gray-900 tracking-tight">Add New Note</h3>
+              <button onClick={() => setShowNoteForm(false)} className="p-2 hover:bg-gray-50 rounded-full transition-colors">
+                <X className="w-6 h-6 text-gray-400" />
+              </button>
+            </div>
+            <div className="space-y-5">
+              <InputField
+                label="Title"
+                value={noteForm.title}
+                onChange={(e) => setNoteForm({...noteForm, title: e.target.value})}
+                placeholder="Note title..."
+              />
+              <div>
+                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Content</label>
+                <textarea
+                  value={noteForm.content}
+                  onChange={(e) => setNoteForm({...noteForm, content: e.target.value})}
+                  className="w-full px-4 py-3 border-2 border-gray-50 rounded-2xl focus:outline-none focus:border-emerald-500 bg-gray-50/50 min-h-[120px] transition-colors"
+                  placeholder="Note content..."
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Type</label>
+                  <select
+                    value={noteForm.type}
+                    onChange={(e) => setNoteForm({...noteForm, type: e.target.value as any})}
+                    className="w-full px-4 py-3 border-2 border-gray-50 rounded-2xl focus:outline-none focus:border-emerald-500 bg-gray-50/50 transition-colors"
+                  >
+                    <option value="property">Property</option>
+                    <option value="inspection">Inspection</option>
+                    <option value="general">General</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Priority</label>
+                  <select
+                    value={noteForm.priority}
+                    onChange={(e) => setNoteForm({...noteForm, priority: e.target.value as any})}
+                    className="w-full px-4 py-3 border-2 border-gray-50 rounded-2xl focus:outline-none focus:border-emerald-500 bg-gray-50/50 transition-colors"
+                  >
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-4 mt-10">
+              <Button onClick={() => setShowNoteForm(false)} variant="outline" className="w-full sm:flex-1">
+                Cancel
+              </Button>
+              <Button onClick={handleAddNote} variant="primary" className="w-full sm:flex-1">
+                Save Note
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Contact Modal */}
+      {isContactModalOpen && selectedProperty && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-[100] animate-in fade-in duration-200">
+          <div className="bg-white rounded-[2rem] w-full max-w-2xl shadow-2xl overflow-hidden">
+            <div className="p-8 border-b border-gray-50 flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight">
+                  {selectedBuyer ? `Chat with ${selectedBuyer.name}` : "Select a Buyer"}
+                </h2>
+                <p className="text-sm font-medium text-gray-400 mt-1">
+                  {selectedBuyer ? `Regarding ${selectedProperty.title}` : "Choose a buyer to start communicating"}
+                </p>
+              </div>
+              <button onClick={() => {
+                setIsContactModalOpen(false);
+                setSelectedBuyer(null);
+              }} className="p-2 hover:bg-gray-50 rounded-full transition-colors">
+                <X className="w-6 h-6 text-gray-400" />
+              </button>
+            </div>
+
+            <div className="p-8">
+              {!selectedBuyer ? (
+                <div className="space-y-4 max-h-[50vh] overflow-y-auto pr-2">
+                  {buyers.length > 0 ? (
+                    <div className="grid grid-cols-1 gap-3">
+                      {buyers.map((b) => (
+                        <button
+                          key={b.id}
+                          onClick={() => setSelectedBuyer(b.user)}
+                          className="w-full text-left p-5 border-2 border-gray-50 rounded-2xl hover:border-emerald-500 hover:bg-emerald-50/50 transition-all flex items-center justify-between group"
+                        >
+                          <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 font-bold group-hover:bg-emerald-100 group-hover:text-emerald-600 transition-colors">
+                              {b.user.name[0].toUpperCase()}
+                            </div>
+                            <div>
+                              <p className="font-bold text-gray-900">{b.user.name}</p>
+                              <p className="text-xs text-gray-400 font-medium">Buyer</p>
+                            </div>
+                          </div>
+                          <MessageSquare className="w-5 h-5 text-gray-300 group-hover:text-emerald-500 transition-colors" />
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12">
+                      <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <Users className="w-8 h-8 text-gray-300" />
+                      </div>
+                      <p className="text-gray-400 font-medium">No buyers have unlocked this property yet.</p>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="h-[60vh]">
+                  <OneToOneChat
+                    agent={{ id: selectedBuyer._id, name: selectedBuyer.name, email: selectedBuyer.email }}
+                    propertyTitle={selectedProperty.title}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Seller Chat Modal */}
+      {showSellerChat && selectedSeller && (
+        <Modal isOpen={showSellerChat} onClose={() => setShowSellerChat(false)} title={`Chat with ${selectedSeller.name}`} size="lg">
+          <div className="h-[70vh] max-h-[80vh]">
+            {(() => {
+              const sellerId = selectedSeller.id;
+              return (
+                <RealSellerAgentChat
+                  otherUserId={sellerId}
+                  propertyId={selectedProperty?._id || selectedProperty?.id}
+                  currentUserId={currentUserId}
+                  currentUserRole="agent"
+                  otherName={selectedSeller.name}
+                  otherAvatar={selectedSeller.avatar}
+                />
+              );
+            })()}
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }
