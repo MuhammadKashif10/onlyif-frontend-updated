@@ -20,8 +20,10 @@ import {
   Calendar,
   ChevronRight,
   User,
-  Activity
+  Activity,
+  Search
 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, Button } from '@/components/reusable';
 
 // Loading spinner component
 const LoadingSpinner = () => (
@@ -65,7 +67,7 @@ interface EnhancedProperty extends Property {
 
 function SellerDashboard() {
   const router = useRouter();
-  const { user, isAuthenticated, isLoading: authLoading, logout } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading, logout, addRole, setActiveRole } = useAuth();
   
   // State management
   const [activeTab, setActiveTab] = useState<'dashboard' | 'listings'>('dashboard');
@@ -77,13 +79,47 @@ function SellerDashboard() {
   const [statsError, setStatsError] = useState<string | null>(null);
   const [listingsError, setListingsError] = useState<string | null>(null);
   
+  // Role switch modal state
+  const [isBuyerModalOpen, setBuyerModalOpen] = useState(false);
+  const [buyerChecks, setBuyerChecks] = useState({
+    unlockFee: false,
+    noBypass: false,
+    responsibility: false,
+  });
+
+  const buyerAllChecked = 
+    buyerChecks.unlockFee && 
+    buyerChecks.noBypass && 
+    buyerChecks.responsibility;
+
+  const handleSwitchToBuyer = async () => {
+    if (user?.acceptedRoles?.buyer) {
+      setActiveRole('buyer');
+      router.push('/dashboards/buyer');
+    } else {
+      setBuyerModalOpen(true);
+    }
+  };
+
+  const handleAcceptBuyer = async () => {
+    if (!buyerAllChecked) return;
+    try {
+      await addRole('buyer');
+      setActiveRole('buyer');
+      setBuyerModalOpen(false);
+      router.push('/dashboards/buyer');
+    } catch (err) {
+      console.error('Error switching to buyer:', err);
+    }
+  };
+
   // Add missing state variables for Quick Actions
   const [isGettingPriceEstimation, setIsGettingPriceEstimation] = useState(false);
   const [isViewingAddons, setIsViewingAddons] = useState(false);
   const [isGettingCashOffer, setIsGettingCashOffer] = useState(false);
   const [isSchedulingInspection, setIsSchedulingInspection] = useState(false);
   
-  // Authentication check
+  // Authentication check - updated for multi-role support
   useEffect(() => {
     if (authLoading) return;
     
@@ -92,8 +128,9 @@ function SellerDashboard() {
       return;
     }
     
-    if (user.role !== 'seller') {
-      router.push('/dashboards');
+    // In multi-role system, check roles array instead of legacy role field
+    if (!user.roles.includes('seller')) {
+      router.push('/dashboard');
       return;
     }
 
@@ -190,7 +227,7 @@ function SellerDashboard() {
   }
   
   // Show error if not authenticated
-  if (!isAuthenticated || !user || user.role !== 'seller') {
+  if (!isAuthenticated || !user || !user.roles.includes('seller')) {
     return null; // Will redirect in useEffect
   }
 
@@ -380,6 +417,15 @@ function SellerDashboard() {
 
         {/* Right: Dashboard & Sign Out */}
         <div className="flex items-center space-x-6">
+          {/* Switch to Buyer Button */}
+          <button
+            onClick={handleSwitchToBuyer}
+            className="flex items-center space-x-2 bg-blue-50 text-blue-600 border border-blue-200 px-4 py-2 rounded-lg hover:bg-blue-100 transition-colors font-semibold"
+          >
+            <Search className="h-5 w-5" />
+            <span>Switch to Buyer</span>
+          </button>
+
           <Link 
             href="/dashboard"
             className="text-sm font-semibold text-emerald-600 hover:text-emerald-700 transition-colors"
@@ -783,6 +829,65 @@ function SellerDashboard() {
           </main>
         </div>
       </div>
+
+      {/* Switch to Buyer Popup */}
+      <Dialog open={isBuyerModalOpen} onOpenChange={(open) => setBuyerModalOpen(open)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Browse Homes</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <label className="flex items-start gap-3 text-sm text-gray-700">
+              <input
+                type="checkbox"
+                className="mt-1 h-4 w-4"
+                checked={buyerChecks.unlockFee}
+                onChange={(e) => setBuyerChecks((p) => ({ ...p, unlockFee: e.target.checked }))}
+              />
+              <span>
+                I understand the $49 unlock fee is non-refundable and grants access to full listing details.
+              </span>
+            </label>
+            <label className="flex items-start gap-3 text-sm text-gray-700">
+              <input
+                type="checkbox"
+                className="mt-1 h-4 w-4"
+                checked={buyerChecks.noBypass}
+                onChange={(e) => setBuyerChecks((p) => ({ ...p, noBypass: e.target.checked }))}
+              />
+              <span>I agree not to contact sellers directly or bypass the platform.</span>
+            </label>
+            <label className="flex items-start gap-3 text-sm text-gray-700">
+              <input
+                type="checkbox"
+                className="mt-1 h-4 w-4"
+                checked={buyerChecks.responsibility}
+                onChange={(e) => setBuyerChecks((p) => ({ ...p, responsibility: e.target.checked }))}
+              />
+              <span>I acknowledge Only If is not responsible for the sale outcome or owner decisions.</span>
+            </label>
+          </div>
+
+          <div className="mt-6 flex justify-end gap-3">
+            <button
+              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
+              onClick={() => setBuyerModalOpen(false)}
+            >
+              Cancel
+            </button>
+            <button
+              className={`px-4 py-2 rounded-md text-white transition-colors ${
+                buyerAllChecked ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-300 cursor-not-allowed'
+              }`}
+              disabled={!buyerAllChecked}
+              onClick={handleAcceptBuyer}
+            >
+              Accept
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

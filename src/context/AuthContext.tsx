@@ -10,6 +10,12 @@ interface User {
   name: string;
   type: UserRole;
   role: UserRole;
+  roles: UserRole[];
+  acceptedRoles: {
+    buyer: boolean;
+    seller: boolean;
+    agent: boolean;
+  };
   agentStatus?: 'pending' | 'approved' | 'rejected' | null;
 }
 
@@ -20,6 +26,9 @@ interface AuthContextType {
   logout: () => void;
   register: (userData: RegisterData) => Promise<void>;
   acceptRole: (role: 'buyer' | 'seller') => Promise<void>;
+  addRole: (role: 'buyer' | 'seller') => Promise<void>;
+  activeRole: UserRole;
+  setActiveRole: (role: UserRole) => void;
   requestAgentRole: () => Promise<void>;
   sendOtp: (email?: string, phone?: string) => Promise<void>;
   verifyOtp: (email: string | undefined, phone: string | undefined, otp: string) => Promise<void>;
@@ -68,6 +77,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeRole, setActiveRoleState] = useState<UserRole>(null);
+
+  const setActiveRole = (role: UserRole) => {
+    setActiveRoleState(role);
+    if (typeof window !== 'undefined' && role) {
+      localStorage.setItem('activeRole', role);
+    }
+  };
 
   // Session validation function
   const validateSession = async (): Promise<boolean> => {
@@ -95,13 +112,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const data = await parseJsonSafely(response);
       const normalizedRole: UserRole = data.data.role ?? null;
-      const userData = {
+      const userData: User = {
         ...data.data,
+        id: data.data._id || data.data.id,
         type: normalizedRole,
         role: normalizedRole,
+        roles: data.data.roles || [normalizedRole].filter(Boolean),
+        acceptedRoles: data.data.acceptedRoles || {
+          buyer: normalizedRole === 'buyer',
+          seller: normalizedRole === 'seller',
+          agent: normalizedRole === 'agent'
+        }
       };
       
       setUser(userData);
+      // Update activeRole if not set
+      if (typeof window !== 'undefined') {
+        const savedActiveRole = localStorage.getItem('activeRole') as UserRole;
+        if (savedActiveRole && userData.roles.includes(savedActiveRole)) {
+          setActiveRoleState(savedActiveRole);
+        } else if (userData.roles.length > 0) {
+          // Default to admin, then agent, then buyer, then seller
+          let defaultRole: UserRole = userData.roles[0];
+          if (userData.roles.includes('admin')) defaultRole = 'admin';
+          else if (userData.roles.includes('agent')) defaultRole = 'agent';
+          else if (userData.roles.includes('buyer')) defaultRole = 'buyer';
+          else if (userData.roles.includes('seller')) defaultRole = 'seller';
+          
+          setActiveRoleState(defaultRole);
+          localStorage.setItem('activeRole', defaultRole);
+        }
+      }
+      
       // Update stored user data
       localStorage.setItem('user', JSON.stringify(userData));
       return true;
@@ -163,10 +205,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = await parseJsonSafely(response);
       
       const normalizedRole: UserRole = data.data.user.role ?? null;
-      const userData = {
+      const userData: User = {
         ...data.data.user,
+        id: data.data.user._id || data.data.user.id,
         type: normalizedRole,
         role: normalizedRole,
+        roles: data.data.user.roles || [normalizedRole].filter(Boolean),
+        acceptedRoles: data.data.user.acceptedRoles || {
+          buyer: normalizedRole === 'buyer',
+          seller: normalizedRole === 'seller',
+          agent: normalizedRole === 'agent'
+        }
       };
       
       setUser(userData);
@@ -174,6 +223,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (typeof window !== 'undefined') {
         localStorage.setItem('user', JSON.stringify(userData));
         localStorage.setItem('token', data.data.token);
+        
+        // Set default activeRole on login
+        let defaultRole: UserRole = userData.roles[0];
+        if (userData.roles.includes('admin')) defaultRole = 'admin';
+        else if (userData.roles.includes('agent')) defaultRole = 'agent';
+        else if (userData.roles.includes('buyer')) defaultRole = 'buyer';
+        else if (userData.roles.includes('seller')) defaultRole = 'seller';
+        
+        setActiveRoleState(defaultRole);
+        localStorage.setItem('activeRole', defaultRole);
       }
     } catch (err) {
       setError('Invalid email or password');
@@ -208,14 +267,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = await parseJsonSafely(response);
       
       const normalizedRole: UserRole = data.data.user.role ?? null;
-      const userData = {
+      const userData: User = {
         ...data.data.user,
+        id: data.data.user._id || data.data.user.id,
         type: normalizedRole,
         role: normalizedRole,
+        roles: data.data.user.roles || [normalizedRole].filter(Boolean),
+        acceptedRoles: data.data.user.acceptedRoles || {
+          buyer: normalizedRole === 'buyer',
+          seller: normalizedRole === 'seller',
+          agent: normalizedRole === 'agent'
+        }
       };
       
       setUser(userData);
       localStorage.setItem('user', JSON.stringify(userData));
+      
+      // Set default activeRole on admin login
+      const defaultRole = 'admin';
+      setActiveRoleState(defaultRole);
+      localStorage.setItem('activeRole', defaultRole);
+
       // Fix: Use data.data.token instead of response.token
       if (data.data.token) {
         localStorage.setItem('token', data.data.token);
@@ -281,16 +353,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = await parseJsonSafely(response);
       
       const normalizedRole: UserRole = data.data.user.role ?? null;
-      const newUser = {
+      const newUser: User = {
         ...data.data.user,
+        id: data.data.user._id || data.data.user.id,
         type: normalizedRole,
         role: normalizedRole,
+        roles: data.data.user.roles || [normalizedRole].filter(Boolean),
+        acceptedRoles: data.data.user.acceptedRoles || {
+          buyer: normalizedRole === 'buyer',
+          seller: normalizedRole === 'seller',
+          agent: normalizedRole === 'agent'
+        }
       };
       
       setUser(newUser);
       if (typeof window !== 'undefined') {
         localStorage.setItem('user', JSON.stringify(newUser));
         localStorage.setItem('token', data.data.token);
+        
+        // Set default activeRole on registration
+        const defaultRole: UserRole = newUser.roles[0] || normalizedRole;
+        setActiveRoleState(defaultRole);
+        localStorage.setItem('activeRole', defaultRole || '');
       }
     } catch (err) {
       setError('Registration failed');
@@ -332,8 +416,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const normalizedRole: UserRole = data.data.role ?? null;
       const updatedUser: User = {
         ...data.data,
+        id: data.data._id || data.data.id,
         type: normalizedRole,
         role: normalizedRole,
+        roles: data.data.roles || [normalizedRole].filter(Boolean),
+        acceptedRoles: data.data.acceptedRoles || {
+          buyer: normalizedRole === 'buyer',
+          seller: normalizedRole === 'seller',
+          agent: normalizedRole === 'agent'
+        }
       };
 
       setUser(updatedUser);
@@ -342,6 +433,61 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     } catch (err) {
       setError('Failed to accept role');
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const addRole = async (role: 'buyer' | 'seller') => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      if (!API_BASE_URL) {
+        throw new Error('API URL is not configured.');
+      }
+
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      if (!token) {
+        throw new Error('You must be logged in to add a role.');
+      }
+
+      const response = await fetch(buildApiUrl('/auth/add-role'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ role }),
+      });
+
+      if (!response.ok) {
+        const errorData = await parseJsonSafely(response);
+        throw new Error(errorData.message || 'Failed to add role');
+      }
+
+      const data = await parseJsonSafely(response);
+      const normalizedRole: UserRole = data.data.role ?? null;
+      const updatedUser: User = {
+        ...data.data,
+        id: data.data._id || data.data.id,
+        type: normalizedRole,
+        role: normalizedRole,
+        roles: data.data.roles || [normalizedRole].filter(Boolean),
+        acceptedRoles: data.data.acceptedRoles || {
+          buyer: normalizedRole === 'buyer',
+          seller: normalizedRole === 'seller',
+          agent: normalizedRole === 'agent'
+        }
+      };
+
+      setUser(updatedUser);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+      }
+    } catch (err) {
+      setError('Failed to add role');
       throw err;
     } finally {
       setIsLoading(false);
@@ -398,10 +544,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = () => {
     setUser(null);
+    setActiveRoleState(null);
     setError(null);
     if (typeof window !== 'undefined') {
       localStorage.removeItem('user');
       localStorage.removeItem('token');
+      localStorage.removeItem('activeRole');
       // Also clear any remaining sessionStorage items
       sessionStorage.removeItem('user');
       sessionStorage.removeItem('token');
@@ -464,15 +612,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = await parseJsonSafely(response);
       
       const normalizedRole: UserRole = data.data.user.role ?? null;
-      const userData = {
+      const userData: User = {
         ...data.data.user,
+        id: data.data.user._id || data.data.user.id,
         type: normalizedRole,
         role: normalizedRole,
+        roles: data.data.user.roles || [normalizedRole].filter(Boolean),
+        acceptedRoles: data.data.user.acceptedRoles || {
+          buyer: normalizedRole === 'buyer',
+          seller: normalizedRole === 'seller',
+          agent: normalizedRole === 'agent'
+        }
       };
       
       setUser(userData);
-      localStorage.setItem('user', JSON.stringify(userData));
-      localStorage.setItem('token', data.data.token);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('user', JSON.stringify(userData));
+        localStorage.setItem('token', data.data.token);
+        
+        // Set default activeRole on OTP verification
+        let defaultRole: UserRole = userData.roles[0];
+        if (userData.roles.includes('admin')) defaultRole = 'admin';
+        else if (userData.roles.includes('agent')) defaultRole = 'agent';
+        else if (userData.roles.includes('buyer')) defaultRole = 'buyer';
+        else if (userData.roles.includes('seller')) defaultRole = 'seller';
+        
+        setActiveRoleState(defaultRole);
+        localStorage.setItem('activeRole', defaultRole || '');
+      }
     } catch (err) {
       setError('OTP verification failed');
       throw err;
@@ -481,7 +648,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const isAdmin = user?.role === 'admin';
+  const isAdmin = user?.roles?.includes('admin') || user?.role === 'admin';
 
   return (
     <AuthContext.Provider value={{
@@ -491,6 +658,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       logout,
       register,
       acceptRole,
+      addRole,
+      activeRole,
+      setActiveRole,
       requestAgentRole,
       sendOtp,
       verifyOtp,

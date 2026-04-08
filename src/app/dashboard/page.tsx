@@ -10,7 +10,7 @@ type ModalType = 'buyer' | 'seller' | 'agent' | null;
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { user, isLoading, acceptRole, requestAgentRole } = useAuth();
+  const { user, isLoading, addRole, setActiveRole, activeRole, requestAgentRole } = useAuth();
 
   const [modal, setModal] = useState<ModalType>(null);
 
@@ -40,26 +40,50 @@ export default function DashboardPage() {
       return;
     }
 
-    if (user.role === 'buyer') {
-      router.replace('/dashboards/buyer');
-      return;
+    // Use activeRole if available for consistent redirection
+    if (activeRole) {
+      if (activeRole === 'admin' && user.roles.includes('admin')) {
+        router.replace('/dashboards/admin');
+        return;
+      }
+      if (activeRole === 'agent' && user.roles.includes('agent')) {
+        router.replace('/dashboards/agent');
+        return;
+      }
+      if (activeRole === 'buyer' && user.roles.includes('buyer')) {
+        router.replace('/dashboards/buyer');
+        return;
+      }
+      if (activeRole === 'seller' && user.roles.includes('seller')) {
+        router.replace('/dashboards/seller');
+        return;
+      }
     }
 
-    if (user.role === 'seller') {
-      router.replace('/dashboards/seller');
-      return;
+    // Default redirection based on roles if activeRole is not set or not matching
+    if (user.roles && user.roles.length > 0) {
+      if (user.roles.includes('admin')) {
+        setActiveRole('admin');
+        router.replace('/dashboards/admin');
+        return;
+      }
+      if (user.roles.includes('agent')) {
+        setActiveRole('agent');
+        router.replace('/dashboards/agent');
+        return;
+      }
+      if (user.roles.includes('buyer')) {
+        setActiveRole('buyer');
+        router.replace('/dashboards/buyer');
+        return;
+      }
+      if (user.roles.includes('seller')) {
+        setActiveRole('seller');
+        router.replace('/dashboards/seller');
+        return;
+      }
     }
-
-    if (user.role === 'agent') {
-      router.replace('/dashboards/agent');
-      return;
-    }
-
-    if (user.role === 'admin') {
-      router.replace('/dashboards/admin');
-      return;
-    }
-  }, [isLoading, router, user]);
+  }, [isLoading, router, user, activeRole, setActiveRole]);
 
   const buyerAllChecked = useMemo(
     () => buyerChecks.unlockFee && buyerChecks.noBypass && buyerChecks.responsibility,
@@ -81,14 +105,30 @@ export default function DashboardPage() {
 
   const handleAcceptBuyer = async () => {
     if (!buyerAllChecked) return;
-    await acceptRole('buyer');
+    await addRole('buyer');
     router.push('/dashboards/buyer');
   };
 
   const handleAcceptSeller = async () => {
     if (!sellerAllChecked) return;
-    await acceptRole('seller');
+    await addRole('seller');
     router.push('/dashboards/seller');
+  };
+
+  const handleSelectBuyer = () => {
+    if (user?.acceptedRoles?.buyer) {
+      router.push('/dashboards/buyer');
+    } else {
+      setModal('buyer');
+    }
+  };
+
+  const handleSelectSeller = () => {
+    if (user?.acceptedRoles?.seller) {
+      router.push('/dashboards/seller');
+    } else {
+      setModal('seller');
+    }
   };
 
   const handleAcceptAgent = async () => {
@@ -101,7 +141,7 @@ export default function DashboardPage() {
     }
   };
 
-  if (isLoading || !user || user.role !== null) return null;
+  if (isLoading || !user) return null;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -116,7 +156,7 @@ export default function DashboardPage() {
         <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6">
           <button
             type="button"
-            onClick={() => setModal('seller')}
+            onClick={handleSelectSeller}
             className="rounded-2xl border border-gray-200 bg-white p-6 text-left shadow-sm hover:shadow-md transition-shadow"
           >
             <div className="text-2xl">🏠</div>
@@ -128,7 +168,7 @@ export default function DashboardPage() {
 
           <button
             type="button"
-            onClick={() => setModal('buyer')}
+            onClick={handleSelectBuyer}
             className="rounded-2xl border border-gray-200 bg-white p-6 text-left shadow-sm hover:shadow-md transition-shadow"
           >
             <div className="text-2xl">🔍</div>

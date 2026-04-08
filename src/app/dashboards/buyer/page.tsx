@@ -13,6 +13,7 @@ import { getSafeImageUrl } from '@/utils/imageUtils';
 import { formatCurrencyCompact } from '@/utils/currency';
 import { Bed, Bath, Car } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/reusable';
 
 // Define DashboardStats interface
 interface DashboardStats {
@@ -63,7 +64,7 @@ interface PropertyStatusUpdate {
 
 export default function BuyerDashboard() {
   const router = useRouter();
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, addRole, setActiveRole } = useAuth();
   const { 
     unlockedProperties,
     viewedProperties, 
@@ -85,6 +86,67 @@ export default function BuyerDashboard() {
   // Add modal state for property details
   const [selectedProperty, setSelectedProperty] = useState<any | null>(null);
   const [isPropertyModalOpen, setPropertyModalOpen] = useState(false);
+  
+  // Role switch modal state
+  const [isSellerModalOpen, setSellerModalOpen] = useState(false);
+  const [sellerChecks, setSellerChecks] = useState({
+    terms: false,
+    legalAuthorization: false,
+    successFee: false,
+    noBypass: false,
+    upgrades: false,
+    agentPartnerHelp: false,
+  });
+
+  const sellerAllChecked = 
+    sellerChecks.terms &&
+    sellerChecks.legalAuthorization &&
+    sellerChecks.successFee &&
+    sellerChecks.noBypass &&
+    sellerChecks.upgrades &&
+    sellerChecks.agentPartnerHelp;
+
+  const handleSwitchToSeller = async () => {
+    if (user?.acceptedRoles?.seller) {
+      setActiveRole('seller');
+      router.push('/dashboards/seller');
+    } else {
+      setSellerModalOpen(true);
+    }
+  };
+
+  const handleAcceptSeller = async () => {
+    if (!sellerAllChecked) return;
+    try {
+      await addRole('seller');
+      setActiveRole('seller');
+      setSellerModalOpen(false);
+      router.push('/dashboards/seller');
+    } catch (err) {
+      console.error('Error switching to seller:', err);
+      toast.error('Failed to add seller role');
+    }
+  };
+
+  useEffect(() => {
+    if (authLoading) return;
+    
+    if (!user) {
+      router.push('/signin');
+      return;
+    }
+
+    // In multi-role system, check roles array instead of legacy role field
+    if (!user.roles.includes('buyer')) {
+      router.push('/dashboard');
+      return;
+    }
+
+    fetchBuyerData();
+    fetchDashboardStats();
+    fetchWatchlist();
+    fetchStatusUpdates();
+  }, [user, authLoading, router]);
   
   // Property tracking state
   const [watchlist, setWatchlist] = useState<TrackedProperty[]>([]);
@@ -121,25 +183,6 @@ export default function BuyerDashboard() {
   
     return getSafeImageUrl('/images/01.jpg');
   };
-
-  useEffect(() => {
-    if (!authLoading && !user) {
-      router.push('/signin');
-      return;
-    }
-
-    if (user && user.role !== 'buyer') {
-      router.push('/signin');
-      return;
-    }
-
-    if (user) {
-      fetchBuyerData();
-      fetchDashboardStats();
-      fetchWatchlist();
-      fetchStatusUpdates();
-    }
-  }, [user, authLoading]);
 
   const fetchDashboardStats = async () => {
     try {
@@ -317,6 +360,15 @@ export default function BuyerDashboard() {
           </div>
           
           <div className="flex items-center justify-center sm:justify-end space-x-4 w-full sm:w-auto">
+            {/* Switch to Seller Button */}
+            <button
+              onClick={handleSwitchToSeller}
+              className="flex items-center space-x-2 bg-emerald-50 text-emerald-600 border border-emerald-200 px-4 py-2 rounded-lg hover:bg-emerald-100 transition-colors font-semibold"
+            >
+              <Home className="h-5 w-5" />
+              <span>Switch to Seller</span>
+            </button>
+
             {/* Notifications Bell */}
             <div className="relative">
               <button
@@ -913,6 +965,94 @@ export default function BuyerDashboard() {
           </div>
         )}
       </Modal>
+
+      {/* Switch to Seller Popup */}
+      <Dialog open={isSellerModalOpen} onOpenChange={(open) => setSellerModalOpen(open)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>List My Home</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <label className="flex items-start gap-3 text-sm text-gray-700">
+              <input
+                type="checkbox"
+                className="mt-1 h-4 w-4"
+                checked={sellerChecks.terms}
+                onChange={(e) => setSellerChecks((p) => ({ ...p, terms: e.target.checked }))}
+              />
+              <span>
+                I agree to the Terms and Conditions
+              </span>
+            </label>
+            <label className="flex items-start gap-3 text-sm text-gray-700">
+              <input
+                type="checkbox"
+                className="mt-1 h-4 w-4"
+                checked={sellerChecks.legalAuthorization}
+                onChange={(e) => setSellerChecks((p) => ({ ...p, legalAuthorization: e.target.checked }))}
+              />
+              <span>I confirm I am legally authorised to list the property on Only If.</span>
+            </label>
+            <label className="flex items-start gap-3 text-sm text-gray-700">
+              <input
+                type="checkbox"
+                className="mt-1 h-4 w-4"
+                checked={sellerChecks.successFee}
+                onChange={(e) => setSellerChecks((p) => ({ ...p, successFee: e.target.checked }))}
+              />
+              <span>
+                I agree to a 1.1% (inc. GST) success fee if a buyer from Only If purchases my property.
+              </span>
+            </label>
+            <label className="flex items-start gap-3 text-sm text-gray-700">
+              <input
+                type="checkbox"
+                className="mt-1 h-4 w-4"
+                checked={sellerChecks.noBypass}
+                onChange={(e) => setSellerChecks((p) => ({ ...p, noBypass: e.target.checked }))}
+              />
+              <span>I will not attempt to bypass the platform or agent once a buyer is introduced.</span>
+            </label>
+            <label className="flex items-start gap-3 text-sm text-gray-700">
+              <input
+                type="checkbox"
+                className="mt-1 h-4 w-4"
+                checked={sellerChecks.upgrades}
+                onChange={(e) => setSellerChecks((p) => ({ ...p, upgrades: e.target.checked }))}
+              />
+              <span>I understand premium listings and AI features may incur additional costs.</span>
+            </label>
+            <label className="flex items-start gap-3 text-sm text-gray-700">
+              <input
+                type="checkbox"
+                className="mt-1 h-4 w-4"
+                checked={sellerChecks.agentPartnerHelp}
+                onChange={(e) => setSellerChecks((p) => ({ ...p, agentPartnerHelp: e.target.checked }))}
+              />
+              <span>I am interested in professional agent help to sell my property.</span>
+            </label>
+          </div>
+
+          <div className="mt-6 flex justify-end gap-3">
+            <button
+              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
+              onClick={() => setSellerModalOpen(false)}
+            >
+              Cancel
+            </button>
+            <button
+              className={`px-4 py-2 rounded-md text-white transition-colors ${
+                sellerAllChecked ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-gray-300 cursor-not-allowed'
+              }`}
+              disabled={!sellerAllChecked}
+              onClick={handleAcceptSeller}
+            >
+              Accept
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

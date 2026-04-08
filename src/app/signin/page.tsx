@@ -9,7 +9,7 @@ import Link from 'next/link';
 
 export default function SignInPage() {
   const router = useRouter();
-  const { login, user, isLoading, error } = useAuth();
+  const { login, user, isLoading, error, activeRole } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -18,9 +18,11 @@ export default function SignInPage() {
   const [loginError, setLoginError] = useState('');
 
   useEffect(() => {
-    // Redirect if already authenticated based on userType from database
+    // Redirect if already authenticated based on activeRole or legacy role
     if (user) {
-      switch (user.role) {
+      const currentRole = activeRole || user.role;
+      
+      switch (currentRole) {
         case null:
           router.push('/dashboard');
           break;
@@ -40,7 +42,7 @@ export default function SignInPage() {
           router.push('/');
       }
     }
-  }, [user, router]);
+  }, [user, activeRole, router]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
