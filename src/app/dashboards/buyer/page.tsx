@@ -328,6 +328,34 @@ export default function BuyerDashboard() {
 
   // Add/Remove property from watchlist
   const toggleWatchlist = async (propertyId: string, isCurrentlyWatching: boolean) => {
+    // Optimistic Update
+    const previousWatchlist = [...watchlist];
+    
+    if (isCurrentlyWatching) {
+      setWatchlist(prev => prev.filter(p => p._id !== propertyId && p.id !== propertyId));
+    } else {
+      // Find property in recommendations or unlockedProperties to add temporarily
+      const propertyToAdd = recommendations.find(p => (p.id || p._id) === propertyId) || 
+                          unlockedProperties.find(p => (p.id || p._id) === propertyId);
+      
+      if (propertyToAdd) {
+        const newTrackedProperty: TrackedProperty = {
+          _id: propertyId,
+          title: propertyToAdd.title,
+          address: propertyToAdd.address,
+          price: propertyToAdd.price,
+          salesStatus: propertyToAdd.salesStatus as any,
+          status: propertyToAdd.status || 'active',
+          images: propertyToAdd.images || [],
+          isWatching: true
+        };
+        setWatchlist(prev => [newTrackedProperty, ...prev]);
+      } else {
+        // Just add an ID-only object if we can't find the full data
+        setWatchlist(prev => [{ _id: propertyId, isWatching: true } as any, ...prev]);
+      }
+    }
+
     try {
       const response = await fetch(`/api/buyer/watchlist/${propertyId}`, {
         method: isCurrentlyWatching ? 'DELETE' : 'POST',
@@ -340,14 +368,22 @@ export default function BuyerDashboard() {
       const data = await response.json();
       if (data.success) {
         if (isCurrentlyWatching) {
-          setWatchlist(prev => prev.filter(p => p._id !== propertyId && p.id !== propertyId));
           toast.success('Property removed from watchlist');
         } else {
           toast.success('Property added to watchlist');
-          fetchWatchlist(); // Refresh the full list to get updated status and metadata
+          // Fetch updated watchlist to ensure we have all correct metadata
+          fetchWatchlist();
         }
+        // Refresh dashboard stats to update saved properties count
+        fetchDashboardStats();
+      } else {
+        // Revert if success is false
+        setWatchlist(previousWatchlist);
+        toast.error(data.message || 'Failed to update watchlist');
       }
     } catch (error) {
+      // Revert on error
+      setWatchlist(previousWatchlist);
       console.error('Error updating watchlist:', error);
       toast.error('Failed to update watchlist');
     }
@@ -600,8 +636,8 @@ export default function BuyerDashboard() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     {recommendations.slice(0, 3).map((property) => (
                       <PropertyCard
-                        key={property.id || property._id}
-                        id={property.id || property._id}
+                        key={property._id || property.id}
+                        id={property._id || property.id}
                         title={property.title}
                         address={typeof property.address === 'string' ? property.address : formatPropertyAddress(property.address)}
                         price={property.price}
@@ -611,20 +647,23 @@ export default function BuyerDashboard() {
                         image={property.images?.[0]?.url || property.mainImage?.url || property.mainImage || '/images/01.jpg'}
                         carSpaces={property.carSpaces}
                         isWatched={watchlist.some(w => 
-                          (w._id && (w._id === property.id || w._id === property._id)) ||
-                          (w.id && (w.id === property.id || w.id === property._id))
+                          (w._id && (w._id === property._id || w._id === property.id)) ||
+                          (w.id && (w.id === property._id || w.id === property.id))
                         )}
                         onToggleWatchlist={(e) => {
                           e.stopPropagation();
                           e.preventDefault();
-                          const id = property.id || property._id;
-                          if (!id) return;
+                          const targetId = property._id || property.id;
+                          if (!targetId) {
+                            console.error('❌ Property ID not found for watchlist toggle');
+                            return;
+                          }
                           
                           const isWatching = watchlist.some(w => 
-                            (w._id && (w._id === property.id || w._id === property._id)) ||
-                            (w.id && (w.id === property.id || w.id === property._id))
+                            (w._id && (w._id === targetId)) ||
+                            (w.id && (w.id === targetId))
                           );
-                          toggleWatchlist(id, isWatching);
+                          toggleWatchlist(targetId, isWatching);
                         }}
                       />
                     ))}
@@ -917,7 +956,7 @@ export default function BuyerDashboard() {
                 ) : watchlist.length === 0 ? (
                   <div className="text-center py-20 bg-gray-50 rounded-3xl border border-dashed border-gray-200">
                     <Star className="mx-auto h-16 w-16 text-gray-200 mb-4" />
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">Watchlist is empty</h3>
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">You haven't saved any properties yet.</h3>
                     <p className="text-gray-500 mb-8 max-w-sm mx-auto font-medium px-4">Save properties to your watchlist to get notified immediately when their status changes.</p>
                     <button 
                       onClick={() => router.push('/buy')}

@@ -155,10 +155,10 @@ export const buyerApi = {
     }
   },
 
-  // Save a property
+  // Save a property to watchlist
   async saveProperty(propertyId: string): Promise<{ success: boolean; message: string }> {
     try {
-      const response = await apiClient.post(`/buyer/properties/${propertyId}/save`);
+      const response = await apiClient.post(`/buyer/watchlist/${propertyId}`);
       return response.data || { success: false, message: 'Unknown error' };
     } catch (error) {
       console.warn('Error saving property:', error);
@@ -166,10 +166,10 @@ export const buyerApi = {
     }
   },
 
-  // Unsave a property
+  // Remove a property from watchlist
   async unsaveProperty(propertyId: string): Promise<{ success: boolean; message: string }> {
     try {
-      const response = await apiClient.delete(`/buyer/properties/${propertyId}/save`);
+      const response = await apiClient.delete(`/buyer/watchlist/${propertyId}`);
       return response.data || { success: false, message: 'Unknown error' };
     } catch (error) {
       console.warn('Error unsaving property:', error);
