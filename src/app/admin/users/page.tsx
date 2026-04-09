@@ -205,6 +205,7 @@ interface User {
   email: string;
   phone?: string;
   role: 'buyer' | 'seller';
+  roles?: string[];
   status: 'active' | 'suspended' | 'banned';
   joinedDate: string;
   lastActive: string;
@@ -242,12 +243,24 @@ export default function UsersPage() {
     try {
       setIsLoading(true);
       const response = await adminApi.getUsers();
-      setUsers(response.data || []);
+      const normalizedUsers = (response.data || []).map((u: any) => ({
+        ...u,
+        role: u.role || (Array.isArray(u.roles) && u.roles.length > 0 ? u.roles[0] : 'buyer'),
+        roles: Array.isArray(u.roles) && u.roles.length > 0
+          ? u.roles
+          : (u.role ? [u.role] : []),
+      }));
+      setUsers(normalizedUsers);
     } catch (error) {
       console.error('Error loading users:', error);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const userHasRole = (user: User, targetRole: string) => {
+    const allRoles = user.roles && user.roles.length > 0 ? user.roles : [user.role];
+    return allRoles.includes(targetRole);
   };
 
   const filterUsers = () => {
@@ -261,7 +274,7 @@ export default function UsersPage() {
     }
     
     if (roleFilter !== 'all') {
-      filtered = filtered.filter(user => user.role === roleFilter);
+      filtered = filtered.filter(user => userHasRole(user, roleFilter));
     }
     
     if (statusFilter !== 'all') {
@@ -362,13 +375,13 @@ export default function UsersPage() {
           <div className="bg-white p-6 rounded-lg shadow">
             <h3 className="text-sm font-medium text-gray-500">Buyers</h3>
             <p className="text-2xl font-bold text-blue-600">
-              {users.filter(u => u.role === 'buyer').length}
+              {users.filter(u => userHasRole(u, 'buyer')).length}
             </p>
           </div>
           <div className="bg-white p-6 rounded-lg shadow">
             <h3 className="text-sm font-medium text-gray-500">Sellers</h3>
             <p className="text-2xl font-bold text-purple-600">
-              {users.filter(u => u.role === 'seller').length}
+              {users.filter(u => userHasRole(u, 'seller')).length}
             </p>
           </div>
           <div className="bg-white p-6 rounded-lg shadow">
@@ -441,9 +454,16 @@ export default function UsersPage() {
                         <div className="text-sm text-gray-500">{user.phone || 'No phone'}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleColor(user.role)}`}>
-                          {user.role}
-                        </span>
+                        <div className="flex flex-wrap gap-1">
+                          {(user.roles && user.roles.length > 0 ? user.roles : [user.role]).map((role) => (
+                            <span
+                              key={`${user.id}-${role}`}
+                              className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleColor(role)}`}
+                            >
+                              {role}
+                            </span>
+                          ))}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(user.status)}`}>
@@ -534,9 +554,16 @@ export default function UsersPage() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Role</label>
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleColor(selectedUser.role)}`}>
-                      {selectedUser.role}
-                    </span>
+                    <div className="flex flex-wrap gap-1">
+                      {(selectedUser.roles && selectedUser.roles.length > 0 ? selectedUser.roles : [selectedUser.role]).map((role) => (
+                        <span
+                          key={`${selectedUser.id}-${role}`}
+                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleColor(role)}`}
+                        >
+                          {role}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Status</label>

@@ -4,10 +4,10 @@ const BACKEND_URL = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_U
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { propertyId: string } }
+  { params }: { params: Promise<{ propertyId: string }> }
 ) {
   try {
-    const { propertyId } = params;
+    const { propertyId } = await params;
     
     // Get authorization header from frontend request
     const authorization = request.headers.get('Authorization');
@@ -23,9 +23,9 @@ export async function POST(
     const backendResponse = await fetch(`${BACKEND_URL}/api/buyer/watchlist/${propertyId}`, {
       method: 'POST',
       headers: {
-        'Authorization': authorization,
-        'Content-Type': 'application/json'
-      }
+        'Authorization': authorization
+      },
+      body: JSON.stringify({})
     });
 
     const responseData = await backendResponse.json();
@@ -53,10 +53,10 @@ export async function POST(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { propertyId: string } }
+  { params }: { params: Promise<{ propertyId: string }> }
 ) {
   try {
-    const { propertyId } = params;
+    const { propertyId } = await params;
     
     // Get authorization header from frontend request
     const authorization = request.headers.get('Authorization');
@@ -72,8 +72,7 @@ export async function DELETE(
     const backendResponse = await fetch(`${BACKEND_URL}/api/buyer/watchlist/${propertyId}`, {
       method: 'DELETE',
       headers: {
-        'Authorization': authorization,
-        'Content-Type': 'application/json'
+        'Authorization': authorization
       }
     });
 

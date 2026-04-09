@@ -70,6 +70,15 @@ interface PropertyStatusUpdate {
   };
 }
 
+const getPropertyIdentifier = (property: any): string | null => {
+  if (!property || typeof property !== 'object') return null;
+  const candidate = property._id || property.id || property.slug;
+  if (!candidate || typeof candidate !== 'string') return null;
+  const normalized = candidate.trim();
+  if (!normalized || normalized === 'undefined' || normalized === 'null') return null;
+  return normalized;
+};
+
 export default function BuyerDashboard() {
   const router = useRouter();
   const { user, loading: authLoading, addRole, setActiveRole } = useAuth();
@@ -328,6 +337,11 @@ export default function BuyerDashboard() {
 
   // Add/Remove property from watchlist
   const toggleWatchlist = async (propertyId: string, isCurrentlyWatching: boolean) => {
+    if (!propertyId || propertyId === 'undefined' || propertyId === 'null') {
+      toast.error('Unable to save this property. Missing property ID.');
+      return;
+    }
+
     // Optimistic Update
     const previousWatchlist = [...watchlist];
     
@@ -357,7 +371,7 @@ export default function BuyerDashboard() {
     }
 
     try {
-      const response = await fetch(`/api/buyer/watchlist/${propertyId}`, {
+      const response = await fetch(`/api/buyer/watchlist/${encodeURIComponent(propertyId)}`, {
         method: isCurrentlyWatching ? 'DELETE' : 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -653,9 +667,9 @@ export default function BuyerDashboard() {
                         onToggleWatchlist={(e) => {
                           e.stopPropagation();
                           e.preventDefault();
-                          const targetId = property._id || property.id;
+                          const targetId = getPropertyIdentifier(property);
                           if (!targetId) {
-                            console.error('❌ Property ID not found for watchlist toggle');
+                            toast.error('Unable to save this property right now.');
                             return;
                           }
                           
@@ -684,6 +698,71 @@ export default function BuyerDashboard() {
                   )}
                 </div>
               )}
+            </div>
+
+            {/* Your Watchlist */}
+            <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+              <div className="p-6 sm:p-8">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="bg-emerald-50 p-2 rounded-lg">
+                    <Heart className="w-5 h-5 text-emerald-600" />
+                  </div>
+                  <h3 className="text-base sm:text-xl font-bold text-gray-900">Your Watchlist</h3>
+                </div>
+                
+                {watchlist.length === 0 ? (
+                  <div className="space-y-6">
+                    <p className="text-xs sm:text-sm text-gray-500 leading-relaxed font-medium">
+                      You haven't saved any properties yet. Browse homes and tap the heart ❤️ to add favorites to your watchlist.
+                    </p>
+                    <div className="relative h-32 sm:h-40 rounded-2xl overflow-hidden">
+                      <img 
+                        src="/images/02.jpg" 
+                        alt="Watchlist placeholder" 
+                        className="w-full h-full object-cover brightness-90" 
+                      />
+                      <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm p-2 rounded-full shadow-sm">
+                        <Heart className="w-5 h-5 text-red-500 fill-red-500" />
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => router.push('/buy')}
+                      className="w-full sm:w-auto py-2.5 sm:py-3 px-6 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all shadow-md text-sm"
+                    >
+                      Browse All Homes
+                    </button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {watchlist.slice(0, 4).map(p => (
+                      <div key={p._id} className="flex gap-3 sm:gap-4 items-center p-2 sm:p-3 rounded-2xl hover:bg-gray-50 transition-colors border border-gray-50">
+                        <img 
+                          src={getSafeImageUrl(p.images?.[0]?.url || p.mainImage?.url || p.mainImage || '/images/01.jpg')} 
+                          className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl object-cover shadow-sm"
+                          alt={p.title}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-bold text-gray-900 truncate text-[10px] sm:text-sm">{p.title}</h4>
+                          <p className="text-[10px] sm:text-xs text-emerald-600 font-bold">{formatCurrencyCompact(p.price || 0)}</p>
+                        </div>
+                        <button
+                          onClick={() => {
+                            const targetId = getPropertyIdentifier(p);
+                            if (!targetId) {
+                              toast.error('Unable to update watchlist for this property.');
+                              return;
+                            }
+                            toggleWatchlist(targetId, true);
+                          }}
+                          className="p-1"
+                        >
+                          <Heart className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-red-500 fill-red-500" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
@@ -735,66 +814,6 @@ export default function BuyerDashboard() {
               </div>
             </div>
 
-            {/* Your Watchlist card below */}
-            <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-              <div className="p-6 sm:p-8">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="bg-emerald-50 p-2 rounded-lg">
-                    <Heart className="w-5 h-5 text-emerald-600" />
-                  </div>
-                  <h3 className="text-base sm:text-xl font-bold text-gray-900">Your Watchlist</h3>
-                </div>
-                
-                {watchlist.length === 0 ? (
-                  <div className="space-y-6">
-                    <p className="text-xs sm:text-sm text-gray-500 leading-relaxed font-medium">
-                      You haven't saved any properties yet. Browse homes and tap the heart ❤️ to add favorites to your watchlist.
-                    </p>
-                    <div className="relative h-32 sm:h-40 rounded-2xl overflow-hidden">
-                      <img 
-                        src="/images/02.jpg" 
-                        alt="Watchlist placeholder" 
-                        className="w-full h-full object-cover brightness-90" 
-                      />
-                      <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm p-2 rounded-full shadow-sm">
-                        <Heart className="w-5 h-5 text-red-500 fill-red-500" />
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => router.push('/buy')}
-                      className="w-full py-2.5 sm:py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all shadow-md text-sm"
-                    >
-                      Browse All Homes
-                    </button>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {watchlist.slice(0, 2).map(p => (
-                      <div key={p._id} className="flex gap-3 sm:gap-4 items-center p-2 sm:p-3 rounded-2xl hover:bg-gray-50 transition-colors border border-gray-50">
-                        <img 
-                          src={getSafeImageUrl(p.images?.[0]?.url || p.mainImage?.url || p.mainImage || '/images/01.jpg')} 
-                          className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl object-cover shadow-sm"
-                          alt={p.title}
-                        />
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-bold text-gray-900 truncate text-[10px] sm:text-sm">{p.title}</h4>
-                          <p className="text-[10px] sm:text-xs text-emerald-600 font-bold">{formatCurrencyCompact(p.price || 0)}</p>
-                        </div>
-                        <button onClick={() => toggleWatchlist(p._id || p.id, true)} className="p-1">
-                          <Heart className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-red-500 fill-red-500" />
-                        </button>
-                      </div>
-                    ))}
-                    <button
-                      onClick={() => setActiveTab('watchlist')}
-                      className="w-full py-2.5 sm:py-3 border-2 border-gray-100 text-gray-600 font-bold rounded-xl hover:bg-gray-50 transition-all text-xs sm:text-sm"
-                    >
-                      View Full Watchlist
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
           </div>
         </div>
 
@@ -984,7 +1003,12 @@ export default function BuyerDashboard() {
                           onToggleWatchlist={(e) => {
                             e.stopPropagation();
                             e.preventDefault();
-                            toggleWatchlist(property._id, true);
+                            const targetId = getPropertyIdentifier(property);
+                            if (!targetId) {
+                              toast.error('Unable to update watchlist for this property.');
+                              return;
+                            }
+                            toggleWatchlist(targetId, true);
                           }}
                         />
                       );
@@ -1193,14 +1217,19 @@ export default function BuyerDashboard() {
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  const isWatching = watchlist.some(p => p._id === selectedProperty._id);
-                  toggleWatchlist(selectedProperty._id, isWatching);
+                  const targetId = getPropertyIdentifier(selectedProperty);
+                  if (!targetId) {
+                    toast.error('Unable to update watchlist for this property.');
+                    return;
+                  }
+                  const isWatching = watchlist.some(p => getPropertyIdentifier(p) === targetId);
+                  toggleWatchlist(targetId, isWatching);
                 }}
                 className="absolute top-4 right-4 p-2 bg-white rounded-full shadow-md hover:bg-gray-50"
               >
                 <Heart 
                   className={`h-5 w-5 ${
-                    watchlist.some(p => p._id === selectedProperty._id) 
+                    watchlist.some(p => getPropertyIdentifier(p) === getPropertyIdentifier(selectedProperty))
                       ? 'text-red-500 fill-current' 
                       : 'text-gray-400'
                   }`}
@@ -1257,7 +1286,7 @@ export default function BuyerDashboard() {
             
             <div className="flex justify-between items-center">
               <div>
-                {watchlist.some(p => p._id === selectedProperty._id) ? (
+                {watchlist.some(p => getPropertyIdentifier(p) === getPropertyIdentifier(selectedProperty)) ? (
                   <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                     <CheckCircle className="h-4 w-4 mr-1" />
                     In Watchlist
