@@ -57,7 +57,7 @@ export default function Navbar({
               alt="OnlyIf Logo"
               width={220}
               height={64}
-className="h-12 sm:h-14 md:h-16 lg:h-16 xl:h-16 w-auto transition-transform group-hover:scale-105"
+              className="w-36 sm:w-40 lg:w-44 h-auto transition-transform group-hover:scale-105"
               priority
             />
           </Link>

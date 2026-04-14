@@ -18,28 +18,27 @@ export default function SignInPage() {
   const [loginError, setLoginError] = useState('');
 
   useEffect(() => {
-    // Redirect if already authenticated based on activeRole or legacy role
+    // Redirect if authenticated, supporting both roles[] and legacy role
     if (user) {
-      const currentRole = activeRole || user.role;
-      
-      switch (currentRole) {
-        case null:
-          router.push('/dashboard');
-          break;
-        case 'buyer':
-          router.push('/dashboards/buyer');
-          break;
-        case 'seller':
-          router.push('/dashboards/seller');
-          break;
-        case 'agent':
-          router.push('/dashboards/agent');
-          break;
-        case 'admin':
-          router.push('/dashboards/admin');
-          break;
-        default:
-          router.push('/');
+      const roles = Array.isArray(user.roles) ? user.roles : [];
+      if (roles.includes('admin')) {
+        router.push('/admin/dashboard');
+      } else if (roles.includes('seller')) {
+        router.push('/dashboards/seller');
+      } else if (roles.includes('buyer')) {
+        router.push('/dashboards/buyer');
+      } else if (roles.includes('agent')) {
+        router.push('/dashboards/agent');
+      } else if (activeRole === 'admin' || user.role === 'admin') {
+        router.push('/admin/dashboard');
+      } else if (activeRole === 'seller' || user.role === 'seller') {
+        router.push('/dashboards/seller');
+      } else if (activeRole === 'buyer' || user.role === 'buyer') {
+        router.push('/dashboards/buyer');
+      } else if (activeRole === 'agent' || user.role === 'agent') {
+        router.push('/dashboards/agent');
+      } else {
+        router.push('/dashboard');
       }
     }
   }, [user, activeRole, router]);

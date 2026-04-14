@@ -79,7 +79,7 @@ export default function Navbar({
                 <img 
                   src={logo} 
                   alt="OnlyIf logo" 
-                  className="h-10 sm:h-12 md:h-14 lg:h-16 w-auto transition-transform duration-200 group-hover:scale-105"
+                  className="w-36 sm:w-40 lg:w-44 h-auto transition-transform duration-200 group-hover:scale-105"
                 />
                 {logoText && (
                   <span className="text-base font-bold text-gray-900 group-hover:text-blue-600">{logoText}</span>

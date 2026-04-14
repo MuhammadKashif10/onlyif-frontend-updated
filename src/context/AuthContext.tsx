@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 type UserRole = 'buyer' | 'seller' | 'agent' | 'admin' | null;
+type NonNullUserRole = Exclude<UserRole, null>;
 
 interface User {
   id: string;
@@ -73,6 +74,42 @@ const parseJsonSafely = async (response: Response): Promise<any> => {
   }
 };
 
+const VALID_ROLES: NonNullUserRole[] = ['buyer', 'seller', 'agent', 'admin'];
+
+const normalizeRoles = (roles: unknown, legacyRole: unknown): NonNullUserRole[] => {
+  const normalized: NonNullUserRole[] = [];
+  if (Array.isArray(roles)) {
+    for (const role of roles) {
+      if (typeof role === 'string' && VALID_ROLES.includes(role as NonNullUserRole)) {
+        normalized.push(role as NonNullUserRole);
+      }
+    }
+  }
+  if (
+    normalized.length === 0 &&
+    typeof legacyRole === 'string' &&
+    VALID_ROLES.includes(legacyRole as NonNullUserRole)
+  ) {
+    normalized.push(legacyRole as NonNullUserRole);
+  }
+  return Array.from(new Set(normalized));
+};
+
+const resolvePrimaryRole = (
+  roles: NonNullUserRole[],
+  legacyRole: UserRole,
+  preferredRole?: UserRole
+): UserRole => {
+  const preferred = preferredRole && roles.includes(preferredRole as NonNullUserRole) ? preferredRole : null;
+  if (preferred) return preferred;
+  if (roles.includes('admin')) return 'admin';
+  if (roles.includes('agent')) return 'agent';
+  if (roles.includes('buyer')) return 'buyer';
+  if (roles.includes('seller')) return 'seller';
+  if (legacyRole && VALID_ROLES.includes(legacyRole as NonNullUserRole)) return legacyRole;
+  return null;
+};
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -112,12 +149,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const data = await parseJsonSafely(response);
       const normalizedRole: UserRole = data.data.role ?? null;
+      const normalizedRoles = normalizeRoles(data.data.roles, normalizedRole);
       const userData: User = {
         ...data.data,
         id: data.data._id || data.data.id,
         type: normalizedRole,
         role: normalizedRole,
-        roles: data.data.roles || [normalizedRole].filter(Boolean),
+        roles: normalizedRoles,
         acceptedRoles: data.data.acceptedRoles || {
           buyer: normalizedRole === 'buyer',
           seller: normalizedRole === 'seller',
@@ -129,18 +167,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Update activeRole if not set
       if (typeof window !== 'undefined') {
         const savedActiveRole = localStorage.getItem('activeRole') as UserRole;
-        if (savedActiveRole && userData.roles.includes(savedActiveRole)) {
+        if (savedActiveRole && userData.roles.includes(savedActiveRole as NonNullUserRole)) {
           setActiveRoleState(savedActiveRole);
-        } else if (userData.roles.length > 0) {
-          // Default to admin, then agent, then buyer, then seller
-          let defaultRole: UserRole = userData.roles[0];
-          if (userData.roles.includes('admin')) defaultRole = 'admin';
-          else if (userData.roles.includes('agent')) defaultRole = 'agent';
-          else if (userData.roles.includes('buyer')) defaultRole = 'buyer';
-          else if (userData.roles.includes('seller')) defaultRole = 'seller';
-          
+        } else {
+          const defaultRole = resolvePrimaryRole(userData.roles as NonNullUserRole[], userData.role);
+          if (defaultRole) {
           setActiveRoleState(defaultRole);
           localStorage.setItem('activeRole', defaultRole);
+          }
         }
       }
       
@@ -205,12 +239,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = await parseJsonSafely(response);
       
       const normalizedRole: UserRole = data.data.user.role ?? null;
+      const normalizedRoles = normalizeRoles(data.data.user.roles, normalizedRole);
       const userData: User = {
         ...data.data.user,
         id: data.data.user._id || data.data.user.id,
         type: normalizedRole,
         role: normalizedRole,
-        roles: data.data.user.roles || [normalizedRole].filter(Boolean),
+        roles: normalizedRoles,
         acceptedRoles: data.data.user.acceptedRoles || {
           buyer: normalizedRole === 'buyer',
           seller: normalizedRole === 'seller',
@@ -224,15 +259,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.setItem('user', JSON.stringify(userData));
         localStorage.setItem('token', data.data.token);
         
-        // Set default activeRole on login
-        let defaultRole: UserRole = userData.roles[0];
-        if (userData.roles.includes('admin')) defaultRole = 'admin';
-        else if (userData.roles.includes('agent')) defaultRole = 'agent';
-        else if (userData.roles.includes('buyer')) defaultRole = 'buyer';
-        else if (userData.roles.includes('seller')) defaultRole = 'seller';
-        
-        setActiveRoleState(defaultRole);
-        localStorage.setItem('activeRole', defaultRole);
+        // Support old users (role only) and new users (roles[])
+        const defaultRole = resolvePrimaryRole(userData.roles as NonNullUserRole[], userData.role);
+        if (defaultRole) {
+          setActiveRoleState(defaultRole);
+          localStorage.setItem('activeRole', defaultRole);
+        } else {
+          setActiveRoleState(null);
+          localStorage.removeItem('activeRole');
+        }
       }
     } catch (err) {
       setError('Invalid email or password');
@@ -267,12 +302,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = await parseJsonSafely(response);
       
       const normalizedRole: UserRole = data.data.user.role ?? null;
+      const normalizedRoles = normalizeRoles(data.data.user.roles, normalizedRole);
       const userData: User = {
         ...data.data.user,
         id: data.data.user._id || data.data.user.id,
         type: normalizedRole,
         role: normalizedRole,
-        roles: data.data.user.roles || [normalizedRole].filter(Boolean),
+        roles: normalizedRoles,
         acceptedRoles: data.data.user.acceptedRoles || {
           buyer: normalizedRole === 'buyer',
           seller: normalizedRole === 'seller',
@@ -353,12 +389,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = await parseJsonSafely(response);
       
       const normalizedRole: UserRole = data.data.user.role ?? null;
+      const normalizedRoles = normalizeRoles(data.data.user.roles, normalizedRole);
       const newUser: User = {
         ...data.data.user,
         id: data.data.user._id || data.data.user.id,
         type: normalizedRole,
         role: normalizedRole,
-        roles: data.data.user.roles || [normalizedRole].filter(Boolean),
+        roles: normalizedRoles,
         acceptedRoles: data.data.user.acceptedRoles || {
           buyer: normalizedRole === 'buyer',
           seller: normalizedRole === 'seller',
@@ -372,7 +409,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.setItem('token', data.data.token);
         
         // Set default activeRole on registration
-        const defaultRole: UserRole = newUser.roles[0] || normalizedRole;
+        const defaultRole: UserRole = resolvePrimaryRole(newUser.roles as NonNullUserRole[], normalizedRole);
         setActiveRoleState(defaultRole);
         localStorage.setItem('activeRole', defaultRole || '');
       }
@@ -414,12 +451,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const data = await parseJsonSafely(response);
       const normalizedRole: UserRole = data.data.role ?? null;
+      const normalizedRoles = normalizeRoles(data.data.roles, normalizedRole);
       const updatedUser: User = {
         ...data.data,
         id: data.data._id || data.data.id,
         type: normalizedRole,
         role: normalizedRole,
-        roles: data.data.roles || [normalizedRole].filter(Boolean),
+        roles: normalizedRoles,
         acceptedRoles: data.data.acceptedRoles || {
           buyer: normalizedRole === 'buyer',
           seller: normalizedRole === 'seller',
@@ -469,12 +507,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const data = await parseJsonSafely(response);
       const normalizedRole: UserRole = data.data.role ?? null;
+      const normalizedRoles = normalizeRoles(data.data.roles, normalizedRole);
       const updatedUser: User = {
         ...data.data,
         id: data.data._id || data.data.id,
         type: normalizedRole,
         role: normalizedRole,
-        roles: data.data.roles || [normalizedRole].filter(Boolean),
+        roles: normalizedRoles,
         acceptedRoles: data.data.acceptedRoles || {
           buyer: normalizedRole === 'buyer',
           seller: normalizedRole === 'seller',
@@ -612,12 +651,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = await parseJsonSafely(response);
       
       const normalizedRole: UserRole = data.data.user.role ?? null;
+      const normalizedRoles = normalizeRoles(data.data.user.roles, normalizedRole);
       const userData: User = {
         ...data.data.user,
         id: data.data.user._id || data.data.user.id,
         type: normalizedRole,
         role: normalizedRole,
-        roles: data.data.user.roles || [normalizedRole].filter(Boolean),
+        roles: normalizedRoles,
         acceptedRoles: data.data.user.acceptedRoles || {
           buyer: normalizedRole === 'buyer',
           seller: normalizedRole === 'seller',
@@ -630,13 +670,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.setItem('user', JSON.stringify(userData));
         localStorage.setItem('token', data.data.token);
         
-        // Set default activeRole on OTP verification
-        let defaultRole: UserRole = userData.roles[0];
-        if (userData.roles.includes('admin')) defaultRole = 'admin';
-        else if (userData.roles.includes('agent')) defaultRole = 'agent';
-        else if (userData.roles.includes('buyer')) defaultRole = 'buyer';
-        else if (userData.roles.includes('seller')) defaultRole = 'seller';
-        
+        // Set default activeRole after considering roles[] and legacy role
+        const defaultRole = resolvePrimaryRole(userData.roles as NonNullUserRole[], userData.role);
         setActiveRoleState(defaultRole);
         localStorage.setItem('activeRole', defaultRole || '');
       }

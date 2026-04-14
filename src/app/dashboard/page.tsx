@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Navbar } from '@/components';
 import { Button, Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/reusable';
 import { useAuth } from '@/context/AuthContext';
+import { BriefcaseBusiness, Heart, Home, Search } from 'lucide-react';
 
 type ModalType = 'buyer' | 'seller' | 'agent' | null;
 
@@ -144,26 +145,68 @@ export default function DashboardPage() {
   if (isLoading || !user) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       <Navbar />
 
-      <main className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-10">
-        <h1 className="text-3xl font-bold text-gray-900 text-center">Welcome to Only If</h1>
-        <p className="mt-3 text-center text-gray-600">
-          Choose how you want to use the platform to continue.
-        </p>
+      <main className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-10">
+        <div>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Welcome back, {user.name?.split(' ')[0] || 'there'} 👋</h1>
+            <p className="mt-2 text-gray-600">Here&apos;s what you can do today</p>
+          </div>
+        </div>
 
-        <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="mt-6 grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-gray-200 rounded-2xl border border-gray-200 bg-gray-50">
+          <div className="p-4">
+            <div className="flex items-start gap-3">
+              <Heart className="h-5 w-5 text-gray-500 mt-0.5" />
+              <div>
+                <p className="text-sm font-semibold text-gray-900">No saved homes yet</p>
+                <p className="mt-1 text-xs text-gray-600">Start browsing to save properties you&apos;re interested in.</p>
+              </div>
+            </div>
+          </div>
+          <div className="p-4">
+            <div className="flex items-start gap-3">
+              <Home className="h-5 w-5 text-gray-500 mt-0.5" />
+              <div>
+                <p className="text-sm font-semibold text-gray-900">You haven&apos;t listed a property</p>
+                <p className="mt-1 text-xs text-gray-600">Create your private listing in just a few minutes.</p>
+              </div>
+            </div>
+          </div>
+          <div className="p-4">
+            <div className="flex items-start gap-3">
+              <Search className="h-5 w-5 text-gray-500 mt-0.5" />
+              <div>
+                <p className="text-sm font-semibold text-gray-900">Ready to explore?</p>
+                <p className="mt-1 text-xs text-gray-600">Unlock exclusive off-market opportunities today.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
           <button
             type="button"
             onClick={handleSelectSeller}
             className="rounded-2xl border border-gray-200 bg-white p-6 text-left shadow-sm hover:shadow-md transition-shadow"
           >
-            <div className="text-2xl">🏠</div>
-            <h2 className="mt-4 text-lg font-bold text-gray-900">List My Home</h2>
-            <p className="mt-2 text-sm text-gray-600">
-              Create a seller account and list privately.
-            </p>
+            <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-green-500 to-emerald-400 text-white">
+              <Home className="h-6 w-6" />
+            </div>
+            <h2 className="mt-4 text-xl font-bold text-gray-900">List My Home</h2>
+            <p className="mt-2 text-sm text-gray-600">Create a private listing and connect with serious buyers, on your terms.</p>
+            <ul className="mt-4 space-y-2 text-sm text-gray-700">
+              <li>✅ Private &amp; secure</li>
+              <li>✅ Reach motivated buyers</li>
+              <li>✅ Takes ~3 minutes to get started</li>
+            </ul>
+            <div className="mt-5">
+              <span className="inline-flex w-full items-center justify-center rounded-xl bg-green-600 px-4 py-2.5 font-semibold text-white">
+                Start Listing →
+              </span>
+            </div>
           </button>
 
           <button
@@ -171,11 +214,21 @@ export default function DashboardPage() {
             onClick={handleSelectBuyer}
             className="rounded-2xl border border-gray-200 bg-white p-6 text-left shadow-sm hover:shadow-md transition-shadow"
           >
-            <div className="text-2xl">🔍</div>
-            <h2 className="mt-4 text-lg font-bold text-gray-900">Browse Homes</h2>
-            <p className="mt-2 text-sm text-gray-600">
-              Get access to off-market properties.
-            </p>
+            <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-500 text-white">
+              <Search className="h-6 w-6" />
+            </div>
+            <h2 className="mt-4 text-xl font-bold text-gray-900">Browse Homes</h2>
+            <p className="mt-2 text-sm text-gray-600">Get access to exclusive off-market properties not available on other platforms.</p>
+            <ul className="mt-4 space-y-2 text-sm text-gray-700">
+              <li>✅ Exclusive off-market listings</li>
+              <li>✅ Search and save homes</li>
+              <li>✅ New properties added daily</li>
+            </ul>
+            <div className="mt-5">
+              <span className="inline-flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2.5 font-semibold text-white">
+                Browse Now →
+              </span>
+            </div>
           </button>
 
           <button
@@ -183,13 +236,36 @@ export default function DashboardPage() {
             onClick={() => setModal('agent')}
             className="rounded-2xl border border-gray-200 bg-white p-6 text-left shadow-sm hover:shadow-md transition-shadow"
           >
-            <div className="text-2xl">🤝</div>
-            <h2 className="mt-4 text-lg font-bold text-gray-900">I&apos;m an Agent</h2>
-            <p className="mt-2 text-sm text-gray-600">
-              Learn how to get started as an agent.
-            </p>
+            <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gray-100 text-gray-700">
+              <BriefcaseBusiness className="h-6 w-6" />
+            </div>
+            <h2 className="mt-4 text-xl font-bold text-gray-900">I&apos;m an Agent</h2>
+            <p className="mt-2 text-sm text-gray-600">Access your tools, manage clients, and grow your off-market business.</p>
+            <ul className="mt-4 space-y-2 text-sm text-gray-700">
+              <li>✅ Manage your listings</li>
+              <li>✅ Track client activity</li>
+              <li>✅ Access agent resources</li>
+            </ul>
+            <div className="mt-5">
+              <span className="inline-flex w-full items-center justify-center rounded-xl border border-gray-300 bg-white px-4 py-2.5 font-semibold text-gray-700">
+                Agent Access →
+              </span>
+            </div>
           </button>
         </div>
+
+        <section className="mt-6 rounded-2xl border border-gray-200 bg-white shadow-sm">
+          <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
+            <h3 className="font-semibold text-gray-900">Recent Activity</h3>
+            <button type="button" className="text-sm font-medium text-blue-600 hover:text-blue-700">
+              View All Activity →
+            </button>
+          </div>
+          <div className="p-8 text-center">
+            <p className="text-sm font-medium text-gray-700">No activity yet</p>
+            <p className="mt-1 text-xs text-gray-500">When you browse homes, save properties, or create a listing, your activity will appear here.</p>
+          </div>
+        </section>
       </main>
 
       <Dialog open={modal === 'buyer'} onOpenChange={(open) => setModal(open ? 'buyer' : null)}>
@@ -319,21 +395,6 @@ export default function DashboardPage() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={modal === 'agent'} onOpenChange={(open) => setModal(open ? 'agent' : null)}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>I&apos;m an Agent</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-gray-700">
-            Agent accounts are created by our admin team. Please contact us to get started.
-          </p>
-          <div className="mt-6 flex justify-end">
-            <Button variant="primary" onClick={() => setModal(null)}>
-              Close
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
       <Dialog open={modal === 'agent'} onOpenChange={(open) => setModal(open ? 'agent' : null)}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
