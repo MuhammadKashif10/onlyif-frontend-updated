@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Heart, Bed, Bath, Car } from 'lucide-react';
+import { Heart, Bed, Bath, Car, Eye, LockKeyhole } from 'lucide-react';
 import { getSafeImageUrl } from '@/utils/imageUtils';
 import { StatusBadge } from '@/components/reusable';
 import { formatCurrencyCompact } from '@/utils/currency';
@@ -28,6 +28,7 @@ interface PropertyCardProps {
   carSpaces?: number | null | undefined;
   isWatched?: boolean;
   onToggleWatchlist?: (e: React.MouseEvent) => void;
+  variant?: 'default' | 'vault';
 }
 
 export default function PropertyCard({
@@ -46,7 +47,8 @@ export default function PropertyCard({
   onClick,
   carSpaces,
   isWatched,
-  onToggleWatchlist
+  onToggleWatchlist,
+  variant = 'default'
 }: PropertyCardProps) {
   const [targetPath, setTargetPath] = useState('/signin');
 
@@ -114,6 +116,72 @@ export default function PropertyCard({
 
   const safeImageUrl = getSafeImageUrl(image, 'property');
   const hasValidImage = safeImageUrl && safeImageUrl.trim() !== '';
+
+  if (variant === 'vault') {
+    return (
+      <article
+        className={`group relative overflow-hidden rounded-lg border border-[#bfcfc1] bg-white shadow-[0_18px_38px_rgba(21,49,27,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_22px_50px_rgba(21,49,27,0.14)] ${className}`}
+        onClick={onClick}
+      >
+        <button
+          type="button"
+          onClick={handleCheckout}
+          className="block w-full text-left focus:outline-none focus:ring-2 focus:ring-[#087735] focus:ring-offset-2"
+          aria-label={`Unlock details for ${title}`}
+        >
+          <div className="relative h-64 overflow-hidden bg-[#d8ecd7]">
+            {hasValidImage ? (
+              <img
+                src={safeImageUrl}
+                alt={`${title} - ${address}`}
+                className="h-full w-full scale-105 object-cover blur-[7px] brightness-75 transition-transform duration-500 group-hover:scale-110"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center bg-[#d8ecd7]">
+                <p className="text-xs text-[#66766a]">No Image</p>
+              </div>
+            )}
+            <div className="absolute inset-0 bg-black/18" />
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-white">
+              <LockKeyhole className="h-9 w-9 text-white drop-shadow" aria-hidden="true" />
+              <p className="mt-3 text-lg font-bold text-white drop-shadow">Details Hidden</p>
+            </div>
+            {featured && (
+              <div className="absolute right-4 top-4 rounded-full bg-[#dff6df] px-3 py-1 text-xs font-semibold text-[#087735]">
+                New
+              </div>
+            )}
+          </div>
+
+          <div className="p-5">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#435346]">
+              Confidential Listing
+            </p>
+            <h3 className="mt-1 text-lg font-semibold leading-snug text-[#071109] line-clamp-1">
+              {address || title}
+            </h3>
+            <div className="mt-3 flex flex-wrap gap-2 text-xs text-[#5b6a5e]">
+              <span>{formatSafeNumber(beds)} bed{formatSafeNumber(beds) !== 1 ? 's' : ''}</span>
+              <span aria-hidden="true">/</span>
+              <span>{formatSafeNumber(baths)} bath{formatSafeNumber(baths) !== 1 ? 's' : ''}</span>
+              {carSpaces != null && !isNaN(carSpaces) ? (
+                <>
+                  <span aria-hidden="true">/</span>
+                  <span>{formatSafeNumber(carSpaces)} car</span>
+                </>
+              ) : null}
+              <span aria-hidden="true">/</span>
+              <span>{formatSize(size)} sq m</span>
+            </div>
+            <span className="mt-5 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-md border border-[#b9d5c0] bg-[#e3f3e8] px-4 text-sm font-bold text-[#087735] group-hover:border-[#087735] group-hover:bg-[#d7efdf]">
+              <Eye className="h-4 w-4" aria-hidden="true" />
+              Unlock for $49
+            </span>
+          </div>
+        </button>
+      </article>
+    );
+  }
 
   // --- Render ---
   return (

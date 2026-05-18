@@ -132,49 +132,55 @@ export default function Footer({
 
   return (
     <>
-      <footer className={`bg-gray-900 text-white ${layoutOffsetClass} ${className}`}>
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      <footer className={`border-t border-[#cfe1d0] bg-[#dff1df] text-[#0b1d10] ${layoutOffsetClass} ${className}`}>
+        <div className="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8">
           {/* Main Footer Content */}
-          <div className="py-12 sm:py-16 lg:py-20 pb-16">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12">
+          <div className="py-12 sm:py-14 lg:py-16">
+            <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-[1.65fr_1fr_1fr_1fr] lg:gap-16">
               {/* Company Info */}
-              <div className="lg:col-span-2">
-                <div className="flex items-center mb-6">
-<img src={logo} alt="OnlyIf Logo" className="h-24 md:h-24 lg:h-24 xl:h-24 w-auto mr-3" />
+              <div className="max-w-md">
+                <div className="mb-5 flex items-center">
+<img src={logo} alt="OnlyIf Logo" className="h-16 w-auto md:h-18 lg:h-20" />
                   {logoText && (
-                    <span className="text-2xl font-bold text-white">{logoText}</span>
+                    <span className="ml-3 text-2xl font-bold text-[#0b1d10]">{logoText}</span>
                   )}
                 </div>
                 
-                <p className="text-gray-300 mb-6 leading-relaxed">
+                <p className="mb-7 max-w-sm text-sm leading-6 text-[#4d6252]">
                   {description}
                 </p>
 
                 {/* Contact Info */}
                 {contactInfo && (
-                  <div className="space-y-3">
+                  <div className="grid gap-3 text-sm text-[#223a29]">
                     {contactInfo.phone && (
-                      <div className="flex items-center text-gray-300">
-                        <Phone className="mr-3" color="#47C96F" strokeWidth={2} size={24} aria-hidden="true" />
-                        <a href={`tel:${contactInfo.phone}`} className="hover:text-white transition-colors">
+                      <div className="flex items-center gap-3">
+                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#bfd8c2] bg-[#edfbea]">
+                          <Phone color="#087735" strokeWidth={2} size={16} aria-hidden="true" />
+                        </span>
+                        <a href={`tel:${contactInfo.phone}`} className="font-medium hover:text-[#087735]">
                           {contactInfo.phone}
                         </a>
                       </div>
                     )}
                     
                     {contactInfo.email && (
-                      <div className="flex items-center text-gray-300">
-                        <Mail className="mr-3" color="#47C96F" strokeWidth={2} size={24} aria-hidden="true" />
-                        <a href={`mailto:${contactInfo.email}`} className="hover:text-white transition-colors">
+                      <div className="flex items-center gap-3">
+                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#bfd8c2] bg-[#edfbea]">
+                          <Mail color="#087735" strokeWidth={2} size={16} aria-hidden="true" />
+                        </span>
+                        <a href={`mailto:${contactInfo.email}`} className="font-medium hover:text-[#087735]">
                           {contactInfo.email}
                         </a>
                       </div>
                     )}
                     
                     {contactInfo.address && (
-                      <div className="flex items-start text-gray-300">
-                        <MapPin className="mr-3 mt-0.5 flex-shrink-0" color="#47C96F" strokeWidth={2} size={24} aria-hidden="true" />
-                        <span>{contactInfo.address}</span>
+                      <div className="flex items-start gap-3">
+                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#bfd8c2] bg-[#edfbea]">
+                          <MapPin color="#087735" strokeWidth={2} size={16} aria-hidden="true" />
+                        </span>
+                        <span className="pt-1 font-medium">{contactInfo.address}</span>
                       </div>
                     )}
                   </div>
@@ -182,14 +188,14 @@ export default function Footer({
 
                 {/* Social Links */}
                 {socialLinks && socialLinks.length > 0 && (
-                  <div className="flex space-x-4 mt-6">
+                  <div className="mt-7 flex gap-3">
                     {socialLinks.map((social) => (
                       <a
                         key={social.name}
                         href={social.href}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-gray-400 hover:text-white transition-colors p-2 rounded-lg hover:bg-gray-800"
+                        className="flex h-10 w-10 items-center justify-center rounded-full border border-[#bfd8c2] bg-[#edfbea] text-[#087735] shadow-sm transition-all hover:-translate-y-0.5 hover:border-[#087735] hover:bg-white"
                         aria-label={`Follow us on ${social.name}`}
                       >
                         {renderSocialIcon(social.icon)}
@@ -202,7 +208,7 @@ export default function Footer({
               {/* Navigation Sections */}
               {sections.map((section) => (
                 <div key={section.title}>
-                  <h3 className="text-lg font-semibold text-white mb-4">
+                  <h3 className="mb-5 text-xs font-bold uppercase tracking-[0.18em] text-[#0b1d10]">
                     {section.title}
                   </h3>
                   <ul className="space-y-3">
@@ -210,7 +216,7 @@ export default function Footer({
                       <li key={link.label}>
                         <Link
                           href={link.href}
-                          className="text-gray-300 hover:text-white transition-colors duration-200"
+                          className="text-sm font-medium text-[#4d6252] transition-colors duration-200 hover:text-[#087735]"
                           target={link.external ? '_blank' : undefined}
                           rel={link.external ? 'noopener noreferrer' : undefined}
                         >
@@ -225,23 +231,23 @@ export default function Footer({
           </div>
 
           {/* Bottom Footer */}
-          <div className="border-t border-gray-800 pt-8 pb-8">
-            <div className="flex flex-col md:flex-row justify-between items-center">
-              <p className="text-gray-400 text-sm mb-4 md:mb-0">{copyrightText}</p>
-              <div className="flex flex-wrap gap-6">
+          <div className="border-t border-[#c8dec9] py-7">
+            <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
+              <p className="text-sm text-[#5b6f60]">{copyrightText}</p>
+              <div className="flex flex-wrap gap-x-6 gap-y-3">
                 {legalLinks.map((link, index) => (
                   <div key={index}>
                     {link.label === 'Privacy Policy' ? (
                       <button
                         onClick={handlePrivacyClick}
-                        className="text-gray-400 hover:text-white text-sm transition-colors cursor-pointer"
+                        className="cursor-pointer text-sm font-medium text-[#5b6f60] transition-colors hover:text-[#087735]"
                       >
                         {link.label}
                       </button>
                     ) : (
                       <Link
                         href={link.href}
-                        className="text-gray-400 hover:text-white text-sm transition-colors"
+                        className="text-sm font-medium text-[#5b6f60] transition-colors hover:text-[#087735]"
                         {...(link.external && { target: '_blank', rel: 'noopener noreferrer' })}
                       >
                         {link.label}

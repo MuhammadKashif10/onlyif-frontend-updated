@@ -1,0 +1,9 @@
+   ▲ Next.js 16.0.7 (Turbopack)
+   - Local:         http://127.0.0.1:3011
+   - Network:       http://127.0.0.1:3011
+   - Environments: .env
+
+ ✓ Starting...
+ ✓ Ready in 1716ms
+ ○ Compiling / ...
+ GET / 200 in 5.5s (compile: 5.1s, render: 371ms)

@@ -23,6 +23,7 @@ interface PropertyGridProps {
   emptyStateSuggestion?: string;
   emptyStateCtaLabel?: string;
   emptyStateCtaHref?: string;
+  cardVariant?: 'default' | 'vault';
 }
 
 function hasActiveFilters(filters: FilterOptions): boolean {
@@ -47,7 +48,8 @@ export default function PropertyGrid({
   emptyStateMessage,
   emptyStateSuggestion,
   emptyStateCtaLabel,
-  emptyStateCtaHref
+  emptyStateCtaHref,
+  cardVariant = 'default'
 }: PropertyGridProps) {
   // Fix: Access properties from state instead of destructuring directly
   const { state, loadProperties, loadFeaturedProperties } = usePropertyContext();
@@ -266,6 +268,7 @@ export default function PropertyGrid({
                   image={property.mainImage || '/images/default-property.jpg'}
                   featured={property.featured}
                   carSpaces={property.carSpaces}
+                  variant={cardVariant}
                   onClick={onPropertyClick ? () => onPropertyClick(property) : undefined}
                 />
               );

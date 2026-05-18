@@ -1,20 +1,13 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import {
-  Navbar,
-  HeroSection,
-  CTASection,
-  Footer
-} from '@/components';
-import PropertyGrid from '@/components/sections/PropertyGrid';
-import { HowItWorksUnlockButton } from '@/components/marketing/HowItWorksUnlockButton';
 import Image from 'next/image';
-import { CheckCircle2 } from 'lucide-react';
+import Link from 'next/link';
+import { BadgeCheck, EyeOff, Handshake, LockKeyhole, ShieldCheck, WalletCards } from 'lucide-react';
+import { Navbar } from '@/components';
+import PropertyGrid from '@/components/sections/PropertyGrid';
 import { useAuth } from '@/context/AuthContext';
 
 export default function HomePage() {
-  const router = useRouter();
   const { user } = useAuth();
 
   const handlePrimaryCtaClick = () => {
@@ -26,215 +19,197 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-<Navbar 
-        logo="/images/logo.PNG"
-        logoText=""
-      />
-      
-      {/* Hero Section */}
-      <HeroSection
-        backgroundImage="/images/01.png"
-        headline={
-          <>
-            <span className="block text-4xl sm:text-5xl lg:text-6xl font-bold text-white">
-              Australia's trusted way to buy and
-            </span>
-            <span className="block text-4xl sm:text-5xl lg:text-6xl font-bold text-white">
-              sell property on your terms.
-            </span>
-          </>
-        }
-        subheadline="Only If connects local owners and serious buyers quietly, transparently and in complete control – giving you a smarter way to buy and sell without the pressure or the noise."
-        primaryCtaText="I'll sell, Only IF"
-        primaryCtaHref="/signin"
-        secondaryCtaText="I'm a Buyer"
-        secondaryCtaHref={user ? "/buy" : "/signin"}
-        onPrimaryCtaClick={handlePrimaryCtaClick}
-        onSecondaryCtaClick={handleSecondaryCtaClick}
-        showOverlay={false}
-      />
+    <div className="min-h-screen bg-[#edfbea] text-[#071109]">
+      <Navbar logo="/images/logo.PNG" logoText="" />
 
-      {/* Property cards (after hero) */}
-      <section className="py-14 bg-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-10">
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900">
-              Homes Available Only If the Price Is Right
-            </h2>
-          </div>
-          <PropertyGrid
-            showFilters={false}
-            showPagination={false}
-            itemsPerPage={12}
-            featuredOnly={false}
-            emptyStateMessage="Be among the first."
-            emptyStateSuggestion="New properties are being added — register to get early access."
-            emptyStateCtaLabel="Join as a Buyer"
-            emptyStateCtaHref={user ? "/buy" : "/signin"}
-          />
-        </div>
-      </section>
-
-      {/* How Only If Works (home) */}
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="max-w-5xl mx-auto text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
-              How <span className="text-emerald-600">Only If</span> Works
-            </h2>
-          </div>
-
-          <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Card 1 */}
-            <div className="rounded-2xl bg-white shadow-md border border-gray-200 flex flex-col overflow-hidden">
-              <div className="px-6 pt-6">
-                <p className="text-sm font-semibold text-emerald-600 mb-1">
-                  1. Set Your Price
-                </p>
+      <main className="overflow-hidden">
+        <section className="bg-[#edfbea] px-5 py-14 sm:px-6 sm:py-20 lg:py-24">
+          <div className="mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-[0.92fr_1fr] lg:gap-16">
+            <div className="max-w-xl">
+              <h1 className="text-4xl font-bold leading-[1.05] tracking-normal text-[#071109] sm:text-5xl lg:text-[4.25rem]">
+                The Real Estate Market You&apos;ve Been Missing.
+              </h1>
+              <p className="mt-6 max-w-lg text-base leading-7 text-[#4b5b4e] sm:text-lg">
+                Only If connects local owners and serious buyers quietly, transparently and in complete control, giving you a smarter way to buy and sell without the pressure or the noise.
+              </p>
+              <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+                <Link
+                  href={user ? '/buy' : '/signin'}
+                  onClick={handleSecondaryCtaClick}
+                  className="inline-flex min-h-12 items-center justify-center rounded-md bg-[#087735] px-7 text-sm font-bold text-white shadow-sm hover:bg-[#06662d] focus:outline-none focus:ring-2 focus:ring-[#087735] focus:ring-offset-2"
+                >
+                  Browse Listings
+                </Link>
+                <Link
+                  href="/signin"
+                  onClick={handlePrimaryCtaClick}
+                  className="inline-flex min-h-12 items-center justify-center rounded-md border border-[#b8cfbc] bg-white px-7 text-sm font-bold text-[#0a3d20] shadow-sm hover:border-[#087735] hover:bg-[#f8fff8] focus:outline-none focus:ring-2 focus:ring-[#087735] focus:ring-offset-2"
+                >
+                  List Your Home
+                </Link>
               </div>
-              <div className="px-6 flex-1 pb-6">
-                <div className="w-full h-32 relative rounded-lg overflow-hidden mb-4 bg-emerald-50">
-                  <Image
-                    src="/images/how-onlyif-step-1.png"
-                    alt="Set your price"
-                    fill
-                    className="object-cover"
-                  />
-                  <div className="absolute top-2 right-2 w-7 h-7 rounded-full bg-emerald-500 flex items-center justify-center shadow">
-                    <CheckCircle2 className="w-4 h-4 text-white" strokeWidth={2} />
+            </div>
+
+            <div className="relative min-h-[360px] overflow-hidden rounded-lg border border-[#0f2616]/20 bg-[#d8ecd7] shadow-[0_22px_60px_rgba(8,38,18,0.18)] sm:min-h-[460px] lg:min-h-[595px]">
+              <Image
+                src="/images/01.png"
+                alt="Premium modern home"
+                fill
+                priority
+                sizes="(min-width: 1024px) 52vw, 100vw"
+                className="object-cover"
+              />
+            </div>
+          </div>
+        </section>
+
+        <section className="border-t border-[#d4e7d2] bg-[#edfbea] px-5 py-16 sm:px-6 lg:py-20">
+          <div className="mx-auto max-w-7xl">
+            <div className="mx-auto max-w-2xl text-center">
+              <h2 className="text-3xl font-bold text-[#071109] sm:text-4xl">How it Works</h2>
+              <p className="mt-3 text-sm leading-6 text-[#58695b] sm:text-base">
+                A refined process designed for control, privacy and trust.
+              </p>
+            </div>
+
+            <div className="mt-12 grid gap-7 md:grid-cols-3">
+              {[
+                {
+                  icon: EyeOff,
+                  title: 'Set Your Price',
+                  body: 'Choose the price that would genuinely make you sell, then test the market without public pressure.'
+                },
+                {
+                  icon: LockKeyhole,
+                  title: 'Stay Private',
+                  body: 'Your home stays hidden until serious buyers register, verify and unlock access to the opportunity.'
+                },
+                {
+                  icon: Handshake,
+                  title: 'Sell Only If It Is Right',
+                  body: 'When a buyer meets your terms, Only If helps manage the next steps through to a professional close.'
+                }
+              ].map((step) => {
+                const Icon = step.icon;
+                return (
+                  <article
+                    key={step.title}
+                    className="rounded-lg border border-[#bfcfc1] bg-white px-7 py-9 text-center shadow-[0_18px_40px_rgba(21,49,27,0.08)]"
+                  >
+                    <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#dff6df]">
+                      <Icon className="h-6 w-6 text-[#087735]" aria-hidden="true" />
+                    </div>
+                    <h3 className="mt-7 text-lg font-semibold text-[#071109]">{step.title}</h3>
+                    <p className="mt-3 text-sm leading-6 text-[#5a675d]">{step.body}</p>
+                  </article>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        <section className="bg-[#edfbea] px-5 py-16 sm:px-6 lg:py-20">
+          <div className="mx-auto max-w-7xl">
+            <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <h2 className="text-3xl font-bold text-[#071109] sm:text-4xl">The Vault</h2>
+                <p className="mt-2 text-sm text-[#58695b]">Homes available only if the price is right.</p>
+              </div>
+              <Link href={user ? '/buy' : '/signin'} className="text-sm font-semibold text-[#087735] hover:text-[#065b28]">
+                View All Properties
+              </Link>
+            </div>
+            <PropertyGrid
+              showFilters={false}
+              showPagination={false}
+              itemsPerPage={3}
+              featuredOnly={false}
+              cardVariant="vault"
+              emptyStateMessage="Be among the first."
+              emptyStateSuggestion="New properties are being added. Register to get early access."
+              emptyStateCtaLabel="Join as a Buyer"
+              emptyStateCtaHref={user ? '/buy' : '/signin'}
+            />
+          </div>
+        </section>
+
+        <section className="bg-[#edfbea] px-5 py-16 sm:px-6 lg:py-24">
+          <div className="mx-auto max-w-7xl rounded-lg bg-[#162d1d] px-7 py-12 text-white shadow-[0_24px_60px_rgba(9,29,14,0.28)] sm:px-12 lg:px-16 lg:py-16">
+            <div className="max-w-4xl">
+              <h2 className="text-3xl font-bold leading-tight text-white sm:text-5xl">
+                Privacy is our highest currency.
+              </h2>
+              <p className="mt-6 max-w-3xl text-base leading-7 text-white/85">
+                High-value property decisions require a specialised environment. Only If provides a private ecosystem for discreet property conversations, verified buyers and owners who stay in control.
+              </p>
+            </div>
+
+            <div className="mt-10 grid gap-7 md:grid-cols-2">
+              {[
+                {
+                  icon: ShieldCheck,
+                  title: 'Zero Digital Footprint',
+                  body: 'Properties remain hidden from public portals and search engines until qualified buyers unlock access.'
+                },
+                {
+                  icon: BadgeCheck,
+                  title: 'Verified Buyers',
+                  body: 'Buyer access is guided by registration, verification and a clear payment filter.'
+                },
+                {
+                  icon: LockKeyhole,
+                  title: 'Bank-Level Security',
+                  body: 'Communications, documents and next steps are handled inside the secure Only If experience.'
+                },
+                {
+                  icon: WalletCards,
+                  title: 'Transparent Success Fee',
+                  body: 'Owners can test the market privately, then proceed only when the terms make sense.'
+                }
+              ].map((item) => {
+                const Icon = item.icon;
+                return (
+                  <div key={item.title} className="flex gap-4">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#087735]">
+                      <Icon className="h-5 w-5 text-white" aria-hidden="true" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-white">{item.title}</h3>
+                      <p className="mt-2 max-w-md text-sm leading-6 text-white/72">{item.body}</p>
+                    </div>
                   </div>
-                </div>
-                <p className="text-sm text-gray-600">
-                  Choose the price that would genuinely make you sell.
-                </p>
-              </div>
-            </div>
-
-            {/* Card 2 — unlock CTA only here (buyer unlock example) */}
-            <div className="rounded-2xl bg-white shadow-md border border-gray-200 flex flex-col overflow-hidden">
-              <div className="px-6 pt-6">
-                <p className="text-sm font-semibold text-emerald-600 mb-1">
-                  2. Stay Private
-                </p>
-              </div>
-              <div className="px-6 flex-1">
-                <div className="w-full h-32 relative rounded-lg overflow-hidden mb-4 bg-emerald-50">
-                  <Image
-                    src="/images/how-onlyif-step-2.png"
-                    alt="Stay private until buyers unlock"
-                    fill
-                    className="object-cover"
-                  />
-                  <div className="absolute top-2 right-2 w-7 h-7 rounded-full bg-emerald-500 flex items-center justify-center shadow">
-                    <CheckCircle2 className="w-4 h-4 text-white" strokeWidth={2} />
-                  </div>
-                </div>
-                <p className="text-sm text-gray-600 mb-4">
-                  Your home stays hidden until serious buyers unlock it.
-                </p>
-              </div>
-              <div className="px-6 pb-6">
-                <HowItWorksUnlockButton />
-              </div>
-            </div>
-
-            {/* Card 3 */}
-            <div className="rounded-2xl bg-white shadow-md border border-gray-200 flex flex-col overflow-hidden">
-              <div className="px-6 pt-6">
-                <p className="text-sm font-semibold text-emerald-600 mb-1">
-                  3. Sell Only If It&apos;s Right
-                </p>
-              </div>
-              <div className="px-6 flex-1 pb-6">
-                <div className="w-full h-32 relative rounded-lg overflow-hidden mb-4 bg-emerald-50">
-                  <Image
-                    src="/images/how-onlyif-step-3.png"
-                    alt="Sell only if the price is right"
-                    fill
-                    className="object-cover"
-                  />
-                  <div className="absolute top-2 right-2 w-7 h-7 rounded-full bg-emerald-500 flex items-center justify-center shadow">
-                    <CheckCircle2 className="w-4 h-4 text-white" strokeWidth={2} />
-                  </div>
-                </div>
-                <p className="text-sm text-gray-600">
-                  If a buyer meets your price, we handle everything from there.
-                </p>
-              </div>
+                );
+              })}
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Why Choose OnlyIf? (home) */}
-      <section className="py-20 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="max-w-5xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-10">
-              Why Choose <span className="text-emerald-600">OnlyIf</span>?
+        <section className="bg-[#edfbea] px-5 pb-20 sm:px-6 lg:pb-28">
+          <div className="mx-auto max-w-7xl border-t border-[#d4e7d2] pt-16 text-center">
+            <h2 className="mx-auto max-w-3xl text-3xl font-bold leading-tight text-[#071109] sm:text-5xl">
+              Ready to move only if the terms are right?
             </h2>
-
-            <div className="overflow-hidden rounded-2xl bg-white shadow-sm border border-gray-200">
-              <div className="grid grid-cols-1 md:grid-cols-2">
-                {/* Traditional Real Estate */}
-                <div className="px-6 py-6 md:py-8 border-b md:border-b-0 md:border-r border-gray-200 bg-gray-50">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                    Traditional Real Estate
-                  </h3>
-                  <ul className="space-y-2 text-sm text-gray-700">
-                    <li>✓ Public listings</li>
-                    <li>✓ Endless inspections</li>
-                    <li>✓ Pressure to sell</li>
-                    <li>✓ High agent fees</li>
-                  </ul>
-                </div>
-
-                {/* With OnlyIf */}
-                <div className="px-6 py-6 md:py-8 bg-emerald-50/70">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                    With <span className="text-emerald-600">OnlyIf</span>
-                  </h3>
-                  <ul className="space-y-2 text-sm text-gray-800">
-                    <li>✓ Private &amp; hidden until buyers unlock</li>
-                    <li>✓ No pressure to sell</li>
-                    <li>✓ Your price, your terms</li>
-                    <li>✓ 1.1% success fee (inc. GST)</li>
-                  </ul>
-                </div>
-              </div>
+            <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-[#4b5b4e]">
+              Join Australian homeowners quietly testing the market and serious buyers looking for opportunities they will not find everywhere else.
+            </p>
+            <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+              <Link
+                href="/signin"
+                onClick={handlePrimaryCtaClick}
+                className="inline-flex min-h-12 items-center justify-center rounded-md bg-[#087735] px-7 text-sm font-bold text-white shadow-sm hover:bg-[#06662d] focus:outline-none focus:ring-2 focus:ring-[#087735] focus:ring-offset-2"
+              >
+                I&apos;ll sell, Only IF
+              </Link>
+              <Link
+                href="/how-it-works"
+                className="inline-flex min-h-12 items-center justify-center rounded-md border border-[#b8cfbc] bg-white px-7 text-sm font-bold text-[#0a3d20] shadow-sm hover:border-[#087735] hover:bg-[#f8fff8] focus:outline-none focus:ring-2 focus:ring-[#087735] focus:ring-offset-2"
+              >
+                How it Works
+              </Link>
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* Mission highlight */}
-      <section className="bg-white py-10">
-        <div className="max-w-6xl mx-auto px-4 text-center">
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900">
-            Our Mission
-          </h2>
-          <p className="mt-3 text-lg text-gray-700 max-w-3xl mx-auto">
-            To give homeowners control over how and when they sell — on their terms.
-          </p>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <CTASection
-        title="Ready to Sell Your Home?"
-        subtitle="Join Australian homeowners selling on their terms"
-        description="Only If is an Australian home-selling platform that connects you with serious buyers in your neighbourhood, with transparent pricing, personalised support and a sale timeline that suits you – no pressure and no hard sell."
-        primaryCtaText="I'll sell, Only IF"
-        primaryCtaHref="/signin"
-        secondaryCtaText="How it Works"
-        secondaryCtaHref="/how-it-works"
-        showPrimary={true}
-        variant="primary"
-        alignment="center"
-      />
-
-      {/* Footer removed - already handled by layout.tsx */}
+        </section>
+      </main>
     </div>
   );
 }
