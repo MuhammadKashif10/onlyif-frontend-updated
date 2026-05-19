@@ -1,17 +1,29 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Navbar from '@/components/main/Navbar';
-import Sidebar from '@/components/main/Sidebar';
+import { useRouter } from 'next/navigation';
+import { LayoutDashboard, Home, Store, BarChart3, Settings } from 'lucide-react';
+import { Navbar } from '@/components';
 import { useAuth } from '@/hooks/useAuth';
 import { sellerApi, AnalyticsData } from '@/api/seller';
 
 export default function SellerAnalytics() {
+  const router = useRouter();
   const { user } = useAuth();
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [timeRange, setTimeRange] = useState('6months');
+
+  const sidebarButtonClass = (isActive: boolean) =>
+    `w-full flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all ${
+      isActive
+        ? 'bg-black text-white shadow-lg shadow-black/10'
+        : 'text-gray-600 hover:bg-white hover:text-gray-950'
+    }`;
+
+  const sidebarIconClass = (isActive: boolean) =>
+    `h-4 w-4 ${isActive ? 'text-white' : 'text-gray-500'}`;
 
   useEffect(() => {
     if (user?.id) {
@@ -42,11 +54,36 @@ export default function SellerAnalytics() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-[#f5f6fb] flex flex-col">
         <Navbar />
-        <div className="flex">
-          <Sidebar />
-          <main className="flex-1 p-8">
+        <div className="flex w-full flex-1 bg-[#f5f6fb] lg:pl-[280px]">
+          <aside id="dashboard-sidebar" className="fixed left-0 top-20 bottom-0 z-30 hidden w-[280px] shrink-0 flex-col overflow-y-auto border-r border-gray-200 bg-white px-5 py-4 lg:flex">
+            <div className="flex-1">
+              <nav className="space-y-2 pt-3">
+                <button onClick={() => router.push('/dashboards/seller')} className={sidebarButtonClass(false)}>
+                  <LayoutDashboard className={sidebarIconClass(false)} />
+                  <span>Dashboard</span>
+                </button>
+                <button onClick={() => router.push('/dashboards/seller/listings')} className={sidebarButtonClass(false)}>
+                  <Home className={sidebarIconClass(false)} />
+                  <span>Listings</span>
+                </button>
+                <button onClick={() => router.push('/dashboards/seller/marketplace')} className={sidebarButtonClass(false)}>
+                  <Store className={sidebarIconClass(false)} />
+                  <span>Marketplace</span>
+                </button>
+                <button className={sidebarButtonClass(true)}>
+                  <BarChart3 className={sidebarIconClass(true)} />
+                  <span>Analytics</span>
+                </button>
+                <button onClick={() => router.push('/dashboards/seller/account')} className={sidebarButtonClass(false)}>
+                  <Settings className={sidebarIconClass(false)} />
+                  <span>Settings</span>
+                </button>
+              </nav>
+            </div>
+          </aside>
+          <main className="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-8">
             <div className="text-center py-8">
               <p className="text-gray-500">Please log in to view analytics.</p>
             </div>
@@ -57,20 +94,75 @@ export default function SellerAnalytics() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#f5f6fb] flex flex-col">
       <Navbar />
-      <div className="flex flex-col md:flex-row">
-        <Sidebar />
-        <main className="flex-1 md:ml-64 px-4 sm:px-6 lg:px-8 py-8">
+      <div className="flex w-full flex-1 bg-[#f5f6fb] lg:pl-[280px]">
+        <aside id="dashboard-sidebar" className="fixed left-0 top-20 bottom-0 z-30 hidden w-[280px] shrink-0 flex-col overflow-y-auto border-r border-gray-200 bg-white px-5 py-4 lg:flex">
+          <div className="flex-1">
+            <nav className="space-y-2 pt-3">
+              <button onClick={() => router.push('/dashboards/seller')} className={sidebarButtonClass(false)}>
+                <LayoutDashboard className={sidebarIconClass(false)} />
+                <span>Dashboard</span>
+              </button>
+              <button onClick={() => router.push('/dashboards/seller/listings')} className={sidebarButtonClass(false)}>
+                <Home className={sidebarIconClass(false)} />
+                <span>Listings</span>
+              </button>
+              <button onClick={() => router.push('/dashboards/seller/marketplace')} className={sidebarButtonClass(false)}>
+                <Store className={sidebarIconClass(false)} />
+                <span>Marketplace</span>
+              </button>
+              <button className={sidebarButtonClass(true)}>
+                <BarChart3 className={sidebarIconClass(true)} />
+                <span>Analytics</span>
+              </button>
+              <button onClick={() => router.push('/dashboards/seller/account')} className={sidebarButtonClass(false)}>
+                <Settings className={sidebarIconClass(false)} />
+                <span>Settings</span>
+              </button>
+            </nav>
+          </div>
+
+          <div className="border-t border-gray-200 pt-5">
+            <button
+              onClick={() => router.push('/dashboards/seller/add-property')}
+              className="mb-5 w-full rounded-xl bg-black px-4 py-3 text-sm font-bold text-white shadow-lg shadow-black/10 transition hover:bg-gray-900"
+            >
+              List Property
+            </button>
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-600 text-sm font-bold text-white shadow-sm">
+                {user?.name?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'S'}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-bold text-gray-950">{user?.name || 'Seller Name'}</p>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">Verified Seller</p>
+              </div>
+            </div>
+          </div>
+        </aside>
+        <main className="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-8">
+          <div className="mb-6 grid grid-cols-2 gap-3 lg:hidden">
+            <button onClick={() => router.push('/dashboards/seller')} className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-700 shadow-sm">Dashboard</button>
+            <button onClick={() => router.push('/dashboards/seller/listings')} className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-700 shadow-sm">Listings</button>
+            <button onClick={() => router.push('/dashboards/seller/marketplace')} className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-700 shadow-sm">Marketplace</button>
+            <button className="rounded-xl bg-black px-4 py-3 text-sm font-bold text-white shadow-sm">Analytics</button>
+            <button onClick={() => router.push('/dashboards/seller/account')} className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-700 shadow-sm">Settings</button>
+          </div>
           {/* Header */}
-          <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg p-6 mb-8 text-white">
-            <h1 className="text-3xl font-bold mb-2">Analytics Dashboard</h1>
-            <p className="text-orange-100">Track your property performance and insights</p>
+          <div className="mb-8">
+            <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.24em] text-gray-400">Interest Insights</p>
+            <h1 className="text-3xl font-black tracking-tight text-gray-950 sm:text-4xl">Analytics Dashboard</h1>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-600 sm:text-base">
+              {analyticsData?.topPerformingListing?.title
+                ? `Current focus: ${analyticsData.topPerformingListing.title}`
+                : 'Track buyer interest and activity for your seller listings.'}
+            </p>
           </div>
 
           {/* Time Range Selector */}
           <div className="mb-6">
-            <div className="flex space-x-2">
+            <div className="flex flex-wrap gap-2">
               {[
                 { value: '1month', label: '1 Month' },
                 { value: '3months', label: '3 Months' },
@@ -80,10 +172,10 @@ export default function SellerAnalytics() {
                 <button
                   key={range.value}
                   onClick={() => setTimeRange(range.value)}
-                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  className={`rounded-xl px-4 py-2 text-sm font-bold transition-colors ${
                     timeRange === range.value
-                      ? 'bg-orange-500 text-white'
-                      : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
+                      ? 'bg-black text-white shadow-lg shadow-black/10'
+                      : 'border border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
                   }`}
                 >
                   {range.label}
@@ -114,98 +206,65 @@ export default function SellerAnalytics() {
           )}
 
           {/* Analytics Content */}
-          {!loading && !error && analyticsData && (
-            <>
-              {/* KPI Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-                  <h3 className="text-sm font-medium text-gray-600 mb-2">Total Views</h3>
-                  <p className="text-3xl font-bold text-gray-900">{analyticsData.totalViews.toLocaleString()}</p>
-                </div>
-                <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-                  <h3 className="text-sm font-medium text-gray-600 mb-2">Total Inquiries</h3>
-                  <p className="text-3xl font-bold text-gray-900">{analyticsData.totalInquiries}</p>
-                </div>
-                <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-                  <h3 className="text-sm font-medium text-gray-600 mb-2">Total Offers</h3>
-                  <p className="text-3xl font-bold text-gray-900">{analyticsData.totalOffers}</p>
-                </div>
-                <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-                  <h3 className="text-sm font-medium text-gray-600 mb-2">Conversion Rate</h3>
-                  <p className="text-3xl font-bold text-gray-900">{analyticsData.conversionRate}%</p>
-                </div>
+          {!loading && !error && (
+            <div className="rounded-[24px] border border-gray-200/80 bg-white p-6 shadow-[0_24px_80px_rgba(15,23,42,0.06)] sm:p-8">
+              <div className="mb-8">
+                <h2 className="text-2xl font-black tracking-tight text-gray-950">Interest Over Time</h2>
+                <p className="mt-2 text-sm leading-6 text-gray-500">Views, inquiries, and offers for the selected period.</p>
               </div>
 
-              {/* Charts and Performance */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Performance Chart */}
-                <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Performance Over Time</h3>
-                  <div className="h-64 flex items-end justify-between space-x-2">
+              {analyticsData?.chartData?.length ? (
+                <>
+                  <div className="flex h-80 items-end justify-between gap-3 overflow-x-auto pb-2">
                     {analyticsData.chartData.map((data, index) => (
-                      <div key={index} className="flex flex-col items-center space-y-2">
-                        <div className="flex flex-col space-y-1">
-                          <div 
-                            className="bg-blue-500 rounded-t"
-                            style={{ height: `${Math.max((data.views / 100) * 100, 10)}px`, width: '30px' }}
+                      <div key={`${data.month}-${index}`} className="flex min-w-16 flex-1 flex-col items-center gap-3">
+                        <div className="flex h-64 items-end gap-1.5">
+                          <div
+                            className="w-5 rounded-t bg-blue-500"
+                            style={{ height: `${Math.max((data.views / 100) * 100, data.views ? 12 : 0)}px` }}
                             title={`Views: ${data.views}`}
                           />
-                          <div 
-                            className="bg-green-500"
-                            style={{ height: `${Math.max((data.inquiries / 20) * 100, 5)}px`, width: '30px' }}
+                          <div
+                            className="w-5 rounded-t bg-emerald-500"
+                            style={{ height: `${Math.max((data.inquiries / 20) * 100, data.inquiries ? 12 : 0)}px` }}
                             title={`Inquiries: ${data.inquiries}`}
                           />
-                          <div 
-                            className="bg-orange-500 rounded-b"
-                            style={{ height: `${Math.max((data.offers / 10) * 100, 5)}px`, width: '30px' }}
+                          <div
+                            className="w-5 rounded-t bg-gray-950"
+                            style={{ height: `${Math.max((data.offers / 10) * 100, data.offers ? 12 : 0)}px` }}
                             title={`Offers: ${data.offers}`}
                           />
                         </div>
-                        <span className="text-xs text-gray-600">{data.month}</span>
+                        <span className="text-xs font-bold text-gray-500">{data.month}</span>
                       </div>
                     ))}
                   </div>
-                  <div className="flex justify-center space-x-4 mt-4">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-3 h-3 bg-blue-500 rounded" />
-                      <span className="text-sm text-gray-600">Views</span>
+
+                  <div className="mt-6 flex flex-wrap justify-center gap-4">
+                    <div className="flex items-center gap-2">
+                      <div className="h-3 w-3 rounded bg-blue-500" />
+                      <span className="text-sm font-semibold text-gray-600">Views</span>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <div className="w-3 h-3 bg-green-500 rounded" />
-                      <span className="text-sm text-gray-600">Inquiries</span>
+                    <div className="flex items-center gap-2">
+                      <div className="h-3 w-3 rounded bg-emerald-500" />
+                      <span className="text-sm font-semibold text-gray-600">Inquiries</span>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <div className="w-3 h-3 bg-orange-500 rounded" />
-                      <span className="text-sm text-gray-600">Offers</span>
+                    <div className="flex items-center gap-2">
+                      <div className="h-3 w-3 rounded bg-gray-950" />
+                      <span className="text-sm font-semibold text-gray-600">Offers</span>
                     </div>
                   </div>
+                </>
+              ) : (
+                <div className="flex min-h-80 flex-col items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-gray-50 px-6 text-center">
+                  <BarChart3 className="mb-4 h-10 w-10 text-gray-300" />
+                  <h3 className="text-lg font-black text-gray-950">No analytics data yet</h3>
+                  <p className="mt-2 max-w-md text-sm leading-6 text-gray-500">
+                    Interest data will appear here once buyers start viewing or engaging with your listings.
+                  </p>
                 </div>
-
-                {/* Top Performing Listing */}
-                <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Top Performing Listing</h3>
-                  {analyticsData.topPerformingListing ? (
-                    <div className="space-y-4">
-                      <div className="p-4 bg-gray-50 rounded-lg">
-                        <h4 className="font-medium text-gray-900">{analyticsData.topPerformingListing.title}</h4>
-                        <p className="text-sm text-gray-600 mt-1">Property ID: {analyticsData.topPerformingListing.id}</p>
-                        <div className="mt-3 flex items-center justify-between">
-                          <span className="text-sm text-gray-600">Total Views</span>
-                          <span className="font-semibold text-orange-600">{analyticsData.topPerformingListing.views}</span>
-                        </div>
-                      </div>
-                      <button className="w-full px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors">
-                        View Details
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="text-center py-8 text-gray-500">
-                      <p>No performance data available</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </>
+              )}
+            </div>
           )}
         </main>
       </div>

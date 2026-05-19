@@ -3,10 +3,10 @@
 // Imports at top of file
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { Button } from '@/components/reusable/Button';
 import Badge from '@/components/reusable/Badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/reusable/EnhancedCard';
-import { UserPlus, Eye, Edit, Trash2 } from 'lucide-react';
+import { Navbar } from '@/components';
+import Link from 'next/link';
+import { UserPlus, Eye, Edit, Trash2, LayoutDashboard, Home, Store, BarChart3, Settings, Plus, Building2 } from 'lucide-react';
 import { Agent } from '@/types/api';
 import AgentAssignmentModal from '@/components/seller/AgentAssignmentModal';
 import AssignedAgentCard from '@/components/seller/AssignedAgentCard';
@@ -23,8 +23,10 @@ import ViewPropertyModal from '@/components/seller/ViewPropertyModal';
 export default function SellerListingsPage() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
+  const canAccessSellerDashboard = !!user?.roles?.includes('seller');
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+  const [statusTab, setStatusTab] = useState<'active' | 'drafts' | 'archived'>('active');
 
   // REMOVE this early-return block:
   // if (!isLoading) {
@@ -40,16 +42,14 @@ export default function SellerListingsPage() {
   
   // Redirect via effect (hooks stay in consistent order)
   useEffect(() => {
-    if (!isLoading && (!user || user.role !== 'seller')) {
+    if (!isLoading && (!user || !canAccessSellerDashboard)) {
       router.push('/signin');
     }
-  }, [isLoading, user, router]);
+  }, [canAccessSellerDashboard, isLoading, user, router]);
 
   // Fetch seller properties using React Query (unconditional hook)
   const {
     data: propertiesData,
-    isLoading: propertiesLoading,
-    error: propertiesError,
     refetch
   } = useQuery({
     queryKey: ["seller-properties", user?.id],
@@ -58,7 +58,7 @@ export default function SellerListingsPage() {
       const result = await sellerApi.getSellerListings(user.id);
       return result;
     },
-    enabled: !!user && user.role === "seller",
+    enabled: !!user && canAccessSellerDashboard,
     staleTime: 5 * 60 * 1000,
   });
 
@@ -151,87 +151,199 @@ export default function SellerListingsPage() {
     setViewingProperty(null);
   };
 
+  const activeCount = properties.filter((property: any) => ['active', 'public', 'buyer-interest', 'negotiation', 'under-offer'].includes(property.status)).length;
+  const draftCount = properties.filter((property: any) => ['draft', 'pending', 'review'].includes(property.status)).length;
+  const archivedCount = properties.filter((property: any) => ['sold', 'withdrawn', 'rejected'].includes(property.status)).length;
+  const displayedProperties = properties.filter((property: any) => {
+    if (statusTab === 'active') return ['active', 'public', 'buyer-interest', 'negotiation', 'under-offer'].includes(property.status);
+    if (statusTab === 'drafts') return ['draft', 'pending', 'review'].includes(property.status);
+    return ['sold', 'withdrawn', 'rejected'].includes(property.status);
+  });
+
+  const sidebarButtonClass = (isActive: boolean) =>
+    `w-full flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all ${
+      isActive
+        ? 'bg-black text-white shadow-lg shadow-black/10'
+        : 'text-gray-600 hover:bg-white hover:text-gray-950'
+    }`;
+
+  const sidebarIconClass = (isActive: boolean) =>
+    `h-4 w-4 ${isActive ? 'text-white' : 'text-gray-500'}`;
+
+  const getAddressText = (property: any) => {
+    if (!property?.address) return '';
+    if (typeof property.address === 'string') return property.address;
+    return [property.address.street, property.address.city, property.address.state].filter(Boolean).join(', ');
+  };
+
+  const getDaysListed = (property: any) => (
+    property.daysOnMarket ||
+    (property.dateListed
+      ? Math.floor((new Date().getTime() - new Date(property.dateListed).getTime()) / (1000 * 3600 * 24))
+      : 0)
+  );
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-          <div className="text-center sm:text-left">
-            <h1 className="text-3xl font-bold text-gray-900">My Listings</h1>
-            <p className="text-gray-600 mt-2">
-              Manage your property listings and track their performance
-            </p>
+    <div className="min-h-screen bg-[#f5f6fb] flex flex-col">
+      <Navbar />
+
+      <div className="flex w-full flex-1 bg-[#f5f6fb] lg:pl-[280px]">
+        <aside id="dashboard-sidebar" className="fixed left-0 top-20 bottom-0 z-30 hidden w-[280px] shrink-0 flex-col overflow-y-auto border-r border-gray-200 bg-white px-5 py-4 lg:flex">
+          <div className="flex-1">
+            <nav className="space-y-2 pt-3">
+              <button onClick={() => router.push('/dashboards/seller')} className={sidebarButtonClass(false)}>
+                <LayoutDashboard className={sidebarIconClass(false)} />
+                <span>Dashboard</span>
+              </button>
+              <button className={sidebarButtonClass(true)}>
+                <Home className={sidebarIconClass(true)} />
+                <span>Listings</span>
+              </button>
+              <button onClick={() => router.push('/dashboards/seller/marketplace')} className={sidebarButtonClass(false)}>
+                <Store className={sidebarIconClass(false)} />
+                <span>Marketplace</span>
+              </button>
+              <button onClick={() => router.push('/dashboards/seller/analytics')} className={sidebarButtonClass(false)}>
+                <BarChart3 className={sidebarIconClass(false)} />
+                <span>Analytics</span>
+              </button>
+              <button onClick={() => router.push('/dashboards/seller/account')} className={sidebarButtonClass(false)}>
+                <Settings className={sidebarIconClass(false)} />
+                <span>Settings</span>
+              </button>
+            </nav>
           </div>
-          <div className="flex justify-center sm:justify-end">
-            <Button
-              className="bg-blue-600 hover:bg-blue-700"
+
+          <div className="border-t border-gray-200 pt-5">
+            <button
+              onClick={() => router.push('/dashboards/seller/add-property')}
+              className="mb-5 w-full rounded-xl bg-black px-4 py-3 text-sm font-bold text-white shadow-lg shadow-black/10 transition hover:bg-gray-900"
+            >
+              List Property
+            </button>
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-600 text-sm font-bold text-white shadow-sm">
+                {user?.name?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'S'}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-bold text-gray-950">{user?.name || 'Seller Name'}</p>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">Verified Seller</p>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <main className="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-8">
+          <div className="mb-6 grid grid-cols-2 gap-3 lg:hidden">
+            <button onClick={() => router.push('/dashboards/seller')} className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-700 shadow-sm">Dashboard</button>
+            <button className="rounded-xl bg-black px-4 py-3 text-sm font-bold text-white shadow-sm">Listings</button>
+            <button onClick={() => router.push('/dashboards/seller/marketplace')} className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-700 shadow-sm">Marketplace</button>
+            <button onClick={() => router.push('/dashboards/seller/analytics')} className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-700 shadow-sm">Analytics</button>
+            <button onClick={() => router.push('/dashboards/seller/account')} className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-700 shadow-sm">Settings</button>
+          </div>
+
+          <div className="mb-8 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.24em] text-gray-400">Seller Inventory</p>
+              <h1 className="text-3xl font-black tracking-tight text-gray-950 sm:text-4xl">My Listings</h1>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-600 sm:text-base">
+                Manage and optimize your property portfolio.
+              </p>
+            </div>
+            <button
+              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-6 py-4 text-sm font-bold text-white shadow-lg shadow-emerald-900/10 transition hover:bg-emerald-700 sm:w-auto"
               onClick={() => router.push('/dashboards/seller/add-property')}
             >
-              Add New Property
-            </Button>
+              <Plus className="h-5 w-5" />
+              List New Property
+            </button>
           </div>
-        </div>
+
+          <div className="mb-10 border-b border-gray-300">
+            <div className="flex gap-8 overflow-x-auto">
+              {[
+                { label: 'Active', key: 'active', count: activeCount },
+                { label: 'Drafts', key: 'drafts', count: draftCount },
+                { label: 'Archived', key: 'archived', count: archivedCount },
+              ].map((tab) => (
+                <button
+                  key={tab.label}
+                  onClick={() => setStatusTab(tab.key as 'active' | 'drafts' | 'archived')}
+                  className={`whitespace-nowrap border-b-2 px-0 pb-4 text-sm font-bold transition ${
+                    statusTab === tab.key
+                      ? 'border-black text-black'
+                      : 'border-transparent text-gray-500 hover:text-gray-900'
+                  }`}
+                >
+                  {tab.label} ({tab.count})
+                </button>
+              ))}
+            </div>
+          </div>
 
         {/* Properties Grid */}
-        {properties.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="max-w-md mx-auto">
-              <div className="mb-4">
-                <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H3m2 0h4M9 7h6m-6 4h6m-6 4h6" />
-                </svg>
+        {displayedProperties.length === 0 ? (
+          <div className="rounded-[24px] border border-dashed border-gray-300 bg-white/60 px-6 py-20 text-center shadow-[0_20px_60px_rgba(15,23,42,0.04)]">
+            <div className="mx-auto max-w-md">
+              <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-gray-100">
+                <Building2 className="h-8 w-8 text-gray-400" />
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No listings found</h3>
-              <p className="text-gray-500 mb-6">You haven't created any property listings yet.</p>
-              <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => router.push('/dashboards/seller/add-property')}>
+              <h3 className="mb-2 text-xl font-black tracking-tight text-gray-950">No listings found</h3>
+              <p className="mb-8 text-sm leading-6 text-gray-500">
+                {properties.length === 0
+                  ? "You haven't created any property listings yet."
+                  : `No ${statusTab === 'drafts' ? 'draft' : statusTab} listings found.`}
+              </p>
+              <button className="rounded-xl bg-black px-6 py-3 text-sm font-bold text-white shadow-lg shadow-black/10 transition hover:bg-gray-900" onClick={() => router.push('/dashboards/seller/add-property')}>
                 Create Your First Listing
-              </Button>
+              </button>
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {properties.map((property: any) => (
-              <Card key={property._id || property.id} className="overflow-hidden">
-                <div className="relative">
+          <div className="space-y-8">
+            {displayedProperties.map((property: any) => (
+              <article key={property._id || property.id} className="overflow-hidden rounded-[24px] border border-blue-100/80 bg-white shadow-[0_24px_80px_rgba(15,23,42,0.06)] transition hover:-translate-y-0.5 hover:shadow-[0_28px_90px_rgba(15,23,42,0.10)]">
+                <div className="grid lg:grid-cols-[minmax(280px,0.72fr)_1fr]">
+                <div className="relative min-h-72 lg:min-h-[346px]">
                   <img
                     src={getSafeImageUrl(property.primaryImage || property.images?.[0]?.url || property.mainImage?.url)}
                     alt={property.title}
-                    className="w-full h-48 object-cover"
+                    className="absolute inset-0 h-full w-full object-cover"
                   />
-                  <div className="absolute top-4 left-4">
+                  <div className="absolute left-5 top-5">
                     {getStatusBadge(property.status)}
                   </div>
                 </div>
                 
-                <CardHeader>
-                  <CardTitle className="text-lg">{property.title}</CardTitle>
-                  <p className="text-gray-600 text-sm">
-                    {property.address?.street || property.address}, {property.address?.city || ''}, {property.address?.state || ''}
-                  </p>
-                  <div className="mt-3 flex items-center justify-between">
-                    <p className="text-2xl font-bold text-blue-600">
+                <div className="flex flex-col justify-between p-6 sm:p-8">
+                  <div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
+                    <div className="min-w-0">
+                      <h2 className="truncate text-2xl font-black tracking-tight text-gray-950">{property.title}</h2>
+                      <p className="mt-2 text-sm font-medium text-gray-500">{getAddressText(property)}</p>
+
+                      <div className="mt-5 flex flex-wrap gap-3">
+                        <span className="rounded-lg border border-blue-100 bg-blue-50 px-4 py-2 text-sm font-semibold text-gray-800">{property.beds || 0} Beds</span>
+                        <span className="rounded-lg border border-blue-100 bg-blue-50 px-4 py-2 text-sm font-semibold text-gray-800">{property.baths || 0} Baths</span>
+                        <span className="rounded-lg border border-blue-100 bg-blue-50 px-4 py-2 text-sm font-semibold text-gray-800">{property.size || property.squareMeters || 0} sqft</span>
+                        <span className="rounded-lg border border-gray-200 bg-gray-50 px-4 py-2 text-sm font-semibold text-gray-700">{getDaysListed(property)} days</span>
+                      </div>
+                    </div>
+
+                    <div className="shrink-0 xl:text-right">
+                      <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-gray-500">Price Target</p>
+                      <p className="mt-2 text-2xl font-black tracking-tight text-gray-950">
                       {formatCurrencyCompact(property.price || 0)}
-                    </p>
-                    <div className="text-right">
-                      <p className="text-xs text-gray-700 font-bold">Days Listed</p>
-                      <p className="text-sm font-medium text-gray-900">
-                        {property.daysOnMarket ||
-                          (property.dateListed
-                            ? Math.floor(
-                                (new Date().getTime() - new Date(property.dateListed).getTime()) /
-                                (1000 * 3600 * 24)
-                              )
-                            : 0)}
                       </p>
                     </div>
                   </div>
-                </CardHeader>
 
-                <CardContent className="space-y-4">
+                  <div className="my-7 border-t border-gray-200" />
+
+                  <div className="space-y-5">
                   {/* Buyer Activity */}
                   {property.buyerActivity && (
-                    <div className="bg-gray-50 rounded-lg p-3 text-sm">
-                      <p className="font-medium text-gray-700 mb-2">Buyer Activity</p>
+                    <div className="rounded-2xl bg-gray-50 p-4 text-sm">
+                      <p className="mb-2 font-bold text-gray-800">Buyer Activity</p>
                       <div className="flex flex-wrap gap-3 text-gray-600">
                         <span>{property.buyerActivity.views} views</span>
                         <span>{property.buyerActivity.unlocks} unlocked</span>
@@ -249,39 +361,44 @@ export default function SellerListingsPage() {
                       propertyId={property._id || property.id}
                     />
                   ) : (
-                    <Button
-                      variant="outline"
-                      size="sm"
+                    <button
                       onClick={() => handleAssignAgent(property._id || property.id)}
-                      className="w-full"
+                      className="inline-flex w-full items-center justify-center rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm font-bold text-gray-800 transition hover:border-gray-950"
                     >
-                      <UserPlus className="h-4 w-4 mr-2" />
+                      <UserPlus className="mr-2 h-4 w-4" />
                       No agent assign
-                    </Button>
+                    </button>
                   )}
+                  </div>
 
                   {/* Action Buttons */}
-                  <div className="flex space-x-2">
-                    <Button variant="outline" size="sm" className="flex-1" onClick={() => handleViewOpen(property)}>
-                      <Eye className="h-4 w-4 mr-1" />
-                      View
-                    </Button>
-                    <Button variant="outline" size="sm" className="flex-1" onClick={() => handleEditOpen(property)}>
-                      <Edit className="h-4 w-4 mr-1" />
-                      Edit
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="text-red-600 hover:text-red-700"
+                  <div className="mt-7 flex flex-col gap-4 border-t border-gray-200 pt-6 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex gap-3">
+                    <button className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-700 transition hover:border-gray-950 hover:text-black" onClick={() => handleEditOpen(property)} aria-label="Edit listing">
+                      <Edit className="h-5 w-5" />
+                    </button>
+                    <button className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-700 transition hover:border-gray-950 hover:text-black" onClick={() => handleViewOpen(property)} aria-label="View listing">
+                      <Eye className="h-5 w-5" />
+                    </button>
+                    <button
+                      className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-red-100 bg-white text-red-600 transition hover:border-red-300 hover:bg-red-50"
                       onClick={() => handleDelete(property._id || property.id)}
                       disabled={isDeleting}
+                      aria-label="Delete listing"
                     >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                      <Trash2 className="h-5 w-5" />
+                    </button>
+                    </div>
+                    <button
+                      onClick={() => handleEditOpen(property)}
+                      className="inline-flex w-full items-center justify-center rounded-xl bg-black px-7 py-3.5 text-sm font-bold text-white shadow-lg shadow-black/10 transition hover:bg-gray-900 sm:w-auto"
+                    >
+                      Manage Listing
+                    </button>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+                </div>
+              </article>
             ))}
           </div>
         )}
@@ -315,7 +432,9 @@ export default function SellerListingsPage() {
             property={viewingProperty}
           />
         )}
+        </main>
       </div>
+
     </div>
   );
 }

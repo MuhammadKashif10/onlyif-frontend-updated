@@ -18,6 +18,8 @@ interface PasswordFieldProps {
   showStrengthMeter?: boolean;
   confirmPassword?: string;
   isConfirmField?: boolean;
+  isConfirmation?: boolean;
+  onBlur?: () => void;
 }
 
 const PasswordField: React.FC<PasswordFieldProps> = ({
@@ -33,27 +35,30 @@ const PasswordField: React.FC<PasswordFieldProps> = ({
   name,
   showStrengthMeter = false,
   confirmPassword,
-  isConfirmField = false
+  isConfirmField = false,
+  isConfirmation = false,
+  onBlur,
 }) => {
   const [showPassword, setShowPassword] = useState(false);
+  const isConfirmationField = isConfirmField || isConfirmation;
   
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
 
   // Validate password or confirmation
-  const validation = isConfirmField && confirmPassword
-    ? validatePasswordConfirmation(value, confirmPassword)
+  const validation = isConfirmationField
+    ? validatePasswordConfirmation(confirmPassword || '', value)
     : validatePassword(value);
 
-  const hasError = error || (value && !validation.isValid);
+  const hasError = !!error || (!!value && !validation.isValid);
   
   // Fix: Handle different validation result types
   const getErrorMessage = () => {
     if (error) return error;
     if (value && !validation.isValid) {
       // For password confirmation, use 'error' property
-      if (isConfirmField && 'error' in validation) {
+      if (isConfirmationField && 'error' in validation) {
         return validation.error || '';
       }
       // For regular password validation, use 'errors' array
@@ -85,6 +90,7 @@ const PasswordField: React.FC<PasswordFieldProps> = ({
           name={name}
           value={value}
           onChange={(e) => onChange(e.target.value)}
+          onBlur={onBlur}
           placeholder={placeholder}
           disabled={disabled}
           required={required}
@@ -96,6 +102,8 @@ const PasswordField: React.FC<PasswordFieldProps> = ({
             }
             ${disabled ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}
           `}
+          aria-invalid={hasError}
+          aria-describedby={hasError ? `${id || name}-error` : undefined}
         />
         
         <button
@@ -114,17 +122,17 @@ const PasswordField: React.FC<PasswordFieldProps> = ({
       </div>
 
       {/* Password Strength Meter */}
-      {showStrengthMeter && !isConfirmField && value && (
+      {showStrengthMeter && !isConfirmationField && value && 'strength' in validation && (
         <div className="mt-2">
           <div className="flex items-center justify-between mb-1">
             <span className="text-xs text-gray-600">Password Strength</span>
-            <span className={`text-xs font-medium ${getPasswordStrengthColor(validation.strength)}`}>
+            <span className={`text-xs font-medium ${validation.isValid ? getPasswordStrengthColor(validation.strength) : 'text-red-600'}`}>
               {validation.strength.charAt(0).toUpperCase() + validation.strength.slice(1)}
             </span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div 
-              className={`h-2 rounded-full transition-all duration-300 ${getPasswordStrengthBgColor(validation.strength)}`}
+              className={`h-2 rounded-full transition-all duration-300 ${validation.isValid ? getPasswordStrengthBgColor(validation.strength) : 'bg-red-500'}`}
               style={{ width: `${(validation.score / 5) * 100}%` }}
             ></div>
           </div>
@@ -133,13 +141,13 @@ const PasswordField: React.FC<PasswordFieldProps> = ({
 
       {/* Error Message */}
       {hasError && (
-        <p className="mt-2 text-sm text-red-600" role="alert">
+        <p id={`${id || name}-error`} className="mt-2 text-sm text-red-600" role="alert">
           {errorMessage}
         </p>
       )}
 
       {/* Password Requirements (only for main password field) */}
-      {showStrengthMeter && !isConfirmField && value && validation.errors.length > 0 && (
+      {showStrengthMeter && !isConfirmationField && value && 'errors' in validation && validation.errors.length > 0 && (
         <div className="mt-2">
           <p className="text-xs text-gray-600 mb-1">Password must contain:</p>
           <ul className="text-xs text-gray-600 space-y-1">

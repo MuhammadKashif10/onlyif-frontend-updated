@@ -21,21 +21,29 @@ export default function SignInPage() {
     // Redirect if authenticated, supporting both roles[] and legacy role
     if (user) {
       const roles = Array.isArray(user.roles) ? user.roles : [];
-      if (roles.includes('admin')) {
+      if (activeRole === 'admin' && roles.includes('admin')) {
         router.push('/admin/dashboard');
-      } else if (roles.includes('seller')) {
+      } else if (activeRole === 'seller' && roles.includes('seller')) {
         router.push('/dashboards/seller');
+      } else if (activeRole === 'buyer' && roles.includes('buyer')) {
+        router.push('/dashboards/buyer');
+      } else if (activeRole === 'agent' && roles.includes('agent')) {
+        router.push('/dashboards/agent');
+      } else if (roles.includes('admin')) {
+        router.push('/admin/dashboard');
       } else if (roles.includes('buyer')) {
         router.push('/dashboards/buyer');
+      } else if (roles.includes('seller')) {
+        router.push('/dashboards/seller');
       } else if (roles.includes('agent')) {
         router.push('/dashboards/agent');
-      } else if (activeRole === 'admin' || user.role === 'admin') {
+      } else if (user.role === 'admin') {
         router.push('/admin/dashboard');
-      } else if (activeRole === 'seller' || user.role === 'seller') {
-        router.push('/dashboards/seller');
-      } else if (activeRole === 'buyer' || user.role === 'buyer') {
+      } else if (user.role === 'buyer') {
         router.push('/dashboards/buyer');
-      } else if (activeRole === 'agent' || user.role === 'agent') {
+      } else if (user.role === 'seller') {
+        router.push('/dashboards/seller');
+      } else if (user.role === 'agent') {
         router.push('/dashboards/agent');
       } else {
         router.push('/dashboard');

@@ -34,6 +34,7 @@ interface AuthContextType {
   sendOtp: (email?: string, phone?: string) => Promise<void>;
   verifyOtp: (email: string | undefined, phone: string | undefined, otp: string) => Promise<void>;
   isLoading: boolean;
+  loading: boolean;
   error: string | null;
   isAdmin: boolean;
 }
@@ -75,6 +76,14 @@ const parseJsonSafely = async (response: Response): Promise<any> => {
 };
 
 const VALID_ROLES: NonNullUserRole[] = ['buyer', 'seller', 'agent', 'admin'];
+
+const normalizePhoneNumber = (phone?: string): string | undefined => {
+  const trimmed = phone?.trim();
+  if (!trimmed) return undefined;
+  return trimmed.startsWith('+')
+    ? `+${trimmed.slice(1).replace(/\D/g, '')}`
+    : trimmed.replace(/\D/g, '');
+};
 
 const normalizeRoles = (roles: unknown, legacyRole: unknown): NonNullUserRole[] => {
   const normalized: NonNullUserRole[] = [];
@@ -118,8 +127,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const setActiveRole = (role: UserRole) => {
     setActiveRoleState(role);
-    if (typeof window !== 'undefined' && role) {
-      localStorage.setItem('activeRole', role);
+    if (typeof window !== 'undefined') {
+      if (role) {
+        localStorage.setItem('activeRole', role);
+      } else {
+        localStorage.removeItem('activeRole');
+      }
     }
   };
 
@@ -363,8 +376,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         requestBody.role = desiredRole;
       }
   
-      if (userData.phone) {
-        requestBody.phone = userData.phone;
+      const normalizedPhone = normalizePhoneNumber(userData.phone);
+      if (normalizedPhone) {
+        requestBody.phone = normalizedPhone;
       }
   
       if (userData.type === 'agent') {
@@ -700,6 +714,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       sendOtp,
       verifyOtp,
       isLoading,
+      loading: isLoading,
       error,
       isAdmin,
     }}>

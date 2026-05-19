@@ -107,17 +107,20 @@ export default function DashboardPage() {
   const handleAcceptBuyer = async () => {
     if (!buyerAllChecked) return;
     await addRole('buyer');
+    setActiveRole('buyer');
     router.push('/dashboards/buyer');
   };
 
   const handleAcceptSeller = async () => {
     if (!sellerAllChecked) return;
     await addRole('seller');
+    setActiveRole('seller');
     router.push('/dashboards/seller');
   };
 
   const handleSelectBuyer = () => {
     if (user?.acceptedRoles?.buyer) {
+      setActiveRole('buyer');
       router.push('/dashboards/buyer');
     } else {
       setModal('buyer');
@@ -126,6 +129,7 @@ export default function DashboardPage() {
 
   const handleSelectSeller = () => {
     if (user?.acceptedRoles?.seller) {
+      setActiveRole('seller');
       router.push('/dashboards/seller');
     } else {
       setModal('seller');
@@ -429,4 +433,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-

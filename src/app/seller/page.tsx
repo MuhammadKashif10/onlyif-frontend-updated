@@ -11,6 +11,7 @@ import { Property } from '@/types/api';
 export default function SellerDashboard() {
   const router = useRouter();
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  const canAccessSellerDashboard = !!user?.roles?.includes('seller');
   
   const [sellerStats, setSellerStats] = useState<SellerStats>({
     totalOffers: 0,
@@ -52,14 +53,14 @@ export default function SellerDashboard() {
       return;
     }
     
-    if (user.role !== 'seller') {
+    if (!canAccessSellerDashboard) {
       router.push('/dashboards');
       return;
     }
     
     // Load data once authenticated
     loadData();
-  }, [authLoading, isAuthenticated, user, router]);
+  }, [authLoading, canAccessSellerDashboard, isAuthenticated, user, router]);
 
   const loadData = async () => {
     if (!user?.id) {
@@ -117,7 +118,7 @@ export default function SellerDashboard() {
   }
   
   // Show error if not authenticated
-  if (!isAuthenticated || !user || user.role !== 'seller') {
+  if (!isAuthenticated || !user || !canAccessSellerDashboard) {
     return null; // Will redirect in useEffect
   }
 

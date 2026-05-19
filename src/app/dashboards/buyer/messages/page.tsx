@@ -7,8 +7,9 @@ import { Card } from '@/components/reusable';
 
 const BuyerMessagesPage: React.FC = () => {
   const { user } = useAuth();
+  const canAccessBuyerDashboard = !!user?.roles?.includes('buyer');
 
-  if (!user || user.role !== 'buyer') {
+  if (!user || !canAccessBuyerDashboard) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <Card className="p-8 text-center">

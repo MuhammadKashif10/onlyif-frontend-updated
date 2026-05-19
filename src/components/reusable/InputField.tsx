@@ -13,6 +13,7 @@ interface InputFieldProps {
   id?: string;
   name?: string;
   maxLength?: number;
+  onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
 }
 
 export default function InputField({
@@ -28,6 +29,7 @@ export default function InputField({
   id,
   name,
   maxLength,
+  onBlur,
 }: InputFieldProps) {
   return (
     <div className={className}>
@@ -43,17 +45,20 @@ export default function InputField({
         type={type}
         value={value ?? ''}
         onChange={onChange}
+        onBlur={onBlur}
         placeholder={placeholder}
         disabled={disabled}
         required={required}
         maxLength={maxLength}
         className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
           error
-            ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
+            ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
             : 'border-gray-300 focus:border-blue-500'
         } ${disabled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+        aria-invalid={!!error}
+        aria-describedby={error ? `${id || name}-error` : undefined}
       />
-      {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+      {error && <p id={`${id || name}-error`} className="mt-1 text-sm text-red-600" role="alert">{error}</p>}
     </div>
   );
 }

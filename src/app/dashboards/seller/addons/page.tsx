@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Navbar, Footer } from '@/components';
+import { Navbar } from '@/components';
 import Sidebar from '@/components/main/Sidebar';
 import AddonCard from '@/components/reusable/AddonCard';
 import Modal from '@/components/reusable/Modal';
@@ -414,7 +414,6 @@ export default function AddonsPage() {
         </div>
       </Modal>
       
-      <Footer />
     </div>
   );
 }

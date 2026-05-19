@@ -20,7 +20,8 @@ const MessageBoard: React.FC<MessageBoardProps> = ({
   targetUserId,
   targetUserRole
 }) => {
-  const { user } = useAuth();
+  const { user, activeRole } = useAuth();
+  const currentRole = activeRole || user?.role || user?.type || null;
   const { addNotification } = useUI();
   const [showNewConversation, setShowNewConversation] = useState(false);
   const [newConversationData, setNewConversationData] = useState({
@@ -103,7 +104,7 @@ const MessageBoard: React.FC<MessageBoardProps> = ({
       <div className="flex-1">
         <MessagesInterface
           currentUserId={user.id}
-          currentUserRole={user.role as 'buyer' | 'seller' | 'agent'}
+          currentUserRole={currentRole as 'buyer' | 'seller' | 'agent'}
           className="h-full"
         />
       </div>

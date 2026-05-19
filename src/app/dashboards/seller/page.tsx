@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { Navbar } from '@/components';
-import Sidebar from '@/components/main/Sidebar';
 import { sellerApi } from '@/api/seller';
 import { propertiesApi } from '@/api/properties';
 import { Property } from '@/types/api';
@@ -17,16 +16,16 @@ import {
   Home, 
   Plus, 
   DollarSign, 
-  Calendar,
-  ChevronRight,
   User,
   Activity,
   Search,
   Menu,
   X,
-  ArrowRight
+  ArrowRight,
+  Store,
+  BarChart3
 } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, Button } from '@/components/reusable';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/reusable';
 
 // Loading spinner component
 const LoadingSpinner = () => (
@@ -296,7 +295,7 @@ function SellerDashboard() {
       setIsViewingAddons(true);
       
       // Navigate to add-ons page (the page will fetch data itself)
-      router.push('/dashboards/seller/addons');
+      router.push('/dashboards/seller/marketplace');
       
     } catch (error) {
       console.error('Error navigating to add-ons:', error);
@@ -400,72 +399,38 @@ function SellerDashboard() {
     }
   };
 
+  const featuredListing = activeListings[0];
+  const setupProgress = activeListings.length > 0 ? 100 : 0;
+  const dashboardTitle = user?.name ? `Welcome back, ${user.name}` : 'Welcome back';
+
+  const sidebarButtonClass = (isActive: boolean) =>
+    `w-full flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all ${
+      isActive
+        ? 'bg-black text-white shadow-lg shadow-black/10'
+        : 'text-gray-600 hover:bg-white hover:text-gray-950'
+    }`;
+
+  const sidebarIconClass = (isActive: boolean) =>
+    `h-4 w-4 ${isActive ? 'text-white' : 'text-gray-500'}`;
+
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Top Navbar */}
-      <header className="h-16 sm:h-20 bg-white border-b border-gray-200 flex items-center justify-between px-4 sm:px-8 sticky top-0 z-50 w-full">
-        {/* Left: Logo */}
-        <div className="flex-shrink-0">
-          <Link href="/">
-            <img src="/images/logo.PNG" alt="Only If" className="h-8 sm:h-10 md:h-12 lg:h-14 w-auto transition-transform duration-200" />
-          </Link>
-        </div>
+    <div className="min-h-screen bg-[#f5f6fb] flex flex-col">
+      <Navbar />
 
-        {/* Center: Main Site Navigation */}
-        <nav className="hidden lg:flex items-center space-x-8">
-          <Link href="/buy" className="text-sm font-semibold text-gray-700 hover:text-emerald-600 transition-colors">Buy</Link>
-          <Link href="/signin" className="text-sm font-semibold text-gray-700 hover:text-emerald-600 transition-colors">Sell</Link>
-          <Link href="/how-it-works" className="text-sm font-semibold text-gray-700 hover:text-emerald-600 transition-colors">How it Works</Link>
-          <Link href="/agents" className="text-sm font-semibold text-gray-700 hover:text-emerald-600 transition-colors">Agents</Link>
-        </nav>
-
-        {/* Right: Dashboard & Sign Out */}
-        <div className="flex items-center space-x-2 sm:space-x-6">
-          {/* Switch to Buyer Button */}
-          <button
-            onClick={handleSwitchToBuyer}
-            className="hidden md:flex items-center space-x-2 bg-blue-50 text-blue-600 border border-blue-200 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition-colors font-semibold text-sm"
-          >
-            <Search className="h-4 w-4" />
-            <span>Switch to Buyer</span>
-          </button>
-
-          <Link 
-            href="/dashboard"
-            className="hidden sm:block text-sm font-semibold text-emerald-600 hover:text-emerald-700 transition-colors"
-          >
-            Dashboard
-          </Link>
-          <button 
-            onClick={logout}
-            className="hidden sm:block text-sm font-semibold text-gray-600 hover:text-red-600 transition-colors"
-          >
-            Sign Out
-          </button>
-          <div className="flex items-center space-x-2 sm:space-x-3 sm:pl-4 sm:border-l border-gray-200">
-            <button className="p-1.5 sm:p-2 text-gray-400 hover:text-gray-600 relative">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
-            </button>
-            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gray-200 overflow-hidden border border-gray-100 flex-shrink-0">
-              <img 
-                src="/images/user-avatar.jpg" 
-                alt="User" 
-                className="w-full h-full object-cover" 
-                onError={(e) => (e.currentTarget.src = `https://ui-avatars.com/api/?name=${user?.name || 'S'}&background=10b981&color=fff`)} 
-              />
-            </div>
-            
-            {/* Mobile Menu Button */}
-            <button 
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="lg:hidden p-2 text-gray-400 hover:text-gray-600"
-            >
-              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
+      <div className="sticky top-20 z-40 border-b border-gray-200/70 bg-[#f5f6fb]/95 px-4 py-3 backdrop-blur lg:hidden">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="truncate text-sm font-semibold text-gray-950">{activeTab === 'dashboard' ? 'Dashboard' : 'Listings'}</p>
           </div>
+          <button
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-700 shadow-sm"
+            aria-label="Open seller dashboard menu"
+          >
+            {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
         </div>
-      </header>
+      </div>
 
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
@@ -517,13 +482,33 @@ function SellerDashboard() {
                   {activeTab === 'listings' && <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full shadow-sm"></div>}
                 </button>
                 <Link 
+                  href="/dashboards/seller/marketplace" 
+                  className="w-full flex items-center justify-between py-4 px-2 border-b border-gray-50 text-gray-900 font-bold" 
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <span className="flex items-center gap-3">
+                    <Store className="w-5 h-5 text-gray-400" />
+                    Marketplace
+                  </span>
+                </Link>
+                <Link 
+                  href="/dashboards/seller/analytics" 
+                  className="w-full flex items-center justify-between py-4 px-2 border-b border-gray-50 text-gray-900 font-bold" 
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <span className="flex items-center gap-3">
+                    <BarChart3 className="w-5 h-5 text-gray-400" />
+                    Analytics
+                  </span>
+                </Link>
+                <Link 
                   href="/dashboards/seller/account" 
                   className="w-full flex items-center justify-between py-4 px-2 border-b border-gray-50 text-gray-900 font-bold" 
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   <span className="flex items-center gap-3">
                     <Settings className="w-5 h-5 text-gray-400" />
-                    Account Settings
+                    Settings
                   </span>
                 </Link>
               </div>
@@ -561,97 +546,133 @@ function SellerDashboard() {
         </div>
       )}
 
-      <div className="flex flex-1 relative">
-        {/* Sidebar - Fixed Position */}
-        <aside className="hidden lg:flex w-72 bg-white border-r border-gray-200 flex-col fixed left-0 top-20 bottom-0 z-20 overflow-y-auto">
-          <div className="p-8 flex-1">
-            <nav className="space-y-2">
+      <div className="flex w-full flex-1 bg-[#f5f6fb] lg:pl-[280px]">
+        <aside id="dashboard-sidebar" className="fixed left-0 top-20 bottom-0 z-30 hidden w-[280px] shrink-0 flex-col overflow-y-auto border-r border-gray-200 bg-white px-5 py-4 lg:flex">
+          <div className="flex-1">
+            <nav className="space-y-2 pt-3">
               <button
                 onClick={() => setActiveTab('dashboard')}
-                className={`w-full flex items-center space-x-3 px-5 py-3.5 text-sm font-bold rounded-xl transition-all duration-200 ${
-                  activeTab === 'dashboard' 
-                    ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 shadow-sm' 
-                    : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
-                }`}
+                className={sidebarButtonClass(activeTab === 'dashboard')}
               >
-                <LayoutDashboard className={`w-5 h-5 ${activeTab === 'dashboard' ? 'text-emerald-600' : 'text-gray-400'}`} />
+                <LayoutDashboard className={sidebarIconClass(activeTab === 'dashboard')} />
                 <span>Dashboard</span>
               </button>
               <button
                 onClick={() => setActiveTab('listings')}
-                className={`w-full flex items-center space-x-3 px-5 py-3.5 text-sm font-bold rounded-xl transition-all duration-200 ${
-                  activeTab === 'listings' 
-                    ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 shadow-sm' 
-                    : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
-                }`}
+                className={sidebarButtonClass(activeTab === 'listings')}
               >
-                <Building2 className={`w-5 h-5 ${activeTab === 'listings' ? 'text-emerald-600' : 'text-gray-400'}`} />
-                <span>My Listings</span>
+                <Home className={sidebarIconClass(activeTab === 'listings')} />
+                <span>Listings</span>
+              </button>
+              <button
+                onClick={() => router.push('/dashboards/seller/marketplace')}
+                className={sidebarButtonClass(false)}
+              >
+                <Store className={sidebarIconClass(false)} />
+                <span>Marketplace</span>
+              </button>
+              <button
+                onClick={() => router.push('/dashboards/seller/analytics')}
+                className={sidebarButtonClass(false)}
+              >
+                <BarChart3 className={sidebarIconClass(false)} />
+                <span>Analytics</span>
               </button>
               <button
                 onClick={() => router.push('/dashboards/seller/account')}
-                className="w-full flex items-center space-x-3 px-5 py-3.5 text-sm font-bold rounded-xl transition-all duration-200 text-gray-500 hover:bg-gray-50 hover:text-gray-700"
+                className={sidebarButtonClass(false)}
               >
-                <Settings className="w-5 h-5 text-gray-400" />
-                <span>Account Settings</span>
+                <Settings className={sidebarIconClass(false)} />
+                <span>Settings</span>
               </button>
             </nav>
           </div>
 
-          <div className="p-6 border-t border-gray-100 bg-gray-50/50">
-            <div className="flex items-center space-x-4 p-2">
-              <div className="w-11 h-11 rounded-full bg-emerald-600 flex items-center justify-center text-white font-bold text-base shadow-sm">
+          <div className="border-t border-gray-200 pt-5">
+            <button
+              onClick={() => router.push('/dashboards/seller/add-property')}
+              className="mb-5 w-full rounded-xl bg-black px-4 py-3 text-sm font-bold text-white shadow-lg shadow-black/10 transition hover:bg-gray-900"
+            >
+              List Property
+            </button>
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-600 text-sm font-bold text-white shadow-sm">
                 {user?.name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'S'}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-gray-900 truncate">{user?.name || 'Seller Name'}</p>
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Seller</p>
+                <p className="truncate text-sm font-bold text-gray-950">{user?.name || 'Seller Name'}</p>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">Verified Seller</p>
               </div>
             </div>
           </div>
         </aside>
 
-        {/* Main Content Area - Scrollable */}
-        <div className="flex-1 lg:ml-72 flex flex-col w-full">
-          <main className="p-4 sm:p-6 lg:p-10 w-full max-w-7xl mx-auto min-h-[calc(100vh-5rem)]">
+        <div className="flex min-w-0 flex-1 flex-col px-4 py-6 sm:px-6 lg:px-8">
+          <main className="w-full">
             {activeTab === 'dashboard' && (
-              <div className="space-y-8 sm:space-y-10 animate-in fade-in slide-in-from-bottom-2 duration-500">
-                {/* Mobile Switch to Buyer Button */}
-                <div className="md:hidden w-full mb-2">
-                  <button
-                    onClick={handleSwitchToBuyer}
-                    className="w-full flex items-center justify-center space-x-2 bg-blue-50 text-blue-600 border border-blue-200 py-3 rounded-xl font-bold text-sm shadow-sm"
-                  >
-                    <Search className="h-4 w-4" />
-                    <span>Switch to Buyer Mode</span>
-                  </button>
-                </div>
+              <div className="animate-in fade-in slide-in-from-bottom-2 space-y-8 duration-500 sm:space-y-10">
+                <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+                  <div>
+                    <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.24em] text-gray-400">Seller Dashboard</p>
+                    <h1 className="text-3xl font-black tracking-tight text-gray-950 sm:text-4xl lg:text-5xl">
+                      {dashboardTitle}
+                    </h1>
+                    <p className="mt-3 max-w-3xl text-sm leading-6 text-gray-600 sm:text-base">
+                      {featuredListing ? (
+                        <>
+                          Your listing for <span className="font-semibold text-gray-950">{featuredListing.title}</span> is ready to monitor from one place.
+                        </>
+                      ) : (
+                        'Create your first listing, track buyer activity, and manage your sale workflow from one premium seller hub.'
+                      )}
+                    </p>
+                  </div>
 
+                  <div className="flex flex-col gap-3 sm:flex-row">
+                    <button
+                      onClick={handleSwitchToBuyer}
+                      className="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-bold text-gray-800 shadow-sm transition hover:border-gray-300 hover:bg-gray-50"
+                    >
+                      <Search className="h-4 w-4" />
+                      <span>Switch to Buyer</span>
+                    </button>
+                    <button
+                      onClick={() => router.push('/dashboards/seller/add-property')}
+                      className="inline-flex items-center justify-center gap-2 rounded-xl bg-black px-5 py-3 text-sm font-bold text-white shadow-lg shadow-black/10 transition hover:bg-gray-900"
+                    >
+                      <Plus className="h-4 w-4" />
+                      <span>List Property</span>
+                    </button>
+                  </div>
+                </div>
                 {/* My Property Snapshot Section */}
-                <section className="space-y-4 sm:space-y-5">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0">
-                    <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900 tracking-tight">My Property Snapshot</h2>
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:space-x-4">
+                <section className="grid gap-5 xl:grid-cols-[minmax(0,2fr)_minmax(280px,0.95fr)]">
+                  <div className="rounded-[24px] border border-gray-200/80 bg-white p-5 shadow-[0_24px_70px_rgba(15,23,42,0.06)] sm:p-8">
+                    <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                      <div>
+                        <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-gray-400">Listing Health</p>
+                        <h2 className="mt-2 text-2xl font-black tracking-tight text-gray-950 sm:text-3xl">My Property Snapshot</h2>
+                      </div>
+                      <div className="flex flex-col gap-2 sm:items-end">
                       {activeListings.length > 0 ? (
                         <>
-                          <span className="text-[10px] sm:text-sm font-bold text-gray-500 uppercase tracking-wide">Listing Setup: 100% Complete</span>
-                          <div className="w-full sm:w-32 h-2 sm:h-2.5 bg-gray-200 rounded-full overflow-hidden shadow-inner">
-                            <div className="w-full h-full bg-emerald-500 shadow-sm"></div>
+                          <span className="text-5xl font-black tracking-tight text-gray-300">{setupProgress}%</span>
+                          <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200 sm:w-40">
+                            <div className="h-full w-full rounded-full bg-emerald-600"></div>
                           </div>
                         </>
                       ) : (
                         <>
-                          <span className="text-[10px] sm:text-sm font-bold text-gray-500 uppercase tracking-wide">Listing Setup: 0% Complete</span>
-                          <div className="w-full sm:w-32 h-2 sm:h-2.5 bg-gray-200 rounded-full overflow-hidden shadow-inner">
-                            <div className="w-0 h-full bg-emerald-500 shadow-sm"></div>
+                          <span className="text-5xl font-black tracking-tight text-gray-300">{setupProgress}%</span>
+                          <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200 sm:w-40">
+                            <div className="h-full w-0 rounded-full bg-emerald-600"></div>
                           </div>
                         </>
                       )}
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="bg-white rounded-xl sm:rounded-[2rem] border border-gray-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300">
-                    <div className="p-4 sm:p-10">
+                    <div>
                       {activeListings.length > 0 ? (
                         (() => {
                           const property = activeListings[0];
@@ -768,47 +789,93 @@ function SellerDashboard() {
                       </span>
                     </div>
                   </div>
+
+                  <aside className="rounded-[24px] border border-emerald-200 bg-emerald-50/80 p-6 text-emerald-950 shadow-[0_24px_70px_rgba(15,23,42,0.04)]">
+                    <div className="mb-5 inline-flex h-11 w-11 items-center justify-center rounded-full border border-emerald-200 bg-white/70">
+                      <Bell className="h-5 w-5 text-emerald-700" />
+                    </div>
+                    <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-emerald-800">Optimization Alert</p>
+                    <h3 className="mt-3 text-2xl font-black tracking-tight">Improve your listing reach</h3>
+                    <p className="mt-4 text-sm leading-6 text-emerald-900/80">
+                      Add premium services from Marketplace to improve listing presentation while keeping your current seller workflow intact.
+                    </p>
+                    <button
+                      onClick={() => router.push('/dashboards/seller/marketplace')}
+                      className="mt-8 inline-flex items-center gap-2 border-b border-emerald-700 pb-1 text-sm font-bold text-emerald-950 transition hover:text-emerald-700"
+                    >
+                      View Marketplace
+                      <ArrowRight className="h-4 w-4" />
+                    </button>
+                  </aside>
+                </section>
+
+                <section className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+                  {isLoadingStats ? (
+                    <div className="col-span-full rounded-[24px] border border-gray-200 bg-white p-8 text-center text-sm font-semibold text-gray-500 shadow-sm">
+                      Loading seller metrics...
+                    </div>
+                  ) : statsError ? (
+                    <div className="col-span-full">
+                      <ErrorMessage message={statsError} onRetry={fetchStats} />
+                    </div>
+                  ) : (
+                    [
+                      { label: 'Total Properties', value: stats?.totalProperties ?? 0, detail: `${stats?.activeProperties ?? 0} active listings`, change: `${stats?.soldProperties ?? 0} sold` },
+                      { label: 'Total Views', value: stats?.totalViews ?? 0, detail: 'Across your seller listings', change: 'Live' },
+                      { label: 'Total Inquiries', value: stats?.totalInquiries ?? 0, detail: 'Buyer activity signals', change: 'Tracked' },
+                      { label: 'Total Offers', value: stats?.totalOffers ?? 0, detail: `${stats?.pendingOffers ?? 0} pending offers`, change: `${stats?.acceptedOffers ?? 0} accepted` },
+                    ].map((metric) => (
+                      <div key={metric.label} className="rounded-[24px] border border-gray-200/80 bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.05)]">
+                        <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-gray-500">{metric.label}</p>
+                        <div className="mt-5 flex items-end gap-3">
+                          <p className="text-5xl font-black tracking-tight text-black">{metric.value.toLocaleString()}</p>
+                          <span className="mb-2 text-xs font-bold text-emerald-600">{metric.change}</span>
+                        </div>
+                        <p className="mt-4 text-sm leading-5 text-gray-500">{metric.detail}</p>
+                      </div>
+                    ))
+                  )}
                 </section>
 
                 {/* Get Started Section */}
-                <section className="space-y-4 sm:space-y-6">
-                  <div className="space-y-1">
-                    <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900 tracking-tight">Get Started</h2>
+                <section className="space-y-5 sm:space-y-6">
+                  <div className="space-y-2">
+                    <h2 className="text-3xl font-black tracking-tight text-gray-950">Get Started</h2>
                     <p className="text-sm sm:text-base text-gray-500">
                       You&apos;re in control <span className="font-bold text-gray-900">of your sale</span> – track interest, manage buyers, and move only when the price is right.
                     </p>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8">
+                  <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                     {/* Add Property Card */}
-                    <div className="bg-white p-6 sm:p-10 rounded-xl sm:rounded-[2.5rem] border border-gray-200 shadow-sm flex flex-col items-center text-center space-y-4 sm:space-y-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-                      <div className="w-12 h-12 sm:w-20 sm:h-20 bg-emerald-50 rounded-lg sm:rounded-[2rem] flex items-center justify-center shadow-inner">
-                        <Home className="w-6 h-6 sm:w-10 sm:h-10 text-emerald-600" />
+                    <div className="flex flex-col justify-between rounded-[24px] border border-gray-200/80 bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.05)] transition hover:-translate-y-0.5 hover:shadow-[0_24px_80px_rgba(15,23,42,0.08)] sm:p-8">
+                      <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50">
+                        <Home className="h-7 w-7 text-emerald-700" />
                       </div>
-                      <div className="space-y-1 sm:space-y-2">
-                        <h3 className="text-lg sm:text-2xl font-extrabold text-gray-900">Add Property</h3>
+                      <div className="mb-8 space-y-2">
+                        <h3 className="text-2xl font-black tracking-tight text-gray-950">Add Property</h3>
                         <p className="text-xs sm:text-sm text-gray-500 font-medium leading-relaxed">Start your listing – photos, price, and details.</p>
                       </div>
                       <button 
                         onClick={() => router.push('/dashboards/seller/add-property')}
-                        className="w-full py-3 sm:py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg sm:rounded-2xl font-extrabold text-base sm:text-lg transition-all duration-300 shadow-md hover:shadow-emerald-200 active:scale-[0.98]"
+                        className="w-full rounded-xl bg-black py-4 text-sm font-bold text-white shadow-lg shadow-black/10 transition hover:bg-gray-900 active:scale-[0.98]"
                       >
                         Create Listing
                       </button>
                     </div>
 
                     {/* View Listings Card */}
-                    <div className="bg-white p-6 sm:p-10 rounded-xl sm:rounded-[2.5rem] border border-gray-200 shadow-sm flex flex-col items-center text-center space-y-4 sm:space-y-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-                      <div className="w-12 h-12 sm:w-20 sm:h-20 bg-emerald-50 rounded-lg sm:rounded-[2rem] flex items-center justify-center shadow-inner">
-                        <Building2 className="w-6 h-6 sm:w-10 sm:h-10 text-emerald-600" />
+                    <div className="flex flex-col justify-between rounded-[24px] border border-gray-200/80 bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.05)] transition hover:-translate-y-0.5 hover:shadow-[0_24px_80px_rgba(15,23,42,0.08)] sm:p-8">
+                      <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-gray-100">
+                        <Building2 className="h-7 w-7 text-gray-800" />
                       </div>
-                      <div className="space-y-1 sm:space-y-2">
-                        <h3 className="text-lg sm:text-2xl font-extrabold text-gray-900">View Listings</h3>
+                      <div className="mb-8 space-y-2">
+                        <h3 className="text-2xl font-black tracking-tight text-gray-950">View Listings</h3>
                         <p className="text-xs sm:text-sm text-gray-500 font-medium leading-relaxed">Manage your active and pending property listings.</p>
                       </div>
                       <button 
                         onClick={() => setActiveTab('listings')}
-                        className="w-full py-3 sm:py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg sm:rounded-2xl font-extrabold text-base sm:text-lg transition-all duration-300 shadow-md hover:shadow-emerald-200 active:scale-[0.98]"
+                        className="w-full rounded-xl border border-gray-300 bg-white py-4 text-sm font-bold text-gray-950 transition hover:border-gray-950 active:scale-[0.98]"
                       >
                         View My Listings
                       </button>
@@ -817,9 +884,9 @@ function SellerDashboard() {
                 </section>
 
                 {/* Buyer Activity Section */}
-                <section className="space-y-6">
-                  <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight">Buyer Activity</h2>
-                  <div className="bg-white rounded-[2rem] border border-gray-100 flex flex-col items-center justify-center py-20 px-6 space-y-6 text-center">
+                <section className="space-y-5">
+                  <h2 className="text-3xl font-black tracking-tight text-gray-950">Buyer Activity</h2>
+                  <div className="flex flex-col items-center justify-center rounded-[24px] border border-gray-200/80 bg-white px-6 py-16 text-center shadow-[0_20px_60px_rgba(15,23,42,0.05)] sm:py-20">
                     <p className="text-gray-400 font-medium max-w-sm">No buyers yet – once your property is live, you&apos;ll start seeing interest here.</p>
                     <div className="relative w-64 h-40 opacity-[0.08] grayscale select-none pointer-events-none">
                       <img 
@@ -836,11 +903,15 @@ function SellerDashboard() {
 
             {activeTab === 'listings' && (
               <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
-                  <h2 className="text-xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">My Listings</h2>
+                <div className="mb-8 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+                  <div>
+                    <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.24em] text-gray-400">Seller Inventory</p>
+                    <h2 className="text-3xl font-black tracking-tight text-gray-950 sm:text-4xl">My Listings</h2>
+                    <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-600">Manage your active and pending property listings without leaving the seller hub.</p>
+                  </div>
                   <button 
                     onClick={() => router.push('/dashboards/seller/add-property')}
-                    className="w-full sm:w-auto flex items-center justify-center space-x-2 bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-emerald-700 transition-all shadow-md hover:shadow-emerald-100 text-sm sm:text-base"
+                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-black px-6 py-3 text-sm font-bold text-white shadow-lg shadow-black/10 transition hover:bg-gray-900 sm:w-auto"
                   >
                     <Plus className="w-5 h-5" />
                     <span>New Listing</span>
@@ -855,8 +926,8 @@ function SellerDashboard() {
                 ) : activeListings.length > 0 ? (
                   <div className="grid grid-cols-1 gap-4 sm:gap-6">
                     {activeListings.map((property) => (
-                      <div key={property.id} className="bg-white rounded-xl sm:rounded-[2rem] border border-gray-200 shadow-sm p-4 sm:p-8 hover:shadow-md transition-all duration-300 flex flex-col md:flex-row items-center md:items-stretch gap-4 sm:gap-8 group">
-                        <div className="w-full md:w-48 h-40 sm:h-48 rounded-lg sm:rounded-2xl overflow-hidden flex-shrink-0 shadow-sm">
+                      <div key={property.id} className="group flex flex-col gap-5 rounded-[24px] border border-gray-200/80 bg-white p-4 shadow-[0_20px_60px_rgba(15,23,42,0.05)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_24px_80px_rgba(15,23,42,0.08)] sm:p-6 md:flex-row md:items-stretch">
+                        <div className="h-44 w-full flex-shrink-0 overflow-hidden rounded-2xl shadow-sm md:h-auto md:w-56">
                           <img 
                             src={property.primaryImage || '/images/default-property.jpg'} 
                             alt={property.title}
@@ -867,7 +938,7 @@ function SellerDashboard() {
                         <div className="flex-1 flex flex-col justify-between py-1 sm:py-2 w-full">
                           <div className="space-y-2 sm:space-y-0">
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
-                              <h4 className="text-lg sm:text-2xl font-extrabold text-gray-900 truncate">{property.title}</h4>
+                              <h4 className="truncate text-xl font-black tracking-tight text-gray-950 sm:text-2xl">{property.title}</h4>
                               <div className="self-start sm:self-auto">
                                 {renderStatusBadge(property.status)}
                               </div>
@@ -878,16 +949,16 @@ function SellerDashboard() {
                                 `${property.address.street}, ${property.address.city}, ${property.address.state}` : 
                                 property.address}
                             </p>
-                            <div className="flex items-center space-x-3 sm:space-x-6 text-[10px] sm:text-sm font-bold text-gray-600 bg-gray-50/80 w-fit px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl">
+                            <div className="flex w-fit flex-wrap items-center gap-3 rounded-xl bg-gray-50 px-3 py-2 text-[10px] font-bold text-gray-600 sm:gap-5 sm:px-4 sm:text-sm">
                               <span className="flex items-center"><Building2 className="w-3.5 h-3.5 mr-1.5 sm:mr-2 text-gray-400" />{property.beds}</span>
                               <span className="flex items-center"><Activity className="w-3.5 h-3.5 mr-1.5 sm:mr-2 text-gray-400" />{property.baths}</span>
                               <span className="flex items-center"><LayoutDashboard className="w-3.5 h-3.5 mr-1.5 sm:mr-2 text-gray-400" />{property.size} m²</span>
                             </div>
                           </div>
                         </div>
-                        <div className="flex flex-col justify-center items-stretch sm:items-end space-y-3 sm:space-y-4 w-full md:w-auto md:border-l border-gray-100 md:pl-8">
+                        <div className="flex w-full flex-col justify-center gap-4 border-gray-100 sm:items-end md:w-auto md:border-l md:pl-6">
                           <div className="text-left sm:text-right">
-                            <p className="text-xl sm:text-3xl font-black text-gray-900">
+                            <p className="text-2xl font-black tracking-tight text-gray-950 sm:text-3xl">
                               {property.price != null
                                 ? `A$${property.price.toLocaleString('en-AU')}`
                                 : 'A$0'}
@@ -901,14 +972,14 @@ function SellerDashboard() {
                           <div className="flex items-center space-x-2 sm:space-x-3 w-full md:w-auto">
                             <button 
                               onClick={() => handleEditListing(property.id)}
-                              className="flex-1 md:flex-none px-4 sm:px-6 py-2 sm:py-2.5 bg-gray-900 text-white rounded-lg sm:rounded-xl font-bold text-xs sm:text-sm hover:bg-black transition-colors shadow-sm"
+                              className="flex-1 rounded-xl bg-black px-5 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-gray-900 sm:text-sm md:flex-none"
                             >
                               Edit
                             </button>
                             <select 
                               value={property.status}
                               onChange={(e) => handleStatusChange(property.id, e.target.value)}
-                              className="flex-1 md:flex-none bg-gray-50 border border-gray-200 rounded-lg sm:rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-bold focus:ring-2 focus:ring-emerald-500 outline-none transition-all cursor-pointer"
+                              className="flex-1 cursor-pointer rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-xs font-bold outline-none transition-all focus:ring-2 focus:ring-emerald-500 sm:px-4 sm:text-sm md:flex-none"
                             >
                               <option value="draft">Draft</option>
                               <option value="pending">Pending</option>
@@ -921,8 +992,8 @@ function SellerDashboard() {
                     ))}
                   </div>
                 ) : (
-                  <div className="bg-white rounded-xl sm:rounded-[2rem] border border-gray-100 flex flex-col items-center justify-center py-16 sm:py-32 px-6 text-center space-y-4 sm:space-y-6">
-                    <div className="w-12 h-12 sm:w-20 sm:h-20 bg-gray-50 rounded-lg sm:rounded-[2rem] flex items-center justify-center">
+                  <div className="flex flex-col items-center justify-center rounded-[24px] border border-gray-200/80 bg-white px-6 py-16 text-center shadow-[0_20px_60px_rgba(15,23,42,0.05)] sm:py-28">
+                    <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gray-50 sm:h-20 sm:w-20">
                       <Building2 className="w-6 h-6 sm:w-10 sm:h-10 text-gray-300" />
                     </div>
                     <div className="space-y-1 sm:space-y-2">
@@ -931,7 +1002,7 @@ function SellerDashboard() {
                     </div>
                     <button 
                       onClick={() => router.push('/dashboards/seller/add-property')}
-                      className="w-full sm:w-auto bg-emerald-600 text-white px-8 py-3 rounded-lg sm:rounded-xl font-bold hover:bg-emerald-700 transition-all shadow-md text-sm sm:text-base"
+                      className="mt-2 w-full rounded-xl bg-black px-8 py-3 text-sm font-bold text-white shadow-lg shadow-black/10 transition hover:bg-gray-900 sm:w-auto sm:text-base"
                     >
                       Add Your First Property
                     </button>

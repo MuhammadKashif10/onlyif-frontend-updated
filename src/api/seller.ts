@@ -37,10 +37,10 @@ export interface ChartData {
 // Seller API functions
 export const sellerApi = {
   // Fix route to match backend implementation
-  async getSellerOverview(sellerId: string): Promise<SellerStats> {
+  async getSellerOverview(_sellerId?: string): Promise<SellerStats> {
     try {
-      // Change from /seller/ to /sellers/ to match backend route
-      const response = await apiClient.get(`/sellers/${sellerId}/overview`);
+      // Use the authenticated seller's overview route to avoid id mismatches
+      const response = await apiClient.get('/sellers/me/overview');
       return response.data.data;
     } catch (error) {
       console.error('Error fetching seller overview:', error);
@@ -59,7 +59,7 @@ export const sellerApi = {
     }
   },
 
-  async getSellerListings(sellerId: string, params?: { page?: number; limit?: number; status?: string }): Promise<{ data: Property[]; meta: any }> {
+  async getSellerListings(_sellerId: string, params?: { page?: number; limit?: number; status?: string }): Promise<{ data: Property[]; meta: any }> {
     try {
       const queryParams = new URLSearchParams();
       if (params?.page) queryParams.append('page', params.page.toString());
@@ -67,7 +67,7 @@ export const sellerApi = {
       if (params?.status) queryParams.append('status', params.status);
       
       const qs = queryParams.toString();
-      const response = await apiClient.get(`/sellers/${sellerId}/listings${qs ? `?${qs}` : ''}`);
+      const response = await apiClient.get(`/sellers/me/listings${qs ? `?${qs}` : ''}`);
       
       return {
         data: response.data || [],
@@ -96,9 +96,9 @@ export const sellerApi = {
 
 export default sellerApi;
 
-export async function getSellerListings(sellerId: string) {
+export async function getSellerListings(_sellerId: string) {
   try {
-    const response = await apiClient.get(`/api/sellers/${sellerId}/listings`);
+    const response = await apiClient.get('/sellers/me/listings');
     // Directly return the array of properties
     return response.data.data;
   } catch (error) {

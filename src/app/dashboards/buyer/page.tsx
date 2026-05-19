@@ -81,7 +81,7 @@ const getPropertyIdentifier = (property: any): string | null => {
 
 export default function BuyerDashboard() {
   const router = useRouter();
-  const { user, loading: authLoading, addRole, setActiveRole } = useAuth();
+  const { user, isLoading: authLoading, addRole, setActiveRole } = useAuth();
   const { 
     unlockedProperties,
     viewedProperties, 

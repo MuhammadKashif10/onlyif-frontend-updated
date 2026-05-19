@@ -24,7 +24,8 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [invoiceModalId, setInvoiceModalId] = useState<string | null>(null);
-  const { user } = useAuth();
+  const { user, activeRole } = useAuth();
+  const currentRole = activeRole || user?.role || user?.type || null;
 
   useEffect(() => {
     if (user) {
@@ -37,7 +38,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
           const socket = require('@/lib/socket').initSocket(token);
           // Identify the user and join seller room if applicable
           socket.emit('add-user', user.id);
-          if (user.role === 'seller') {
+          if (currentRole === 'seller') {
             socket.emit('join-seller-room', user.id);
           }
           // Listen for server-pushed notifications
@@ -46,7 +47,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
           });
           // Also support room-based event name with underscore
           socket.on('new_notification', (payload: any) => {
-            if (payload?.invoiceId && user?.role === 'seller') {
+            if (payload?.invoiceId && currentRole === 'seller') {
               setInvoiceModalId(payload.invoiceId);
             }
             console.debug('🔔 new_notification received', payload);
@@ -62,7 +63,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       const interval = setInterval(refreshNotifications, 30000);
       return () => clearInterval(interval);
     }
-  }, [user]);
+  }, [currentRole, user]);
 
   const refreshNotifications = async () => {
     if (!user) return;
@@ -119,18 +120,18 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     
     try {
       // Trigger appropriate notification based on user type and event
-      if (user.userType === 'seller') {
-        if (type === 'property_unlocked' || type === 'inspection_booked') {
-          await notificationAPI.triggerSellerNotification(type as any, { ...data, sellerId: user.id });
-        }
-      } else if (user.userType === 'buyer') {
-        if (type === 'new_match' || type === 'status_update') {
-          await notificationAPI.triggerBuyerNotification(type as any, { ...data, buyerId: user.id });
-        }
-      } else if (user.userType === 'agent') {
-        if (type === 'new_assignment' || type === 'inspection_booked') {
-          await notificationAPI.triggerAgentNotification(type as any, { ...data, agentId: user.id });
-        }
+    if (currentRole === 'seller') {
+      if (type === 'property_unlocked' || type === 'inspection_booked') {
+        await notificationAPI.triggerSellerNotification(type as any, { ...data, sellerId: user.id });
+      }
+    } else if (currentRole === 'buyer') {
+      if (type === 'new_match' || type === 'status_update') {
+        await notificationAPI.triggerBuyerNotification(type as any, { ...data, buyerId: user.id });
+      }
+    } else if (currentRole === 'agent') {
+      if (type === 'new_assignment' || type === 'inspection_booked') {
+        await notificationAPI.triggerAgentNotification(type as any, { ...data, agentId: user.id });
+      }
       }
       
       // Refresh notifications to show the new one
@@ -141,7 +142,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   };
 
   const openInvoice = (invoiceId: string) => {
-    if (user?.role === 'seller') setInvoiceModalId(invoiceId);
+    if (currentRole === 'seller') setInvoiceModalId(invoiceId);
   };
   const closeInvoice = () => setInvoiceModalId(null);
 
@@ -163,7 +164,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   return (
     <NotificationContext.Provider value={value}>
       {children}
-      {invoiceModalId && user?.role === 'seller' && (
+      {invoiceModalId && currentRole === 'seller' && (
         <InvoiceModal invoiceId={invoiceModalId} onClose={closeInvoice} />
       )}
     </NotificationContext.Provider>

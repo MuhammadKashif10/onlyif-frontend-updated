@@ -1,17 +1,13 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { LayoutDashboard, Building2, Settings, Bell, Home } from 'lucide-react';
+import { LayoutDashboard, Settings, Home, Store, BarChart3 } from 'lucide-react';
 import { Navbar } from '@/components';
-import Sidebar from '@/components/main/Sidebar';
 import { Button } from '@/components/reusable/Button';
 import InputField from '@/components/reusable/InputField';
 import TextArea from '@/components/reusable/TextArea';
-import { usePropertyContext } from '@/context/PropertyContext';
 import { useAuth } from '@/context/AuthContext';
-import { Property } from '@/types/api';
 import { toast } from 'react-hot-toast';
 import { propertiesApi } from '@/api/properties';
 import AutoDescriptionButton from '@/components/seller/AutoDescriptionButton';
@@ -39,8 +35,7 @@ interface PropertyFormData {
 
 export default function AddProperty() {
   const router = useRouter();
-  const { addProperty, refreshProperties } = usePropertyContext();
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   
   const [formData, setFormData] = useState<PropertyFormData>({
     title: '',
@@ -67,7 +62,6 @@ export default function AddProperty() {
   const [floorPlans, setFloorPlans] = useState<File[]>([]);
   const [videoTours, setVideoTours] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [contactAutoFilled, setContactAutoFilled] = useState(false);
 
   // Auto-fill contact details from seller's account profile
@@ -250,103 +244,92 @@ export default function AddProperty() {
     }
   };
 
+  const sidebarButtonClass = (isActive: boolean) =>
+    `w-full flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all ${
+      isActive
+        ? 'bg-black text-white shadow-lg shadow-black/10'
+        : 'text-gray-600 hover:bg-white hover:text-gray-950'
+    }`;
+
+  const sidebarIconClass = (isActive: boolean) =>
+    `h-4 w-4 ${isActive ? 'text-white' : 'text-gray-500'}`;
+
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Top Navbar */}
-      <header className="h-20 bg-white border-b border-gray-200 flex items-center justify-between px-8 sticky top-0 z-30 w-full">
-        {/* Left: Logo */}
-        <div className="flex-shrink-0">
-          <Link href="/">
-            <img src="/images/logo.PNG" alt="Only If" className="h-10 w-auto" />
-          </Link>
-        </div>
+    <div className="min-h-screen bg-[#f5f6fb] flex flex-col">
+      <Navbar />
 
-        {/* Center: Main Site Navigation */}
-        <nav className="hidden lg:flex items-center space-x-8">
-          <Link href="/buy" className="text-sm font-semibold text-gray-700 hover:text-emerald-600 transition-colors">Buy</Link>
-          <Link href="/signin" className="text-sm font-semibold text-gray-700 hover:text-emerald-600 transition-colors">Sell</Link>
-          <Link href="/how-it-works" className="text-sm font-semibold text-gray-700 hover:text-emerald-600 transition-colors">How it Works</Link>
-          <Link href="/agents" className="text-sm font-semibold text-gray-700 hover:text-emerald-600 transition-colors">Agents</Link>
-        </nav>
-
-        {/* Right: Dashboard & Sign Out */}
-        <div className="flex items-center space-x-6">
-          <Link 
-            href="/dashboard"
-            className="text-sm font-semibold text-emerald-600 hover:text-emerald-700 transition-colors"
-          >
-            Dashboard
-          </Link>
-          <button 
-            onClick={logout}
-            className="text-sm font-semibold text-gray-600 hover:text-red-600 transition-colors"
-          >
-            Sign Out
-          </button>
-          <div className="flex items-center space-x-3 pl-4 border-l border-gray-200">
-            <button className="p-2 text-gray-400 hover:text-gray-600 relative">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
-            </button>
-            <div className="w-9 h-9 rounded-full bg-gray-200 overflow-hidden border border-gray-100 flex-shrink-0">
-              <img 
-                src="/images/user-avatar.jpg" 
-                alt="User" 
-                className="w-full h-full object-cover" 
-                onError={(e) => (e.currentTarget.src = `https://ui-avatars.com/api/?name=${user?.name || 'S'}&background=10b981&color=fff`)} 
-              />
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <div className="flex flex-1 relative">
-        {/* Sidebar - Fixed Position */}
-        <aside className="w-72 bg-white border-r border-gray-200 flex flex-col fixed left-0 top-20 bottom-0 z-20 overflow-y-auto">
-          <div className="p-8 flex-1">
-            <nav className="space-y-2">
+      <div className="flex w-full flex-1 bg-[#f5f6fb] lg:pl-[280px]">
+        <aside id="dashboard-sidebar" className="fixed left-0 top-20 bottom-0 z-30 hidden w-[280px] shrink-0 flex-col overflow-y-auto border-r border-gray-200 bg-white px-5 py-4 lg:flex">
+          <div className="flex-1">
+            <nav className="space-y-2 pt-3">
               <button
                 onClick={() => router.push('/dashboards/seller')}
-                className="w-full flex items-center space-x-3 px-5 py-3.5 text-sm font-bold rounded-xl transition-all duration-200 text-gray-500 hover:bg-gray-50 hover:text-gray-700"
+                className={sidebarButtonClass(false)}
               >
-                <LayoutDashboard className="w-5 h-5 text-gray-400" />
+                <LayoutDashboard className={sidebarIconClass(false)} />
                 <span>Dashboard</span>
               </button>
               <button
                 onClick={() => router.push('/dashboards/seller/listings')}
-                className="w-full flex items-center space-x-3 px-5 py-3.5 text-sm font-bold rounded-xl transition-all duration-200 text-gray-500 hover:bg-gray-50 hover:text-gray-700"
+                className={sidebarButtonClass(true)}
               >
-                <Building2 className="w-5 h-5 text-gray-400" />
-                <span>My Listings</span>
+                <Home className={sidebarIconClass(true)} />
+                <span>Listings</span>
+              </button>
+              <button
+                onClick={() => router.push('/dashboards/seller/marketplace')}
+                className={sidebarButtonClass(false)}
+              >
+                <Store className={sidebarIconClass(false)} />
+                <span>Marketplace</span>
+              </button>
+              <button
+                onClick={() => router.push('/dashboards/seller/analytics')}
+                className={sidebarButtonClass(false)}
+              >
+                <BarChart3 className={sidebarIconClass(false)} />
+                <span>Analytics</span>
               </button>
               <button
                 onClick={() => router.push('/dashboards/seller/account')}
-                className="w-full flex items-center space-x-3 px-5 py-3.5 text-sm font-bold rounded-xl transition-all duration-200 text-gray-500 hover:bg-gray-50 hover:text-gray-700"
+                className={sidebarButtonClass(false)}
               >
-                <Settings className="w-5 h-5 text-gray-400" />
-                <span>Account Settings</span>
+                <Settings className={sidebarIconClass(false)} />
+                <span>Settings</span>
               </button>
             </nav>
           </div>
 
-          <div className="p-6 border-t border-gray-100 bg-gray-50/50">
-            <div className="flex items-center space-x-4 p-2">
-              <div className="w-11 h-11 rounded-full bg-emerald-600 flex items-center justify-center text-white font-bold text-base shadow-sm">
+          <div className="border-t border-gray-200 pt-5">
+            <button
+              onClick={() => router.push('/dashboards/seller/add-property')}
+              className="mb-5 w-full rounded-xl bg-black px-4 py-3 text-sm font-bold text-white shadow-lg shadow-black/10 transition hover:bg-gray-900"
+            >
+              List Property
+            </button>
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-600 text-sm font-bold text-white shadow-sm">
                 {user?.name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'S'}
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-gray-900 truncate">{user?.name || 'Seller Name'}</p>
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Seller</p>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-bold text-gray-950">{user?.name || 'Seller Name'}</p>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">Verified Seller</p>
               </div>
             </div>
           </div>
         </aside>
 
-        {/* Main Content Area - Scrollable */}
-        <div className="flex-1 ml-72 flex flex-col">
-          <main className="p-10 w-full max-w-7xl mx-auto min-h-[calc(100vh-5rem)]">
-            <div className="max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-2 duration-500">
-              <div className="bg-white rounded-[2rem] border border-gray-200 shadow-sm p-10">
+        <main className="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-8">
+          <div className="mb-6 grid grid-cols-2 gap-3 lg:hidden">
+            <button onClick={() => router.push('/dashboards/seller')} className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-700 shadow-sm">Dashboard</button>
+            <button onClick={() => router.push('/dashboards/seller/listings')} className="rounded-xl bg-black px-4 py-3 text-sm font-bold text-white shadow-sm">Listings</button>
+            <button onClick={() => router.push('/dashboards/seller/marketplace')} className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-700 shadow-sm">Marketplace</button>
+            <button onClick={() => router.push('/dashboards/seller/analytics')} className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-700 shadow-sm">Analytics</button>
+            <button onClick={() => router.push('/dashboards/seller/account')} className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-700 shadow-sm">Settings</button>
+          </div>
+
+          <div className="mx-auto max-w-4xl animate-in fade-in slide-in-from-bottom-2 duration-500">
+            <div className="rounded-[24px] border border-gray-200/80 bg-white p-6 shadow-[0_24px_80px_rgba(15,23,42,0.06)] sm:p-8 lg:p-10">
                 <header className="mb-10">
                   <h1 className="text-4xl font-black text-gray-900 mb-3 tracking-tight">Add Property</h1>
                   <p className="text-gray-500 font-medium text-lg">Fill in the details below to list your property</p>
@@ -634,7 +617,6 @@ export default function AddProperty() {
               </div>
             </div>
           </main>
-        </div>
       </div>
     </div>
   );

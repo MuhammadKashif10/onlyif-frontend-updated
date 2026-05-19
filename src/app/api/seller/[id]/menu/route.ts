@@ -37,6 +37,11 @@ export async function GET(
           icon: "BarChart3"
         },
         {
+          label: "Marketplace",
+          path: "/dashboards/seller/marketplace",
+          icon: "Store"
+        },
+        {
           label: "Account Settings",
           path: "/dashboards/seller/account",
           icon: "Settings"

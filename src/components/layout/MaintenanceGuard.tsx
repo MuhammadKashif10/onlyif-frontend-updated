@@ -7,9 +7,10 @@ import { useAuth } from "@/context/AuthContext";
 
 interface Props {
   children: React.ReactNode;
+  fallback?: React.ReactNode;
 }
 
-export default function MaintenanceGuard({ children }: Props) {
+export default function MaintenanceGuard({ children, fallback = null }: Props) {
   const [checked, setChecked] = useState(false);
   const [isOn, setIsOn] = useState(false);
   const [pathname, setPathname] = useState<string>('');
@@ -62,8 +63,8 @@ export default function MaintenanceGuard({ children }: Props) {
     return () => { cancelled = true; };
   }, [isAdminUser]);
 
-  if (!checked) return null;
-  if (isOn && !isAdminUser && !isAdminRoute && !isMaintenanceRoute) return null; // redirecting
+  if (!checked) return <>{fallback}</>;
+  if (isOn && !isAdminUser && !isAdminRoute && !isMaintenanceRoute) return <>{fallback}</>; // redirecting
 
   return <>{children}</>;
 }

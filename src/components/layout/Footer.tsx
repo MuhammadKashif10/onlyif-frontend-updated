@@ -1,8 +1,9 @@
 'use client';
 
 import Link from 'next/link';
+import type { CSSProperties } from 'react';
 import { useEffect, useState } from 'react';
-// Removed usePathname to avoid layout router context requirement in root layout
+import { usePathname } from 'next/navigation';
 import PrivacyPolicyModal from '../reusable/PrivacyPolicyModal';
 import { Facebook, Twitter, Instagram, Linkedin, Phone, Mail, MapPin } from 'lucide-react';
 
@@ -93,20 +94,50 @@ export default function Footer({
   className = ''
 }: FooterProps) {
   const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
-  // Derive pathname from window to avoid dependency on Next router context
-  const [pathname, setPathname] = useState<string>('');
-  const [hasFixedSidebar, setHasFixedSidebar] = useState(false);
+  const pathname = usePathname();
+  const [fixedSidebarOffset, setFixedSidebarOffset] = useState(0);
 
-  // Initialize pathname and detect presence of a fixed sidebar (e.g., admin layout) in the DOM
+  // Keep the global footer aligned with fixed dashboard sidebars.
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    setPathname(window.location.pathname);
-    const adminSidebar = document.getElementById('admin-sidebar');
-    const dashboardSidebar = document.getElementById('dashboard-sidebar');
-    setHasFixedSidebar(!!adminSidebar || !!dashboardSidebar);
-  }, []);
 
-  const layoutOffsetClass = hasFixedSidebar ? 'lg:ml-64' : '';
+    let resizeObserver: ResizeObserver | undefined;
+
+    const updateSidebarOffset = () => {
+      const sidebar =
+        document.getElementById('dashboard-sidebar') ||
+        document.getElementById('admin-sidebar');
+
+      if (!sidebar) {
+        setFixedSidebarOffset(0);
+        return;
+      }
+
+      setFixedSidebarOffset(sidebar.getBoundingClientRect().width);
+
+      if (typeof ResizeObserver !== 'undefined') {
+        resizeObserver?.disconnect();
+        resizeObserver = new ResizeObserver(() => {
+          setFixedSidebarOffset(sidebar.getBoundingClientRect().width);
+        });
+        resizeObserver.observe(sidebar);
+      }
+    };
+
+    updateSidebarOffset();
+    const animationFrame = window.requestAnimationFrame(updateSidebarOffset);
+    window.addEventListener('resize', updateSidebarOffset);
+
+    return () => {
+      window.cancelAnimationFrame(animationFrame);
+      window.removeEventListener('resize', updateSidebarOffset);
+      resizeObserver?.disconnect();
+    };
+  }, [pathname]);
+
+  const footerStyle = {
+    '--dashboard-footer-offset': `${fixedSidebarOffset}px`,
+  } as CSSProperties;
 
   const handlePrivacyClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -132,7 +163,10 @@ export default function Footer({
 
   return (
     <>
-      <footer className={`border-t border-[#cfe1d0] bg-[#dff1df] text-[#0b1d10] ${layoutOffsetClass} ${className}`}>
+      <footer
+        className={`border-t border-[#cfe1d0] bg-[#dff1df] text-[#0b1d10] transition-[margin] lg:ml-[var(--dashboard-footer-offset)] ${className}`}
+        style={footerStyle}
+      >
         <div className="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8">
           {/* Main Footer Content */}
           <div className="py-12 sm:py-14 lg:py-16">

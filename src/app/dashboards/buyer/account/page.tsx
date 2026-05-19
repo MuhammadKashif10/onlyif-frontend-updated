@@ -32,7 +32,8 @@ interface ValidationErrors {
 
 export default function AccountPage() {
   const router = useRouter();
-  const { user, loading: authLoading } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
+  const canAccessBuyerDashboard = !!user?.roles?.includes('buyer');
   
   // States
   const [passwordData, setPasswordData] = useState<PasswordData>({
@@ -55,11 +56,11 @@ export default function AccountPage() {
       return;
     }
 
-    if (user && user.role !== 'buyer') {
+    if (user && !canAccessBuyerDashboard) {
       router.push('/signin');
       return;
     }
-  }, [user, authLoading, router]);
+  }, [canAccessBuyerDashboard, user, authLoading, router]);
 
   // Validation function
   const validateForm = (): boolean => {
@@ -219,7 +220,7 @@ export default function AccountPage() {
                   <Shield className="h-5 w-5 text-gray-400 mr-3" />
                   <div>
                     <p className="text-sm font-medium text-gray-700">Role</p>
-                    <p className="text-sm text-gray-600 capitalize">{user.role}</p>
+                    <p className="text-sm text-gray-600 capitalize">{user.roles?.includes('buyer') ? 'buyer' : user.role}</p>
                   </div>
                 </div>
                 

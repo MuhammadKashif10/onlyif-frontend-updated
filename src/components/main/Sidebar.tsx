@@ -13,6 +13,7 @@ import {
   Building,
   FileText,
   BarChart3,
+  Store,
   Users,
   ChevronLeft,
   ChevronRight,
@@ -47,6 +48,7 @@ const iconMap = {
   Building,
   FileText,
   BarChart3,
+  Store,
   Users
 };
 

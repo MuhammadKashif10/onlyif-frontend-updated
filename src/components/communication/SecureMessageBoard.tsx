@@ -20,7 +20,8 @@ const SecureMessageBoard: React.FC<SecureMessageBoardProps> = ({
   propertyId,
   restrictedMode = true
 }) => {
-  const { user } = useAuth();
+  const { user, activeRole } = useAuth();
+  const currentRole = activeRole || user?.role || user?.type || null;
   const { addNotification } = useUI();
   const [showNewConversation, setShowNewConversation] = useState(false);
   const [availableAgents, setAvailableAgents] = useState<Agent[]>([]);
@@ -51,17 +52,17 @@ const SecureMessageBoard: React.FC<SecureMessageBoardProps> = ({
     if (!user) return false;
     
     // Business rule enforcement based on user role
-    if (user.role === 'buyer') {
+    if (currentRole === 'buyer') {
       // Buyers can only start conversations with agents
       return newConversationData.type === 'buyer_agent';
-    } else if (user.role === 'seller') {
+    } else if (currentRole === 'seller') {
       // Sellers can only communicate through agents (no direct initiation)
       if (restrictedMode) {
         setBusinessRuleError('Sellers cannot initiate conversations directly. An agent will contact you when there is interest in your property.');
         return false;
       }
       return newConversationData.type === 'agent_seller';
-    } else if (user.role === 'agent') {
+    } else if (currentRole === 'agent') {
       // Agents can start both types of conversations
       return true;
     }
@@ -88,7 +89,7 @@ const SecureMessageBoard: React.FC<SecureMessageBoardProps> = ({
 
     setCreating(true);
     try {
-      const participantIds = user.role === 'agent' 
+      const participantIds = currentRole === 'agent' 
         ? [user.id, newConversationData.selectedAgentId]
         : [user.id, newConversationData.selectedAgentId];
       
@@ -125,9 +126,9 @@ const SecureMessageBoard: React.FC<SecureMessageBoardProps> = ({
     
     const options = [];
     
-    if (user.role === 'buyer') {
+    if (currentRole === 'buyer') {
       options.push({ value: 'buyer_agent', label: 'Contact Agent' });
-    } else if (user.role === 'agent') {
+    } else if (currentRole === 'agent') {
       options.push(
         { value: 'buyer_agent', label: 'Contact Buyer' },
         { value: 'agent_seller', label: 'Contact Seller' }
@@ -156,7 +157,7 @@ const SecureMessageBoard: React.FC<SecureMessageBoardProps> = ({
       <div className="bg-white border-b border-gray-200 p-4">
         <div className="flex items-center justify-between mb-2">
           <h2 className="text-xl font-semibold text-gray-900">Messages</h2>
-          {user.role !== 'seller' || !restrictedMode ? (
+          {currentRole !== 'seller' || !restrictedMode ? (
             <Button
               onClick={() => setShowNewConversation(true)}
               className="bg-blue-600 text-white hover:bg-blue-700"
@@ -171,9 +172,9 @@ const SecureMessageBoard: React.FC<SecureMessageBoardProps> = ({
         <div className="flex items-center space-x-2 text-sm">
           <Badge variant="info" size="sm">Secure Messaging</Badge>
           <span className="text-gray-600">
-            {user.role === 'buyer' && 'Connect with agents for property inquiries'}
-            {user.role === 'seller' && 'Agents will contact you about buyer interest'}
-            {user.role === 'agent' && 'Facilitate buyer-seller communication'}
+            {currentRole === 'buyer' && 'Connect with agents for property inquiries'}
+            {currentRole === 'seller' && 'Agents will contact you about buyer interest'}
+            {currentRole === 'agent' && 'Facilitate buyer-seller communication'}
           </span>
         </div>
       </div>
@@ -182,7 +183,7 @@ const SecureMessageBoard: React.FC<SecureMessageBoardProps> = ({
       <div className="flex-1">
         <MessagesInterface
           currentUserId={user.id}
-          currentUserRole={user.role as 'buyer' | 'seller' | 'agent'}
+          currentUserRole={currentRole as 'buyer' | 'seller' | 'agent'}
           className="h-full"
         />
       </div>
@@ -213,7 +214,7 @@ const SecureMessageBoard: React.FC<SecureMessageBoardProps> = ({
                 type: e.target.value as 'buyer_agent' | 'agent_seller'
               }))}
               className="w-full border border-gray-300 rounded-md px-3 py-2"
-              disabled={user.role === 'buyer'}
+              disabled={currentRole === 'buyer'}
             >
               {getConversationTypeOptions().map(option => (
                 <option key={option.value} value={option.value}>

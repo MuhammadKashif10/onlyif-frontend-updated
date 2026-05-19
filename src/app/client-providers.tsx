@@ -8,6 +8,7 @@ import { PropertyProvider } from '../context/PropertyContext';
 import { BuyerProvider } from '../context/BuyerContext';
 import { UIProvider } from '../context/UIContext';
 import { NotificationProvider } from '../context/NotificationContext';
+import AppReadyShell from '@/components/layout/AppReadyShell';
 
 export default function ClientProviders({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient({
@@ -26,7 +27,7 @@ export default function ClientProviders({ children }: { children: React.ReactNod
           <BuyerProvider>
             <QueryClientProvider client={queryClient}>
               <NotificationProvider>
-                {children}
+                <AppReadyShell>{children}</AppReadyShell>
               </NotificationProvider>
               <Toaster
               position="top-right"

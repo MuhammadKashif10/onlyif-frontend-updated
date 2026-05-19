@@ -45,6 +45,10 @@ class ApiClient {
 
   // Actual request implementation (renamed from request)
   private async makeRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+    const fullUrl = endpoint.startsWith('/api/')
+      ? endpoint
+      : `${this.baseURL}${endpoint}`;
+
     try {
       const headers: Record<string, any> = {
         ...this.defaultHeaders,
@@ -58,10 +62,6 @@ class ApiClient {
         delete headers['Content-Type'];
       }
   
-      // Handle Next.js API routes (start with /api/) vs backend routes
-      const fullUrl = endpoint.startsWith('/api/') 
-        ? endpoint // Use relative path for Next.js API routes
-        : `${this.baseURL}${endpoint}`; // Use full URL for backend routes
       console.log('🌐 Making request to:', fullUrl);
       
       const response = await fetch(fullUrl, {
@@ -71,12 +71,35 @@ class ApiClient {
   
       console.log('📡 Response status:', response.status, response.statusText);
       
-      let data;
-      try {
-        data = await response.json();
-      } catch (jsonError) {
-        console.error('❌ Failed to parse JSON response:', jsonError);
-        data = {};
+      const contentType = response.headers.get('content-type') || '';
+      const expectsJson = contentType.includes('application/json');
+      let data: any = {};
+
+      if (expectsJson) {
+        try {
+          data = await response.json();
+        } catch (jsonError) {
+          console.error('❌ Failed to parse JSON response:', jsonError);
+          const parseError = new Error(`Invalid JSON response from ${fullUrl}`);
+          (parseError as any).status = response.status;
+          (parseError as any).statusText = response.statusText;
+          (parseError as any).url = fullUrl;
+          throw parseError;
+        }
+      } else {
+        const responseText = await response.text();
+        data = responseText ? { raw: responseText } : {};
+
+        // HTML responses usually mean the request hit the wrong route or a frontend fallback.
+        if (responseText.trim().startsWith('<!DOCTYPE') || responseText.trim().startsWith('<html')) {
+          const htmlError = new Error(
+            `Unexpected HTML response from ${fullUrl}. Check the API URL and route path.`
+          );
+          (htmlError as any).status = response.status;
+          (htmlError as any).statusText = response.statusText;
+          (htmlError as any).url = fullUrl;
+          throw htmlError;
+        }
       }
   
       if (!response.ok) {
@@ -220,6 +243,12 @@ class ApiClient {
     };
 
     const response = await fetch(url, config);
+    const contentType = response.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      const text = await response.text();
+      throw new Error(text || `Unexpected non-JSON response from ${url}`);
+    }
+
     const responseData = await response.json();
 
     if (!response.ok) {

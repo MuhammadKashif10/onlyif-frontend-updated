@@ -8,6 +8,17 @@ import PasswordField from '@/components/reusable/PasswordField';
 import { validatePassword, validatePasswordConfirmation } from '@/utils/passwordValidation';
 import { useAuth } from '@/context/AuthContext';
 
+const normalizePhoneNumber = (phone: string) => (
+  phone.trim().startsWith('+')
+    ? `+${phone.trim().slice(1).replace(/\D/g, '')}`
+    : phone.replace(/\D/g, '')
+);
+
+const isValidPhoneNumber = (phone: string) => {
+  const normalized = normalizePhoneNumber(phone);
+  return /^(\+?[1-9]\d{8,14}|0[2-4789]\d{8})$/.test(normalized);
+};
+
 export default function SignupPage() {
   const router = useRouter();
   const { register, user, isLoading, error } = useAuth();
@@ -20,6 +31,7 @@ export default function SignupPage() {
     confirmPassword: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -27,32 +39,70 @@ export default function SignupPage() {
     router.push('/dashboard');
   }, [router, user]);
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    setErrors((prev) => {
-      if (!prev[field]) return prev;
-      const { [field]: _removed, ...rest } = prev;
-      return rest;
-    });
-  };
-
-  const validateForm = () => {
+  const validateFormData = (data = formData) => {
     const nextErrors: Record<string, string> = {};
 
-    if (!formData.name.trim()) nextErrors.name = 'Full name is required';
-    if (!formData.email.trim()) nextErrors.email = 'Email is required';
-    if (!formData.phone.trim()) nextErrors.phone = 'Phone number is required';
+    if (!data.name.trim()) nextErrors.name = 'Full name is required';
+    if (!data.email.trim()) nextErrors.email = 'Email is required';
+    if (!data.phone.trim()) {
+      nextErrors.phone = 'Phone number is required';
+    } else if (!isValidPhoneNumber(data.phone)) {
+      nextErrors.phone = 'Please enter a valid phone number, e.g. 0454 567 890';
+    }
 
-    if (!formData.password) {
+    if (!data.password) {
       nextErrors.password = 'Password is required';
     } else {
-      const pw = validatePassword(formData.password);
+      const pw = validatePassword(data.password);
       if (!pw.isValid) nextErrors.password = pw.errors[0];
     }
 
-    const confirm = validatePasswordConfirmation(formData.password, formData.confirmPassword);
+    const confirm = validatePasswordConfirmation(data.password, data.confirmPassword);
     if (!confirm.isValid) nextErrors.confirmPassword = confirm.error || 'Passwords do not match';
 
+    return nextErrors;
+  };
+
+  const validateVisibleErrors = (data = formData, touchedFields = touched) => {
+    const nextErrors = validateFormData(data);
+    const visibleErrors: Record<string, string> = {};
+
+    Object.entries(nextErrors).forEach(([field, message]) => {
+      if (touchedFields[field]) visibleErrors[field] = message;
+    });
+
+    return visibleErrors;
+  };
+
+  const handleInputChange = (field: string, value: string) => {
+    const nextData = { ...formData, [field]: value };
+    setFormData(nextData);
+
+    setErrors((prev) => {
+      const visibleErrors = validateVisibleErrors(nextData);
+      if (field === 'password' && touched.confirmPassword) {
+        return { ...prev, ...visibleErrors };
+      }
+      const { submit, ...fieldErrors } = visibleErrors;
+      return submit ? { ...fieldErrors, submit } : fieldErrors;
+    });
+  };
+
+  const handleFieldBlur = (field: string) => {
+    const nextTouched = { ...touched, [field]: true };
+    setTouched(nextTouched);
+    setErrors(validateVisibleErrors(formData, nextTouched));
+  };
+
+  const validateForm = () => {
+    const nextErrors = validateFormData();
+    setTouched({
+      name: true,
+      email: true,
+      phone: true,
+      password: true,
+      confirmPassword: true,
+    });
     setErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
   };
@@ -120,6 +170,7 @@ export default function SignupPage() {
                 type="text"
                 value={formData.name}
                 onChange={(e) => handleInputChange('name', e.target.value)}
+                onBlur={() => handleFieldBlur('name')}
                 error={errors.name}
                 placeholder="Enter your full name"
                 required
@@ -131,6 +182,7 @@ export default function SignupPage() {
                 type="email"
                 value={formData.email}
                 onChange={(e) => handleInputChange('email', e.target.value)}
+                onBlur={() => handleFieldBlur('email')}
                 error={errors.email}
                 placeholder="Enter your email address"
                 required
@@ -142,6 +194,7 @@ export default function SignupPage() {
                 type="tel"
                 value={formData.phone}
                 onChange={(e) => handleInputChange('phone', e.target.value)}
+                onBlur={() => handleFieldBlur('phone')}
                 error={errors.phone}
                 placeholder="Enter your Australian phone or mobile (e.g. 04xx xxx xxx)"
                 required
@@ -152,6 +205,7 @@ export default function SignupPage() {
                 label="Password"
                 value={formData.password}
                 onChange={(value) => handleInputChange('password', value)}
+                onBlur={() => handleFieldBlur('password')}
                 error={errors.password}
                 placeholder="Create a strong password"
                 showStrengthMeter
@@ -162,9 +216,11 @@ export default function SignupPage() {
                 label="Confirm Password"
                 value={formData.confirmPassword}
                 onChange={(value) => handleInputChange('confirmPassword', value)}
+                onBlur={() => handleFieldBlur('confirmPassword')}
                 error={errors.confirmPassword}
                 placeholder="Confirm your password"
                 isConfirmation
+                confirmPassword={formData.password}
                 required
               />
             </div>

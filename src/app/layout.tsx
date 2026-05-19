@@ -6,9 +6,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono, Poppins } from "next/font/google";
 import "./globals.css";
 import "../styles/custom.css";
-import Footer from "@/components/layout/Footer";
 import ClientProviders from "./client-providers";
-import MaintenanceGuard from "@/components/layout/MaintenanceGuard";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -130,10 +128,7 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable} ${poppins.variable} ${jetbrainsMono.variable}`} suppressHydrationWarning>
       <body className="antialiased" suppressHydrationWarning>
         <ClientProviders>
-          <MaintenanceGuard>
-            {children}
-          </MaintenanceGuard>
-          <Footer />
+          {children}
         </ClientProviders>
       </body>
     </html>

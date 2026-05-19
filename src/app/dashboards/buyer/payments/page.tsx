@@ -93,7 +93,7 @@ const BuyerPayments = () => {
       return;
     }
 
-    if (user.role !== 'buyer') {
+    if (!user.roles?.includes('buyer')) {
       router.push('/signin');
       return;
     }
