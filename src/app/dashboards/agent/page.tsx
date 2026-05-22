@@ -47,6 +47,7 @@ import { NotificationPanel, Modal } from '@/components/reusable';
 import { MessagesInterface } from '@/components/reusable';
 import OneToOneChat from '@/components/ui/ContactAgentModal';
 import ChatInterface from '@/components/reusable/ChatInterface';
+import { messagesApi } from '@/api/messages';
 import { getSafeImageUrl } from '@/utils/imageUtils';
 import { formatCurrencyCompact } from '@/utils/currency';
 import SalesStatusSelector from '@/components/agent/SalesStatusSelector';
@@ -448,6 +449,18 @@ export default function AgentDashboard() {
     }
   };
   
+  // Pull live unread message count from the existing /messages/unread-count endpoint.
+  // Safely zeroes the card if the endpoint or auth fails — never blocks the dashboard.
+  const fetchUnreadMessages = async () => {
+    try {
+      const result = await messagesApi.getUnreadCount();
+      setStats(prev => ({ ...prev, newMessages: Number(result?.count) || 0 }));
+    } catch (error) {
+      console.error('Error fetching unread message count:', error);
+      setStats(prev => ({ ...prev, newMessages: 0 }));
+    }
+  };
+
   // Add fetchAgentStats function
   const fetchAgentStats = async () => {
     try {
@@ -581,6 +594,9 @@ export default function AgentDashboard() {
     // fetchAgentStats(); // Stats now calculated from properties
     // fetchAgentActivities(); // Will be called after properties load
     fetchAgentProperties(); // This will also update stats and trigger activities
+    fetchUnreadMessages();
+    const messagesInterval = setInterval(fetchUnreadMessages, 60_000);
+    return () => clearInterval(messagesInterval);
   }, [currentUserId]);
 
   // // Load stats on component mount
@@ -1717,6 +1733,16 @@ export default function AgentDashboard() {
               {activeTab === 'overview' && (
                 <div className="space-y-8">
                   {/* Stats Cards - Stacking on mobile */}
+                  {(() => {
+                    const assignedCount = assignments.length;
+                    const pendingCount =
+                      assignments.filter(a => a.salesStatus && a.salesStatus !== 'settled').length +
+                      inspections.filter(i => i.status === 'scheduled').length;
+                    const completedCount =
+                      assignments.filter(a => a.salesStatus === 'settled').length +
+                      inspections.filter(i => i.status === 'completed').length;
+                    const messagesCount = Number(stats.newMessages) || 0;
+                    return (
                   <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
                     <div className="rounded-[22px] border border-white bg-white p-6 shadow-[0_18px_45px_rgba(30,41,59,0.055)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_24px_55px_rgba(30,41,59,0.08)]">
                       <div className="flex items-center gap-5">
@@ -1725,7 +1751,7 @@ export default function AgentDashboard() {
                         </div>
                         <div>
                           <p className="text-sm font-semibold uppercase tracking-widest text-gray-600">Assigned</p>
-                          <p className="mt-1 text-4xl font-black leading-none text-black">{statsLoading ? '...' : stats.assignedProperties}</p>
+                          <p className="mt-1 text-4xl font-black leading-none text-black">{assignedCount}</p>
                         </div>
                       </div>
                     </div>
@@ -1736,7 +1762,7 @@ export default function AgentDashboard() {
                         </div>
                         <div>
                           <p className="text-sm font-semibold uppercase tracking-widest text-gray-600">Pending</p>
-                          <p className="mt-1 text-4xl font-black leading-none text-black">{stats.pendingInspections || 0}</p>
+                          <p className="mt-1 text-4xl font-black leading-none text-black">{pendingCount}</p>
                         </div>
                       </div>
                     </div>
@@ -1747,7 +1773,7 @@ export default function AgentDashboard() {
                         </div>
                         <div>
                           <p className="text-sm font-semibold uppercase tracking-widest text-gray-600">Messages</p>
-                          <p className="mt-1 text-4xl font-black leading-none text-black">{stats.newMessages || 0}</p>
+                          <p className="mt-1 text-4xl font-black leading-none text-black">{messagesCount}</p>
                         </div>
                       </div>
                     </div>
@@ -1758,11 +1784,13 @@ export default function AgentDashboard() {
                         </div>
                         <div>
                           <p className="text-sm font-semibold uppercase tracking-widest text-gray-600">Completed</p>
-                          <p className="mt-1 text-4xl font-black leading-none text-black">{stats.completedInspections || 0}</p>
+                          <p className="mt-1 text-4xl font-black leading-none text-black">{completedCount}</p>
                         </div>
                       </div>
                     </div>
                   </div>
+                    );
+                  })()}
 
                   <div className="grid grid-cols-1 gap-8 xl:grid-cols-[minmax(0,1fr)_340px]">
                     {/* Recent Activity */}

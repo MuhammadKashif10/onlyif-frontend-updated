@@ -104,6 +104,8 @@ export default function Footer({
     let resizeObserver: ResizeObserver | undefined;
 
     const updateSidebarOffset = () => {
+      // Buyer dashboard offsets the footer via its own layout wrapper, so we skip
+      // buyer-sidebar detection here to avoid double-applying the offset.
       const sidebar =
         document.getElementById('dashboard-sidebar') ||
         document.getElementById('admin-sidebar');
@@ -135,8 +137,12 @@ export default function Footer({
     };
   }, [pathname]);
 
+  // Apply margin-left directly so the footer always sits past any fixed dashboard
+  // sidebar. When the sidebar is hidden (below lg, mobile menu collapsed) the
+  // measured width is 0 and the footer naturally spans the full viewport again.
   const footerStyle = {
     '--dashboard-footer-offset': `${fixedSidebarOffset}px`,
+    marginLeft: fixedSidebarOffset > 0 ? `${fixedSidebarOffset}px` : undefined,
   } as CSSProperties;
 
   const handlePrivacyClick = (e: React.MouseEvent) => {
@@ -164,7 +170,7 @@ export default function Footer({
   return (
     <>
       <footer
-        className={`border-t border-[#cfe1d0] bg-[#dff1df] text-[#0b1d10] transition-[margin] lg:ml-[var(--dashboard-footer-offset)] ${className}`}
+        className={`border-t border-[#cfe1d0] bg-[#dff1df] text-[#0b1d10] transition-[margin] ${className}`}
         style={footerStyle}
       >
         <div className="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8">

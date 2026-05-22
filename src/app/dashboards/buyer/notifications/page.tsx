@@ -1,13 +1,13 @@
 'use client';
 
-import { Navbar, Footer } from '@/components';
+import { Navbar } from '@/components';
 import EnhancedNotificationPanel from '@/components/reusable/EnhancedNotificationPanel';
 
 export default function BuyerNotifications() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      
+
       <main className="container mx-auto px-4 py-8">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Notifications</h1>
@@ -15,11 +15,10 @@ export default function BuyerNotifications() {
             Stay updated with property matches, status updates, and important information.
           </p>
         </div>
-        
+
         <EnhancedNotificationPanel userType="buyer" />
       </main>
-      
-      <Footer />
+      {/* Global green footer is rendered once by AppReadyShell; it auto-offsets past #buyer-sidebar. */}
     </div>
   );
 }

@@ -1,17 +1,20 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { useBuyer } from '@/context/BuyerContext';
-import { Navbar, PropertyCard } from '@/components';
+import { Navbar } from '@/components';
 import NotificationsPanel from '@/components/buyer/NotificationsPanel';
-import { 
-  Bell, Heart, Search, Eye, Calendar, DollarSign, User, 
-  TrendingUp, AlertCircle, Clock, CheckCircle, Star, 
+import BuyerSidebar from '@/components/buyer/BuyerSidebar';
+import {
+  Bell, Heart, Search, Eye, Calendar, DollarSign, User,
+  TrendingUp, TrendingDown, AlertCircle, Clock, CheckCircle,
   MapPin, Home, Bed, Bath, Car, ArrowRight, ClipboardList,
-  Menu, X
+  Menu, X, LayoutDashboard, Settings, FileText,
+  ChevronLeft, ChevronRight, Sparkles, Activity, MessageSquare,
+  ShieldCheck, Headphones, PhoneCall, ArrowUpRight,
 } from 'lucide-react';
 import { formatPropertyAddress } from '@/utils/addressUtils';
 import Modal from '@/components/reusable/Modal';
@@ -79,20 +82,23 @@ const getPropertyIdentifier = (property: any): string | null => {
   return normalized;
 };
 
+type BuyerTab = 'overview' | 'notifications';
+
 export default function BuyerDashboard() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, isLoading: authLoading, addRole, setActiveRole } = useAuth();
-  const { 
+  const {
     unlockedProperties,
-    viewedProperties, 
-    scheduledViewings, 
+    viewedProperties,
+    scheduledViewings,
     activeOffers,
     recentActivity,
     loading,
     error,
     fetchBuyerData
   } = useBuyer();
-  
+
   const [stats, setStats] = useState<DashboardStats>({
     savedProperties: 0,
     viewedProperties: 0,
@@ -103,7 +109,7 @@ export default function BuyerDashboard() {
   // Add modal state for property details
   const [selectedProperty, setSelectedProperty] = useState<any | null>(null);
   const [isPropertyModalOpen, setPropertyModalOpen] = useState(false);
-  
+
   // Role switch modal state
   const [isSellerModalOpen, setSellerModalOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -116,7 +122,7 @@ export default function BuyerDashboard() {
     agentPartnerHelp: false,
   });
 
-  const sellerAllChecked = 
+  const sellerAllChecked =
     sellerChecks.terms &&
     sellerChecks.legalAuthorization &&
     sellerChecks.successFee &&
@@ -148,7 +154,7 @@ export default function BuyerDashboard() {
 
   useEffect(() => {
     if (authLoading) return;
-    
+
     if (!user) {
       router.push('/signin');
       return;
@@ -166,15 +172,28 @@ export default function BuyerDashboard() {
     fetchStatusUpdates();
     fetchRecommendations();
   }, [user, authLoading, router]);
-  
+
   // Property tracking state
   const [watchlist, setWatchlist] = useState<TrackedProperty[]>([]);
   const [statusUpdates, setStatusUpdates] = useState<PropertyStatusUpdate[]>([]);
   const [recommendations, setRecommendations] = useState<Property[]>([]);
   const [loadingRecommendations, setLoadingRecommendations] = useState(false);
-  const [activeTab, setActiveTab] = useState<'overview' | 'watchlist' | 'tracking' | 'notifications'>('overview');
+  const [activeTab, setActiveTab] = useState<BuyerTab>('overview');
   const [loadingWatchlist, setLoadingWatchlist] = useState(false);
   const [loadingUpdates, setLoadingUpdates] = useState(false);
+
+  // Updates tab: filter pill + locally dismissed entries (UI-only, no backend mutation)
+  type UpdatesFilter = 'all' | 'alerts' | 'messages' | 'legal';
+  const [updatesFilter, setUpdatesFilter] = useState<UpdatesFilter>('all');
+  const [dismissedUpdates, setDismissedUpdates] = useState<Set<string>>(new Set());
+
+  // Allow other buyer routes to deep-link back to a specific tab via ?tab=
+  useEffect(() => {
+    const tabParam = searchParams?.get('tab');
+    if (tabParam && ['overview', 'notifications'].includes(tabParam)) {
+      setActiveTab(tabParam as BuyerTab);
+    }
+  }, [searchParams]);
 
   // Criteria State
   const [criteria, setCriteria] = useState<{
@@ -206,8 +225,8 @@ export default function BuyerDashboard() {
       }
 
       const result = await propertiesApi.getProperties(params);
-      
-      // LOGIC CHANGE: If we have criteria set but no properties were found, 
+
+      // LOGIC CHANGE: If we have criteria set but no properties were found,
       // fetch all published properties as a fallback.
       if (isSetting && (!result || !result.properties || result.properties.length === 0)) {
         const fallbackResult = await propertiesApi.getProperties({
@@ -215,7 +234,7 @@ export default function BuyerDashboard() {
           limit: '6',
           page: '1'
         });
-        
+
         if (fallbackResult && fallbackResult.properties) {
           setRecommendations(fallbackResult.properties);
         } else {
@@ -251,29 +270,29 @@ export default function BuyerDashboard() {
   // Safely resolve the property image for the modal
   const getModalImageUrl = (p: any) => {
     if (!p) return getSafeImageUrl('/images/01.jpg');
-  
+
     // Try various known fields and handle string vs object formats
     if (Array.isArray(p.images) && p.images.length > 0) {
       const first = p.images[0];
       const img = typeof first === 'string' ? first : first?.url;
       return getSafeImageUrl(img);
     }
-  
+
     if (p.mainImage) {
       const mi = typeof p.mainImage === 'string' ? p.mainImage : p.mainImage?.url;
       return getSafeImageUrl(mi);
     }
-  
+
     if (p.primaryImage) {
       const pi = typeof p.primaryImage === 'string' ? p.primaryImage : p.primaryImage?.url;
       return getSafeImageUrl(pi);
     }
-  
+
     if (p.finalImageUrl) {
       const fi = typeof p.finalImageUrl === 'string' ? p.finalImageUrl : p.finalImageUrl?.url;
       return getSafeImageUrl(fi);
     }
-  
+
     return getSafeImageUrl('/images/01.jpg');
   };
 
@@ -344,14 +363,14 @@ export default function BuyerDashboard() {
 
     // Optimistic Update
     const previousWatchlist = [...watchlist];
-    
+
     if (isCurrentlyWatching) {
-      setWatchlist(prev => prev.filter(p => p._id !== propertyId && p.id !== propertyId));
+      setWatchlist(prev => prev.filter(p => p._id !== propertyId && (p as any).id !== propertyId));
     } else {
       // Find property in recommendations or unlockedProperties to add temporarily
-      const propertyToAdd = recommendations.find(p => (p.id || p._id) === propertyId) || 
+      const propertyToAdd = recommendations.find(p => (p.id || p._id) === propertyId) ||
                           unlockedProperties.find(p => (p.id || p._id) === propertyId);
-      
+
       if (propertyToAdd) {
         const newTrackedProperty: TrackedProperty = {
           _id: propertyId,
@@ -378,7 +397,7 @@ export default function BuyerDashboard() {
           'Content-Type': 'application/json'
         }
       });
-      
+
       const data = await response.json();
       if (data.success) {
         if (isCurrentlyWatching) {
@@ -427,8 +446,11 @@ export default function BuyerDashboard() {
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen flex flex-col bg-[#f5f6fb]">
+        <Navbar />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
+        </div>
       </div>
     );
   }
@@ -439,16 +461,19 @@ export default function BuyerDashboard() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-red-600 mb-4">Error Loading Dashboard</h2>
-          <p className="text-gray-600 mb-4">{error}</p>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-          >
-            Retry
-          </button>
+      <div className="min-h-screen flex flex-col bg-[#f5f6fb]">
+        <Navbar />
+        <div className="flex-1 flex items-center justify-center px-4">
+          <div className="text-center max-w-md bg-white p-10 rounded-3xl shadow-sm border border-gray-100">
+            <h2 className="text-2xl font-black text-gray-950 mb-3">Error Loading Dashboard</h2>
+            <p className="text-gray-500 mb-6">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-6 py-3 rounded-xl bg-black text-white font-bold hover:bg-gray-900 transition"
+            >
+              Retry
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -463,11 +488,24 @@ export default function BuyerDashboard() {
     });
   };
 
+  const formatRelativeTime = (dateString: string) => {
+    const date = new Date(dateString);
+    if (Number.isNaN(date.getTime())) return '';
+    const diffMs = Date.now() - date.getTime();
+    const minutes = Math.floor(diffMs / 60000);
+    if (minutes < 60) return `${Math.max(1, minutes)} minutes ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours} hour${hours === 1 ? '' : 's'} ago`;
+    const days = Math.floor(hours / 24);
+    if (days < 7) return `${days} day${days === 1 ? '' : 's'} ago`;
+    return formatDate(dateString);
+  };
+
   const getStatusColor = (status: string | null) => {
     switch (status) {
-      case 'contract-exchanged': return 'bg-yellow-100 text-yellow-800';
-      case 'unconditional': return 'bg-blue-100 text-blue-800';
-      case 'settled': return 'bg-green-100 text-green-800';
+      case 'contract-exchanged': return 'bg-amber-50 text-amber-700';
+      case 'unconditional': return 'bg-blue-50 text-blue-700';
+      case 'settled': return 'bg-emerald-50 text-emerald-700';
       default: return 'bg-gray-100 text-gray-600';
     }
   };
@@ -481,655 +519,816 @@ export default function BuyerDashboard() {
     }
   };
 
+  // Mobile menu tab items (Watchlist, Property Tracking, Messages are routes — rendered as Links below)
+  const navItems: { key: BuyerTab; label: string; icon: typeof Home }[] = [
+    { key: 'overview', label: 'Overview', icon: LayoutDashboard },
+    { key: 'notifications', label: 'Updates', icon: Bell },
+  ];
+
+  const tabLabel = navItems.find(n => n.key === activeTab)?.label ?? 'Overview';
+
+  const firstName = (user.name || 'there').split(' ')[0];
+
+  // Recently unlocked cards for the Overview "Recently Unlocked Access" row
+  const unlockedAccessCards = (unlockedProperties || []).slice(0, 3);
+
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Top Navbar - Matching Seller Dashboard Style */}
-      <header className="h-16 sm:h-20 bg-white border-b border-gray-200 flex items-center justify-between px-4 sm:px-8 sticky top-0 z-50 w-full">
-        {/* Left: Logo */}
-        <div className="flex-shrink-0">
-          <Link href="/">
-            <img src="/images/logo.PNG" alt="Only If" className="h-8 sm:h-10 md:h-12 lg:h-14 w-auto transition-transform duration-200" />
-          </Link>
-        </div>
+    <div className="min-h-screen flex flex-col bg-[#f5f6fb]">
+      {/* Global Header */}
+      <Navbar />
 
-        {/* Center: Main Site Navigation */}
-        <nav className="hidden lg:flex items-center space-x-6">
-          <Link href="/buy" className="text-sm font-semibold text-gray-700 hover:text-emerald-600 transition-colors">Buy</Link>
-          <Link href="/sell" className="text-sm font-semibold text-gray-700 hover:text-emerald-600 transition-colors">Sell</Link>
-          <Link href="/how-it-works" className="text-sm font-semibold text-gray-700 hover:text-emerald-600 transition-colors">How it Works</Link>
-          <Link href="/agents" className="text-sm font-semibold text-gray-700 hover:text-emerald-600 transition-colors">Agents</Link>
-        </nav>
-
-        {/* Right: Dashboard & Sign Out */}
-        <div className="flex items-center space-x-2 sm:space-x-4">
-          <Link 
-            href="/dashboard"
-            className="hidden md:block text-sm font-semibold text-emerald-600 hover:text-emerald-700 transition-colors"
+      {/* Mobile sticky bar for sidebar toggle */}
+      <div className="sticky top-20 z-40 border-b border-gray-200/70 bg-[#f5f6fb]/95 px-4 py-3 backdrop-blur lg:hidden">
+        <div className="flex items-center justify-between gap-3">
+          <p className="truncate text-sm font-semibold text-gray-950">{tabLabel}</p>
+          <button
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-700 shadow-sm cursor-pointer"
+            aria-label="Open buyer dashboard menu"
           >
-            Dashboard
-          </Link>
-          <button 
-            onClick={() => {
-              localStorage.removeItem('token');
-              router.push('/signin');
-            }}
-            className="hidden md:block text-sm font-semibold text-gray-600 hover:text-red-600 transition-colors"
-          >
-            Sign Out
+            {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
-          
-          <div className="flex items-center space-x-2 sm:space-x-3 sm:pl-4 sm:border-l border-gray-200">
-            <button 
-              onClick={() => setShowNotifications(!showNotifications)}
-              className="p-1.5 sm:p-2 text-gray-400 hover:text-gray-600 relative"
-            >
-              <Bell className="w-5 h-5" />
-              {stats.unreadNotifications > 0 && (
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
-              )}
-            </button>
-            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gray-200 overflow-hidden border border-gray-100 flex-shrink-0">
-              <img 
-                src={user?.avatar || `https://ui-avatars.com/api/?name=${user?.name || 'B'}&background=10b981&color=fff`} 
-                alt="User" 
-                className="w-full h-full object-cover" 
-              />
-            </div>
-            
-            {/* Mobile Menu Button */}
-            <button 
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="lg:hidden p-2 text-gray-400 hover:text-gray-600"
-            >
-              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
-          </div>
         </div>
-      </header>
+      </div>
 
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden fixed inset-0 z-40 bg-white pt-20 px-6 space-y-6">
-          <nav className="flex flex-col space-y-4">
-            <Link href="/buy" className="text-lg font-bold text-gray-900 py-3 border-b border-gray-50 flex items-center justify-between" onClick={() => setIsMobileMenuOpen(false)}>
-              Buy <ArrowRight className="w-4 h-4 text-gray-300" />
-            </Link>
-            <Link href="/sell" className="text-lg font-bold text-gray-900 py-3 border-b border-gray-50 flex items-center justify-between" onClick={() => setIsMobileMenuOpen(false)}>
-              Sell <ArrowRight className="w-4 h-4 text-gray-300" />
-            </Link>
-            <Link href="/how-it-works" className="text-lg font-bold text-gray-900 py-3 border-b border-gray-50 flex items-center justify-between" onClick={() => setIsMobileMenuOpen(false)}>
-              How it Works <ArrowRight className="w-4 h-4 text-gray-300" />
-            </Link>
-            <Link href="/agents" className="text-lg font-bold text-gray-900 py-3 border-b border-gray-50 flex items-center justify-between" onClick={() => setIsMobileMenuOpen(false)}>
-              Agents <ArrowRight className="w-4 h-4 text-gray-300" />
-            </Link>
-            <Link href="/dashboard" className="text-lg font-bold text-emerald-600 py-3 border-b border-gray-50 flex items-center justify-between" onClick={() => setIsMobileMenuOpen(false)}>
-              Dashboard <ArrowRight className="w-4 h-4 text-emerald-100" />
-            </Link>
-            <button 
-              onClick={() => {
-                localStorage.removeItem('token');
-                router.push('/signin');
-                setIsMobileMenuOpen(false);
-              }}
-              className="text-left text-lg font-bold text-red-600 py-3 flex items-center justify-between"
-            >
-              Sign Out <ArrowRight className="w-4 h-4 text-red-100" />
-            </button>
-          </nav>
-          <div className="pt-6">
-            <button 
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="w-full py-4 bg-gray-900 text-white font-bold rounded-2xl shadow-lg"
-            >
-              Close Menu
-            </button>
+        <div className="lg:hidden fixed inset-0 z-40 bg-white overflow-y-auto pb-20">
+          <div className="pt-24 px-6 space-y-8">
+            <nav className="flex flex-col space-y-2">
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] px-1 mb-2">Dashboard Menu</p>
+              {navItems.map(({ key, label, icon: Icon }) => (
+                <button
+                  key={key}
+                  onClick={() => { setActiveTab(key); setIsMobileMenuOpen(false); }}
+                  className={`w-full flex items-center justify-between py-4 px-3 rounded-xl transition-all cursor-pointer ${
+                    activeTab === key
+                      ? 'bg-emerald-50 text-emerald-700 font-bold border border-emerald-100 shadow-sm'
+                      : 'text-gray-900 font-bold border-b border-gray-50'
+                  }`}
+                >
+                  <span className="flex items-center gap-3">
+                    <Icon className={`w-5 h-5 ${activeTab === key ? 'text-emerald-600' : 'text-gray-400'}`} />
+                    {label}
+                  </span>
+                  {activeTab === key && <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full" />}
+                </button>
+              ))}
+
+              <Link
+                href="/dashboards/buyer/saved"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="w-full flex items-center gap-3 py-4 px-3 border-b border-gray-50 text-gray-900 font-bold"
+              >
+                <Heart className="w-5 h-5 text-gray-400" /> Watchlist
+              </Link>
+              <Link
+                href="/dashboards/buyer/tracking"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="w-full flex items-center gap-3 py-4 px-3 border-b border-gray-50 text-gray-900 font-bold"
+              >
+                <TrendingUp className="w-5 h-5 text-gray-400" /> Property Tracking
+              </Link>
+              <Link
+                href="/dashboards/buyer/messages"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="w-full flex items-center gap-3 py-4 px-3 border-b border-gray-50 text-gray-900 font-bold"
+              >
+                <MessageSquare className="w-5 h-5 text-gray-400" /> Messages
+              </Link>
+              <Link
+                href="/dashboards/buyer/account"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="w-full flex items-center gap-3 py-4 px-3 border-b border-gray-50 text-gray-900 font-bold"
+              >
+                <Settings className="w-5 h-5 text-gray-400" /> Settings
+              </Link>
+
+              <button
+                onClick={() => { handleSwitchToSeller(); setIsMobileMenuOpen(false); }}
+                className="mt-6 w-full flex items-center justify-center gap-3 bg-emerald-50 text-emerald-700 border border-emerald-100 py-4 rounded-2xl font-bold shadow-sm active:scale-[0.98] transition-all cursor-pointer"
+              >
+                <Home className="h-5 w-5" />
+                <span>Switch to Seller Mode</span>
+              </button>
+            </nav>
+
+            <div className="pt-2">
+              <button
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="w-full py-4 bg-gray-900 text-white font-bold rounded-2xl shadow-xl active:scale-[0.98] transition-all cursor-pointer"
+              >
+                Close Menu
+              </button>
+            </div>
           </div>
         </div>
       )}
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full">
-        {/* 1. Top Header */}
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-10">
-          <div className="text-center lg:text-left">
-            <h1 className="text-xl sm:text-2xl lg:text-4xl font-extrabold text-gray-900 tracking-tight">Welcome back, {user.name}! 👋</h1>
-            <p className="text-sm sm:text-lg text-gray-500 mt-2 font-medium">These homes aren't on the market — but they could be yours.</p>
-          </div>
-          
-          <div className="flex flex-wrap items-center justify-center lg:justify-end gap-3 w-full sm:w-auto">
-            <button
-              onClick={() => router.push('/buy')}
-              className="w-full sm:w-auto px-4 sm:px-6 py-2.5 rounded-full bg-emerald-600 text-white font-bold hover:bg-emerald-700 transition-all flex items-center justify-center gap-2 text-xs sm:text-sm shadow-md"
-            >
-              <Search className="w-4 h-4" />
-              <span className="whitespace-nowrap">Browse All Homes</span>
-            </button>
-            <button
-              onClick={handleSwitchToSeller}
-              className="w-full sm:w-auto px-4 sm:px-6 py-2.5 rounded-full border-2 border-emerald-100 text-emerald-600 font-bold hover:bg-emerald-50 transition-all flex items-center justify-center gap-2 text-xs sm:text-sm shadow-sm"
-            >
-              <Home className="w-4 h-4" />
-              <span className="whitespace-nowrap">Switch to Seller</span>
-            </button>
-          </div>
-        </div>
+      {/* Body: Sidebar + Main */}
+      <div className="flex w-full flex-1 bg-[#f5f6fb] lg:pl-[280px]">
+        {/* Fixed Sidebar (shared with /dashboards/buyer/messages and other buyer routes) */}
+        <BuyerSidebar
+          activeKey={activeTab}
+          onTabClick={(key) => setActiveTab(key)}
+          user={user}
+        />
 
-        {/* 2. Main Content — Two Column Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 mb-12">
-          {/* Left Column (wider) */}
-          <div className="lg:col-span-8 space-y-6 sm:space-y-8">
-            {/* Recommended for You */}
-            <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-4 sm:p-8">
-              <div className="flex items-center justify-between mb-6 sm:mb-8 gap-2">
-                <h2 className="text-base sm:text-2xl font-bold text-gray-900 leading-tight">For You</h2>
-                <Link href="/buy" className="text-emerald-600 font-bold hover:text-emerald-700 flex items-center gap-1 transition-colors text-xs sm:text-base whitespace-nowrap">
-                  View All <ArrowRight className="w-4 h-4" />
-                </Link>
-              </div>
-              
-              {loadingRecommendations ? (
-                <div className="flex justify-center py-12">
-                  <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-emerald-600"></div>
-                </div>
-              ) : recommendations.length > 0 ? (
-                <div className="space-y-6">
-                  {hasSetCriteria && recommendations.some(p => {
-                    // This is a simple client-side check to see if the property matches criteria
-                    // It helps determine if we are showing fallback results
-                    const matchesPrice = p.price >= criteria.minPrice && p.price <= criteria.maxPrice;
-                    const matchesBeds = !criteria.maxRooms || (p.beds && p.beds <= criteria.maxRooms);
-                    return matchesPrice && matchesBeds;
-                  }) === false && (
-                    <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-center gap-3">
-                      <AlertCircle className="w-5 h-5 text-amber-600" />
-                      <p className="text-sm text-amber-800 font-medium">
-                        No properties match your exact criteria. Showing all available homes instead.
-                      </p>
-                    </div>
-                  )}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {recommendations.slice(0, 3).map((property) => (
-                      <PropertyCard
-                        key={property._id || property.id}
-                        id={property._id || property.id}
-                        title={property.title}
-                        address={typeof property.address === 'string' ? property.address : formatPropertyAddress(property.address)}
-                        price={property.price}
-                        beds={property.beds}
-                        baths={property.baths}
-                        size={property.size}
-                        image={property.images?.[0]?.url || property.mainImage?.url || property.mainImage || '/images/01.jpg'}
-                        carSpaces={property.carSpaces}
-                        isWatched={watchlist.some(w => 
-                          (w._id && (w._id === property._id || w._id === property.id)) ||
-                          (w.id && (w.id === property._id || w.id === property.id))
-                        )}
-                        onToggleWatchlist={(e) => {
-                          e.stopPropagation();
-                          e.preventDefault();
-                          const targetId = getPropertyIdentifier(property);
-                          if (!targetId) {
-                            toast.error('Unable to save this property right now.');
-                            return;
-                          }
-                          
-                          const isWatching = watchlist.some(w => 
-                            (w._id && (w._id === targetId)) ||
-                            (w.id && (w.id === targetId))
-                          );
-                          toggleWatchlist(targetId, isWatching);
-                        }}
-                      />
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center py-12 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
-                  <div className="bg-white w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
-                    <Home className="w-6 h-6 text-gray-300" />
-                  </div>
-                  {hasSetCriteria ? (
-                    <>
-                      <p className="text-gray-900 font-bold mb-1">No matching properties found.</p>
-                      <p className="text-gray-500 font-medium text-sm mb-6">Try broadening your criteria or browse all available properties below.</p>
-                    </>
-                  ) : (
-                    <p className="text-gray-500 font-medium">No recommendations yet. Set your criteria to get matches.</p>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Your Watchlist */}
-            <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-              <div className="p-6 sm:p-8">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="bg-emerald-50 p-2 rounded-lg">
-                    <Heart className="w-5 h-5 text-emerald-600" />
-                  </div>
-                  <h3 className="text-base sm:text-xl font-bold text-gray-900">Your Watchlist</h3>
-                </div>
-                
-                {watchlist.length === 0 ? (
-                  <div className="space-y-6">
-                    <p className="text-xs sm:text-sm text-gray-500 leading-relaxed font-medium">
-                      You haven't saved any properties yet. Browse homes and tap the heart ❤️ to add favorites to your watchlist.
+        {/* Main */}
+        <div className="flex min-w-0 flex-1 flex-col px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
+          <main className="w-full">
+            {activeTab === 'overview' && (
+              <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                {/* Welcome + Market Status */}
+                <section className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
+                  <div className="rounded-[28px] border border-gray-200/80 bg-white p-6 shadow-[0_24px_70px_rgba(15,23,42,0.05)] sm:p-10">
+                    <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.24em] text-gray-400">Buyer Dashboard</p>
+                    <h1 className="text-3xl font-black tracking-tight text-gray-950 sm:text-4xl lg:text-5xl">
+                      Welcome back, {firstName}
+                    </h1>
+                    <p className="mt-4 max-w-2xl text-sm leading-6 text-gray-500 sm:text-base">
+                      Your luxury real estate portfolio is performing beautifully. We&apos;ve identified
+                      {' '}<span className="font-semibold text-gray-900">{recommendations.length || 'new'}</span>{' '}
+                      opportunities aligned with your investment criteria.
                     </p>
-                    <div className="relative h-32 sm:h-40 rounded-2xl overflow-hidden">
-                      <img 
-                        src="/images/02.jpg" 
-                        alt="Watchlist placeholder" 
-                        className="w-full h-full object-cover brightness-90" 
-                      />
-                      <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm p-2 rounded-full shadow-sm">
-                        <Heart className="w-5 h-5 text-red-500 fill-red-500" />
+
+                    <div className="mt-8 flex flex-wrap items-center gap-3">
+                      <button
+                        onClick={() => router.push('/buy')}
+                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-black px-5 py-3 text-sm font-bold text-white shadow-lg shadow-black/10 transition hover:bg-gray-900 cursor-pointer"
+                      >
+                        <Search className="h-4 w-4" />
+                        <span>Browse All Homes</span>
+                      </button>
+                      <button
+                        onClick={() => setCriteriaModalOpen(true)}
+                        className="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-bold text-gray-800 shadow-sm transition hover:border-gray-300 hover:bg-gray-50 cursor-pointer"
+                      >
+                        <ClipboardList className="h-4 w-4" />
+                        <span>{hasSetCriteria ? 'Update Criteria' : 'Set Criteria'}</span>
+                      </button>
+                      <button
+                        onClick={handleSwitchToSeller}
+                        className="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-bold text-gray-800 shadow-sm transition hover:border-gray-300 hover:bg-gray-50 cursor-pointer"
+                      >
+                        <Home className="h-4 w-4" />
+                        <span>Switch to Seller</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Market Status Widget */}
+                  <aside className="rounded-[28px] border border-gray-200/80 bg-white p-6 shadow-[0_24px_70px_rgba(15,23,42,0.05)]">
+                    <div className="flex items-center justify-between">
+                      <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-gray-400">Market Status</p>
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                        Bullish
+                      </span>
+                    </div>
+                    <div className="mt-5">
+                      <p className="text-4xl font-black tracking-tight text-gray-950">+12.4%</p>
+                      <p className="mt-1 text-sm text-gray-500">YoY luxury index growth</p>
+                    </div>
+                    <div className="mt-6 space-y-3">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-semibold text-gray-500">Avg. days on market</span>
+                        <span className="font-bold text-gray-900">28 days</span>
+                      </div>
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-semibold text-gray-500">New listings this week</span>
+                        <span className="font-bold text-gray-900">{recommendations.length}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-semibold text-gray-500">Status updates</span>
+                        <span className="font-bold text-gray-900">{statusUpdates.length}</span>
                       </div>
                     </div>
-                    <button
-                      onClick={() => router.push('/buy')}
-                      className="w-full sm:w-auto py-2.5 sm:py-3 px-6 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all shadow-md text-sm"
-                    >
-                      Browse All Homes
-                    </button>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {watchlist.slice(0, 4).map(p => (
-                      <div key={p._id} className="flex gap-3 sm:gap-4 items-center p-2 sm:p-3 rounded-2xl hover:bg-gray-50 transition-colors border border-gray-50">
-                        <img 
-                          src={getSafeImageUrl(p.images?.[0]?.url || p.mainImage?.url || p.mainImage || '/images/01.jpg')} 
-                          className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl object-cover shadow-sm"
-                          alt={p.title}
-                        />
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-bold text-gray-900 truncate text-[10px] sm:text-sm">{p.title}</h4>
-                          <p className="text-[10px] sm:text-xs text-emerald-600 font-bold">{formatCurrencyCompact(p.price || 0)}</p>
-                        </div>
+                  </aside>
+                </section>
+
+                {/* For You + Recent Status Updates */}
+                <section className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
+                  {/* For You */}
+                  <div className="rounded-[28px] border border-gray-200/80 bg-white p-6 shadow-[0_24px_70px_rgba(15,23,42,0.05)] sm:p-8">
+                    <div className="mb-6 flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-gray-400">Curated</p>
+                        <h2 className="mt-1 text-2xl font-black tracking-tight text-gray-950">For You</h2>
+                      </div>
+                      <Link
+                        href="/buy"
+                        className="inline-flex items-center gap-1 text-sm font-bold text-emerald-700 hover:text-emerald-800 transition cursor-pointer"
+                      >
+                        View all recommendations
+                        <ArrowRight className="h-4 w-4" />
+                      </Link>
+                    </div>
+
+                    {loadingRecommendations ? (
+                      <div className="flex justify-center py-16">
+                        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-emerald-600"></div>
+                      </div>
+                    ) : recommendations.length > 0 ? (
+                      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-2">
+                        {recommendations.slice(0, 2).map((property, idx) => {
+                          const id = property._id || property.id;
+                          const isWatching = watchlist.some(w =>
+                            (w._id && (w._id === property._id || w._id === property.id)) ||
+                            ((w as any).id && ((w as any).id === property._id || (w as any).id === property.id))
+                          );
+                          const badge = idx === 0 ? { label: 'New Listing', tone: 'bg-black text-white' } : { label: 'Price Drop', tone: 'bg-emerald-600 text-white' };
+                          const image = (property as any).images?.[0]?.url || (property as any).mainImage?.url || (property as any).mainImage || '/images/01.jpg';
+                          return (
+                            <div
+                              key={id}
+                              className="group cursor-pointer overflow-hidden rounded-2xl border border-gray-100 bg-white transition-all hover:-translate-y-0.5 hover:shadow-lg"
+                              onClick={() => {
+                                setSelectedProperty(property);
+                                setPropertyModalOpen(true);
+                              }}
+                            >
+                              <div className="relative h-44 overflow-hidden">
+                                <img
+                                  src={getSafeImageUrl(image)}
+                                  alt={property.title}
+                                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                />
+                                <span className={`absolute left-3 top-3 inline-flex items-center rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-widest shadow-sm ${badge.tone}`}>
+                                  {badge.label}
+                                </span>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    e.preventDefault();
+                                    const targetId = getPropertyIdentifier(property);
+                                    if (!targetId) {
+                                      toast.error('Unable to save this property right now.');
+                                      return;
+                                    }
+                                    toggleWatchlist(targetId, isWatching);
+                                  }}
+                                  className="absolute right-3 top-3 grid h-9 w-9 cursor-pointer place-items-center rounded-full bg-white/90 text-gray-700 shadow-sm backdrop-blur transition hover:bg-white"
+                                  aria-label="Toggle watchlist"
+                                >
+                                  <Heart className={`h-4 w-4 ${isWatching ? 'fill-red-500 text-red-500' : ''}`} />
+                                </button>
+                              </div>
+                              <div className="p-5">
+                                <h3 className="truncate text-lg font-black tracking-tight text-gray-950">{property.title}</h3>
+                                <p className="mt-1 flex items-center gap-1 truncate text-xs font-semibold text-gray-500">
+                                  <MapPin className="h-3 w-3" />
+                                  {typeof property.address === 'string' ? property.address : formatPropertyAddress(property.address)}
+                                </p>
+                                <div className="mt-4 flex items-center justify-between">
+                                  <p className="text-xl font-black tracking-tight text-gray-950">{formatCurrencyCompact(property.price || 0)}</p>
+                                  <div className="flex items-center gap-3 text-[11px] font-bold text-gray-500">
+                                    <span className="flex items-center gap-1"><Bed className="h-3 w-3" />{property.beds ?? '—'}</span>
+                                    <span className="flex items-center gap-1"><Bath className="h-3 w-3" />{property.baths ?? '—'}</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/70 px-6 py-12 text-center">
+                        <Sparkles className="mx-auto h-8 w-8 text-gray-300" />
+                        <p className="mt-3 text-sm font-semibold text-gray-600">No matches yet. Set your criteria to unlock tailored picks.</p>
                         <button
-                          onClick={() => {
-                            const targetId = getPropertyIdentifier(p);
-                            if (!targetId) {
-                              toast.error('Unable to update watchlist for this property.');
-                              return;
-                            }
-                            toggleWatchlist(targetId, true);
-                          }}
-                          className="p-1"
+                          onClick={() => setCriteriaModalOpen(true)}
+                          className="mt-5 inline-flex items-center gap-2 rounded-xl bg-black px-5 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-gray-900 cursor-pointer"
                         >
-                          <Heart className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-red-500 fill-red-500" />
+                          <ClipboardList className="h-4 w-4" />
+                          Set Criteria
                         </button>
                       </div>
-                    ))}
+                    )}
                   </div>
-                )}
-              </div>
-            </div>
-          </div>
 
-          {/* Right Column (narrower) */}
-          <div className="lg:col-span-4 space-y-6 sm:space-y-8">
-            {/* Set Your Buying Criteria card at top */}
-            <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
-              <div className="p-6 sm:p-8 pb-0">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="bg-emerald-50 p-2 rounded-lg">
-                    <ClipboardList className="w-5 h-5 text-emerald-600" />
+                  {/* Recent Status Updates */}
+                  <aside className="rounded-[28px] border border-gray-200/80 bg-white p-6 shadow-[0_24px_70px_rgba(15,23,42,0.05)]">
+                    <div className="mb-5 flex items-center justify-between">
+                      <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-gray-400">Recent Status Updates</p>
+                      <button
+                        onClick={() => router.push('/dashboards/buyer/tracking')}
+                        className="text-xs font-bold text-emerald-700 hover:text-emerald-800 cursor-pointer"
+                      >
+                        View all
+                      </button>
+                    </div>
+                    {loadingUpdates ? (
+                      <div className="flex justify-center py-8">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600" />
+                      </div>
+                    ) : statusUpdates.length > 0 ? (
+                      <ul className="space-y-4">
+                        {statusUpdates.slice(0, 4).map((update) => {
+                          const StatusIcon = getStatusIcon(update.newStatus);
+                          return (
+                            <li
+                              key={update._id}
+                              className="cursor-pointer rounded-2xl border border-gray-100 p-4 transition hover:border-emerald-100 hover:bg-emerald-50/40"
+                              onClick={() => router.push('/dashboards/buyer/tracking')}
+                            >
+                              <div className="flex items-start gap-3">
+                                <div className={`grid h-9 w-9 place-items-center rounded-xl ${getStatusColor(update.newStatus).split(' ')[0]}`}>
+                                  <StatusIcon className={`h-4 w-4 ${getStatusColor(update.newStatus).split(' ')[1]}`} />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <p className="truncate text-sm font-bold text-gray-950">
+                                    {update.newStatus?.replace('-', ' ') || 'Status update'}
+                                  </p>
+                                  <p className="truncate text-xs font-semibold text-gray-500">
+                                    {update.property?.title || 'Tracked property'}
+                                  </p>
+                                  <p className="mt-1 text-[11px] font-semibold text-gray-400">{formatRelativeTime(update.updatedAt)}</p>
+                                </div>
+                              </div>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    ) : (
+                      <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/60 px-4 py-10 text-center">
+                        <TrendingUp className="mx-auto h-8 w-8 text-gray-300" />
+                        <p className="mt-3 text-xs font-semibold text-gray-500">No recent updates yet.</p>
+                      </div>
+                    )}
+                  </aside>
+                </section>
+
+                {/* Your Watchlist */}
+                <section className="rounded-[28px] border border-gray-200/80 bg-white p-6 shadow-[0_24px_70px_rgba(15,23,42,0.05)] sm:p-8">
+                  <div className="mb-6 flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-gray-400">Saved</p>
+                      <h2 className="mt-1 text-2xl font-black tracking-tight text-gray-950">Your Watchlist</h2>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => router.push('/dashboards/buyer/saved')}
+                        className="grid h-9 w-9 place-items-center rounded-full border border-gray-200 bg-white text-gray-600 transition hover:bg-gray-50 cursor-pointer"
+                        aria-label="Open saved properties"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => router.push('/dashboards/buyer/saved')}
+                        className="grid h-9 w-9 place-items-center rounded-full border border-gray-200 bg-white text-gray-600 transition hover:bg-gray-50 cursor-pointer"
+                        aria-label="Open saved properties"
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </button>
+                    </div>
                   </div>
-                  <h3 className="text-base sm:text-xl font-bold text-gray-900">Set Your Buying Criteria</h3>
-                </div>
-                <p className="text-[10px] sm:text-sm font-bold text-gray-900 mb-2">
-                  {hasSetCriteria ? 'Current: ' + formatCurrencyCompact(criteria.minPrice) + ' - ' + formatCurrencyCompact(criteria.maxPrice) : 'Get better matches & alerts early'}
-                </p>
-                <p className="text-[10px] sm:text-sm text-gray-500 mb-6 leading-relaxed">
-                  Select your suburbs, set your price range, and choose property types to get notified of early matches.
-                </p>
-              </div>
-              <div className="relative h-32 sm:h-40 mx-4 sm:mx-8 rounded-2xl overflow-hidden mb-6">
-                <img 
-                  src="/images/01.jpg" 
-                  alt="Property" 
-                  className="w-full h-full object-cover blur-[2px] brightness-75" 
-                />
-                <div className="absolute inset-0 flex items-center justify-center">
-                   <div className="bg-white/20 backdrop-blur-md p-2 rounded-full">
-                     <Heart className="w-6 h-6 text-white" />
-                   </div>
-                </div>
-              </div>
-              <div className="px-6 sm:px-8 pb-6 sm:pb-8 flex flex-col gap-3">
-                <button
-                  onClick={() => setCriteriaModalOpen(true)}
-                  className="w-full py-2.5 sm:py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all shadow-md flex items-center justify-center gap-2 text-sm"
-                >
-                  <ClipboardList className="w-4 h-4" />
-                  {hasSetCriteria ? 'Update Criteria' : 'Set My Criteria'}
-                </button>
-                <button
-                  onClick={() => router.push('/buy')}
-                  className="w-full py-2.5 sm:py-3 border-2 border-emerald-100 text-emerald-600 font-bold rounded-xl hover:bg-emerald-50 transition-all flex items-center justify-center gap-2 text-sm"
-                >
-                  <Search className="w-4 h-4" />
-                  Browse All Homes
-                </button>
-              </div>
-            </div>
 
-          </div>
-        </div>
-
-        {/* 3. Bottom Tabs (keep existing style but with new colors) */}
-        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden mb-10">
-          <div className="border-b border-gray-100">
-            <nav className="flex flex-wrap px-4 sm:px-8">
-              {[
-                { key: 'overview', label: 'Overview', icon: Home },
-                { key: 'watchlist', label: 'Watchlist', icon: Star },
-                { key: 'tracking', label: 'Property Tracking', icon: TrendingUp },
-                { key: 'notifications', label: 'Updates', icon: Bell },
-              ].map(({ key, label, icon: Icon }) => (
-                <button
-                  key={key}
-                  onClick={() => setActiveTab(key as any)}
-                  className={`flex items-center gap-2 px-3 sm:px-6 py-3 sm:py-5 text-[10px] sm:text-sm font-bold transition-all border-b-2 whitespace-nowrap ${
-                    activeTab === key
-                      ? 'border-emerald-600 text-emerald-600 bg-emerald-50/30'
-                      : 'border-transparent text-gray-400 hover:text-gray-600 hover:bg-gray-50'
-                  }`}
-                >
-                  <Icon className={`w-3 h-3 sm:w-4 sm:h-4 ${activeTab === key ? 'text-emerald-600' : 'text-gray-400'}`} />
-                  {label}
-                </button>
-              ))}
-            </nav>
-          </div>
-
-          <div className="p-4 sm:p-8">
-            {/* Tab Content (Mostly preserved existing logic) */}
-            {activeTab === 'overview' && (
-              <div className="space-y-12">
-                {/* Unlocked Properties */}
-                <div>
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-base sm:text-xl font-extrabold text-gray-900">Recently Unlocked</h2>
-                    <Link href="/buyer/unlocked-properties" className="text-xs sm:text-sm font-bold text-emerald-600 hover:underline">
-                      View All
-                    </Link>
-                  </div>
-                  
-                  {unlockedProperties && unlockedProperties.length > 0 ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                      {unlockedProperties.slice(0, 4).map((property) => (
+                  {watchlist.length === 0 ? (
+                    <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/70 px-6 py-14 text-center">
+                      <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-white shadow-sm">
+                        <Home className="h-6 w-6 text-gray-300" />
+                      </div>
+                      <h3 className="mt-4 text-base font-black tracking-tight text-gray-950">No saved properties yet</h3>
+                      <p className="mt-2 mx-auto max-w-md text-sm text-gray-500">
+                        Save properties you love to receive price alerts, availability updates, and private viewing invitations.
+                      </p>
+                      <button
+                        onClick={() => router.push('/buy')}
+                        className="mt-6 inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-black px-6 py-3 text-sm font-bold text-white shadow-lg shadow-black/10 transition hover:bg-gray-900"
+                      >
+                        Explore Homes
+                        <ArrowRight className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                      {watchlist.slice(0, 6).map((p) => (
                         <div
-                          key={property.id || property._id}
-                          className="group border border-gray-100 rounded-2xl p-4 hover:shadow-xl hover:border-emerald-100 transition-all cursor-pointer bg-white"
-                          onClick={() => {
-                            setSelectedProperty(property);
-                            setPropertyModalOpen(true);
-                          }}
+                          key={p._id}
+                          className="group cursor-pointer overflow-hidden rounded-2xl border border-gray-100 bg-white transition hover:-translate-y-0.5 hover:shadow-lg"
                         >
-                          <div className="relative h-40 rounded-xl overflow-hidden mb-4">
-                            <img 
-                              src={getSafeImageUrl(property.images?.[0]?.url || property.mainImage?.url || '/images/01.jpg')}
-                              alt={property.title}
-                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                          <div className="relative h-36 overflow-hidden">
+                            <img
+                              src={getSafeImageUrl(p.images?.[0]?.url || p.mainImage?.url || p.mainImage || '/images/01.jpg')}
+                              alt={p.title}
+                              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                             />
-                            <div className="absolute top-2 right-2">
-                               <div className="bg-white/90 backdrop-blur-sm p-1.5 rounded-full shadow-sm">
-                                  <CheckCircle className="w-4 h-4 text-emerald-500" />
-                               </div>
-                            </div>
+                            <button
+                              onClick={() => {
+                                const targetId = getPropertyIdentifier(p);
+                                if (!targetId) {
+                                  toast.error('Unable to update watchlist for this property.');
+                                  return;
+                                }
+                                toggleWatchlist(targetId, true);
+                              }}
+                              className="absolute right-2 top-2 grid h-8 w-8 cursor-pointer place-items-center rounded-full bg-white/90 text-red-500 shadow-sm backdrop-blur hover:bg-white"
+                            >
+                              <Heart className="h-4 w-4 fill-red-500" />
+                            </button>
                           </div>
-                          <h3 className="font-bold text-gray-900 mb-1 truncate">{property.title}</h3>
-                          <p className="text-xs text-gray-500 mb-3 truncate flex items-center gap-1">
-                            <MapPin className="w-3 h-3" /> {formatPropertyAddress(property.address)}
-                          </p>
-                          <p className="text-lg font-black text-emerald-600">
-                            {formatCurrencyCompact(property.price || 0)}
-                          </p>
+                          <div className="p-4">
+                            <p className="truncate text-sm font-black text-gray-950">{p.title}</p>
+                            <p className="mt-1 text-xs font-bold text-emerald-700">{formatCurrencyCompact(p.price || 0)}</p>
+                          </div>
                         </div>
                       ))}
                     </div>
-                  ) : (
-                    <div className="text-center py-16 bg-gray-50 rounded-3xl border border-dashed border-gray-200">
-                      <div className="bg-white w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
-                        <Heart className="w-8 h-8 text-gray-200" />
-                      </div>
-                      <h3 className="text-lg font-bold text-gray-900 mb-2">No unlocked properties</h3>
-                      <p className="text-gray-500 max-w-xs mx-auto mb-6 px-4">Start browsing properties to unlock full details and owner contact!</p>
-                      <button 
-                        onClick={() => router.push('/buy')}
-                        className="w-full sm:w-auto bg-emerald-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-emerald-700 transition-all shadow-md"
-                      >
-                        Explore Homes
-                      </button>
-                    </div>
                   )}
-                </div>
+                </section>
 
-                {/* Status Updates */}
-                <div>
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-base sm:text-xl font-extrabold text-gray-900">Recent Status Updates</h2>
-                    <button 
-                      onClick={() => setActiveTab('tracking')}
-                      className="text-xs sm:text-sm font-bold text-emerald-600 hover:underline"
+                {/* Recently Unlocked Access */}
+                <section className="space-y-5">
+                  <div className="flex items-end justify-between gap-3">
+                    <div>
+                      <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-gray-400">Premium Access</p>
+                      <h2 className="mt-1 text-2xl font-black tracking-tight text-gray-950">Recently Unlocked Access</h2>
+                    </div>
+                    <Link
+                      href="/dashboards/buyer/unlocked"
+                      className="text-sm font-bold text-emerald-700 hover:text-emerald-800 cursor-pointer"
                     >
-                      View History
-                    </button>
+                      View all
+                    </Link>
                   </div>
-                  
-                  {statusUpdates.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {statusUpdates.slice(0, 4).map((update) => {
-                        const StatusIcon = getStatusIcon(update.newStatus);
+
+                  {unlockedAccessCards.length > 0 ? (
+                    <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+                      {unlockedAccessCards.map((property: any, idx: number) => {
+                        const tags = ['Private Portfolio', 'Analysis', 'Exclusive Tour'];
+                        const icons = [FileText, Activity, Eye];
+                        const Icon = icons[idx % icons.length];
                         return (
-                          <div key={update._id} className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5 p-4 sm:p-5 bg-white border border-gray-100 rounded-2xl hover:shadow-md transition-all">
-                            <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${getStatusColor(update.newStatus).split(' ')[0]}`}>
-                              <StatusIcon className={`w-5 h-5 sm:w-6 sm:h-6 ${getStatusColor(update.newStatus).split(' ')[1]}`} />
+                          <div
+                            key={property.id || property._id}
+                            className="group flex cursor-pointer flex-col rounded-2xl border border-gray-200/80 bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.04)] transition hover:-translate-y-0.5 hover:shadow-[0_24px_80px_rgba(15,23,42,0.08)]"
+                            onClick={() => {
+                              setSelectedProperty(property);
+                              setPropertyModalOpen(true);
+                            }}
+                          >
+                            <div className="flex items-start justify-between">
+                              <div className="grid h-11 w-11 place-items-center rounded-xl bg-black text-white">
+                                <Icon className="h-5 w-5" />
+                              </div>
+                              <span className="rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-emerald-700">
+                                {tags[idx % tags.length]}
+                              </span>
                             </div>
-                            <div className="flex-1 min-w-0">
-                              <h4 className="font-bold text-gray-900 truncate text-sm sm:text-base">{update.property.title}</h4>
-                              <p className="text-xs sm:text-sm text-gray-500 font-medium">
-                                Changed to <span className={`px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider ${getStatusColor(update.newStatus)}`}>
-                                  {update.newStatus?.replace('-', ' ') || 'Updated'}
-                                </span>
-                              </p>
-                            </div>
-                            <div className="text-[10px] sm:text-xs font-bold text-gray-400 whitespace-nowrap">
-                              {formatDate(update.updatedAt)}
+                            <h3 className="mt-6 text-lg font-black tracking-tight text-gray-950">{property.title || 'Unlocked property'}</h3>
+                            <p className="mt-2 text-sm text-gray-500">
+                              {typeof property.address === 'string' ? property.address : formatPropertyAddress(property.address)}
+                            </p>
+                            <div className="mt-6 inline-flex items-center gap-1 text-sm font-bold text-emerald-700">
+                              Open Access <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
                             </div>
                           </div>
                         );
                       })}
                     </div>
                   ) : (
-                    <div className="text-center py-12 bg-gray-50 rounded-3xl border border-dashed border-gray-200">
-                      <TrendingUp className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-                      <p className="text-gray-500 font-medium">No recent updates for your watched properties.</p>
+                    <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+                      {[
+                        { tag: 'Private Portfolio', icon: FileText, title: 'Modernist Sanctuary', desc: 'Complete structural plans and historical context.' },
+                        { tag: 'Analysis', icon: Activity, title: 'Investment ROI Deck', desc: 'Projected internal yield and appreciation curves.' },
+                        { tag: 'Exclusive Tour', icon: Eye, title: 'Drone Cinema Reel', desc: 'Cinematic fly-through of every interior and exterior space.' },
+                      ].map(({ tag, icon: Icon, title, desc }) => (
+                        <div
+                          key={title}
+                          className="flex flex-col rounded-2xl border border-gray-200/80 bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.04)]"
+                        >
+                          <div className="flex items-start justify-between">
+                            <div className="grid h-11 w-11 place-items-center rounded-xl bg-black text-white">
+                              <Icon className="h-5 w-5" />
+                            </div>
+                            <span className="rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-emerald-700">
+                              {tag}
+                            </span>
+                          </div>
+                          <h3 className="mt-6 text-lg font-black tracking-tight text-gray-950">{title}</h3>
+                          <p className="mt-2 text-sm text-gray-500">{desc}</p>
+                          <button
+                            onClick={() => router.push('/buy')}
+                            className="mt-6 inline-flex cursor-pointer items-center gap-1 text-sm font-bold text-emerald-700 hover:text-emerald-800"
+                          >
+                            Unlock Access <ArrowRight className="h-4 w-4" />
+                          </button>
+                        </div>
+                      ))}
                     </div>
                   )}
-                </div>
+                </section>
               </div>
             )}
 
-            {activeTab === 'watchlist' && (
-              <div className="space-y-8">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-lg sm:text-2xl font-black text-gray-900">Your Watchlist</h2>
-                    <p className="text-xs sm:text-base text-gray-500 font-medium">Properties you're tracking for status updates</p>
-                  </div>
-                  <button
-                    onClick={fetchWatchlist}
-                    disabled={loadingWatchlist}
-                    className="px-4 sm:px-6 py-2 sm:py-2.5 bg-gray-900 text-white rounded-xl font-bold hover:bg-gray-800 disabled:opacity-50 transition-all text-xs sm:text-sm"
-                  >
-                    {loadingWatchlist ? 'Refreshing...' : 'Refresh List'}
-                  </button>
-                </div>
+            {activeTab === 'notifications' && (() => {
+              // Map each real status update into a typed timeline entry.
+              // We only have status changes from the buyer API; other categories
+              // render an honest empty state instead of fabricated content.
+              const baseUpdates = (statusUpdates || [])
+                .filter(u => !dismissedUpdates.has(u._id))
+                .map(u => ({
+                  id: u._id,
+                  category: 'alerts' as const,
+                  title: u.newStatus === 'price-drop'
+                    ? `Price Reduction Alert: ${u.property?.title || 'Tracked property'}`
+                    : `${(u.newStatus || 'Status update').replace('-', ' ')}: ${u.property?.title || 'Tracked property'}`,
+                  description: u.previousStatus
+                    ? `Status changed from "${u.previousStatus.replace('-', ' ')}" to "${(u.newStatus || 'updated').replace('-', ' ')}"${u.agent?.name ? ` by ${u.agent.name}` : ''}.`
+                    : `New status update on a property in your watchlist.`,
+                  status: u.newStatus,
+                  timestamp: u.updatedAt,
+                  raw: u,
+                }));
 
-                {loadingWatchlist ? (
-                  <div className="flex justify-center py-20">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
+              const filtered = baseUpdates.filter(item =>
+                updatesFilter === 'all' ? true : item.category === updatesFilter
+              );
+
+              // Group by yyyy-mm-dd for date headers
+              const groups = filtered.reduce<Record<string, typeof filtered>>((acc, item) => {
+                const key = new Date(item.timestamp).toISOString().slice(0, 10);
+                (acc[key] ||= []).push(item);
+                return acc;
+              }, {});
+
+              const sortedKeys = Object.keys(groups).sort((a, b) => (a < b ? 1 : -1));
+
+              const dayLabel = (key: string) => {
+                const d = new Date(key);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const yesterday = new Date(today);
+                yesterday.setDate(yesterday.getDate() - 1);
+                const same = (a: Date, b: Date) => a.toDateString() === b.toDateString();
+                if (same(d, today)) return 'Today';
+                if (same(d, yesterday)) return 'Yesterday';
+                return d.toLocaleDateString('en-AU', { weekday: 'long' });
+              };
+
+              const dayDate = (key: string) =>
+                new Date(key).toLocaleDateString('en-AU', { month: 'long', day: 'numeric' }).toUpperCase();
+
+              const filters: { key: UpdatesFilter; label: string; icon: typeof Bell }[] = [
+                { key: 'all', label: 'All Activity', icon: Activity },
+                { key: 'alerts', label: 'Property Alerts', icon: Bell },
+                { key: 'messages', label: 'Agent Messages', icon: MessageSquare },
+                { key: 'legal', label: 'Legal & Escrow', icon: ShieldCheck },
+              ];
+
+              // Status overview tiles derive from real buyer state
+              const activeAlerts = baseUpdates.length;
+              const messagesCount = stats?.unreadNotifications ?? 0;
+              const pendingDocs = 0; // No backend feed → honest zero
+              const showingsCount = Array.isArray(scheduledViewings) ? scheduledViewings.length : 0;
+
+              const overviewTiles = [
+                { label: 'Active Alerts', value: activeAlerts },
+                { label: 'Messages', value: messagesCount },
+                { label: 'Pending Docs', value: pendingDocs },
+                { label: 'Showings', value: showingsCount },
+              ];
+
+              return (
+                <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                  {/* Header */}
+                  <div>
+                    <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.24em] text-gray-400">Notifications</p>
+                    <h1 className="text-3xl font-black tracking-tight text-gray-950 sm:text-4xl">Portfolio Updates</h1>
+                    <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-500">
+                      Real-time alerts, direct agent communications, and status tracking for your high-value property interests.
+                    </p>
                   </div>
-                ) : watchlist.length === 0 ? (
-                  <div className="text-center py-20 bg-gray-50 rounded-3xl border border-dashed border-gray-200">
-                    <Star className="mx-auto h-16 w-16 text-gray-200 mb-4" />
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">You haven't saved any properties yet.</h3>
-                    <p className="text-gray-500 mb-8 max-w-sm mx-auto font-medium px-4">Save properties to your watchlist to get notified immediately when their status changes.</p>
-                    <button 
-                      onClick={() => router.push('/buy')}
-                      className="w-full sm:w-auto bg-emerald-600 text-white px-10 py-3.5 rounded-2xl font-black hover:bg-emerald-700 transition-all shadow-xl"
-                    >
-                      Browse Homes
-                    </button>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {watchlist.map((property) => {
+
+                  {/* Filter pills */}
+                  <div className="flex flex-wrap gap-2">
+                    {filters.map(({ key, label, icon: Icon }) => {
+                      const active = updatesFilter === key;
                       return (
-                        <PropertyCard
-                          key={property._id}
-                          id={property._id}
-                          title={property.title}
-                          address={typeof property.address === 'string' ? property.address : formatPropertyAddress(property.address)}
-                          price={property.price}
-                          beds={property.beds}
-                          baths={property.baths}
-                          size={property.size}
-                          image={property.images?.[0]?.url || property.mainImage?.url || '/images/01.jpg'}
-                          carSpaces={property.carSpaces}
-                          isWatched={true}
-                          onToggleWatchlist={(e) => {
-                            e.stopPropagation();
-                            e.preventDefault();
-                            const targetId = getPropertyIdentifier(property);
-                            if (!targetId) {
-                              toast.error('Unable to update watchlist for this property.');
-                              return;
-                            }
-                            toggleWatchlist(targetId, true);
-                          }}
-                        />
+                        <button
+                          key={key}
+                          onClick={() => setUpdatesFilter(key)}
+                          className={`inline-flex cursor-pointer items-center gap-2 rounded-full px-4 py-2 text-xs font-bold transition ${
+                            active
+                              ? 'bg-black text-white shadow-lg shadow-black/10'
+                              : 'border border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50'
+                          }`}
+                        >
+                          <Icon className={`h-3.5 w-3.5 ${active ? 'text-white' : 'text-gray-400'}`} />
+                          {label}
+                        </button>
                       );
                     })}
                   </div>
-                )}
-              </div>
-            )}
 
-            {activeTab === 'tracking' && (
-              <div className="space-y-8">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-lg sm:text-2xl font-black text-gray-900">Status History</h2>
-                    <p className="text-xs sm:text-base text-gray-500 font-medium">Track sales status changes for properties you're interested in</p>
-                  </div>
-                  <button
-                    onClick={fetchStatusUpdates}
-                    disabled={loadingUpdates}
-                    className="px-4 sm:px-6 py-2 sm:py-2.5 bg-gray-900 text-white rounded-xl font-bold hover:bg-gray-800 disabled:opacity-50 transition-all text-xs sm:text-sm"
-                  >
-                    {loadingUpdates ? 'Loading...' : 'Refresh'}
-                  </button>
-                </div>
-
-                {loadingUpdates ? (
-                  <div className="flex justify-center py-20">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
-                  </div>
-                ) : statusUpdates.length === 0 ? (
-                  <div className="text-center py-20 bg-gray-50 rounded-3xl border border-dashed border-gray-200">
-                    <TrendingUp className="mx-auto h-16 w-16 text-gray-200 mb-4" />
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">No updates yet</h3>
-                    <p className="text-gray-500 mb-8 max-w-sm mx-auto font-medium">Status updates for properties in your watchlist will appear here in real-time.</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {statusUpdates.map((update) => {
-                      const StatusIcon = getStatusIcon(update.newStatus);
-                      return (
-                        <div key={update._id} className="bg-white border border-gray-100 rounded-3xl p-4 sm:p-8 hover:shadow-xl transition-all duration-300">
-                          <div className="flex flex-col md:flex-row md:items-start gap-6 sm:gap-8">
-                            <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center flex-shrink-0 ${getStatusColor(update.newStatus).split(' ')[0]}`}>
-                              <StatusIcon className={`w-6 h-6 sm:w-8 sm:h-8 ${getStatusColor(update.newStatus).split(' ')[1]}`} />
-                            </div>
-                            
-                            <div className="flex-1 min-w-0">
-                              <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-2">
-                                <h3 className="text-lg sm:text-xl font-black text-gray-900 truncate">{update.property.title}</h3>
-                                <div className="text-[10px] sm:text-sm font-bold text-gray-400">
-                                  {formatDate(update.updatedAt)}
-                                </div>
-                              </div>
-                              
-                              <p className="text-gray-500 font-bold text-xs sm:text-sm mb-4 sm:mb-6 flex items-center gap-1">
-                                <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                                {formatPropertyAddress(update.property.address)}
-                              </p>
-                              
-                              <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-4 sm:mb-6 bg-gray-50 p-3 sm:p-4 rounded-2xl border border-gray-100">
-                                <span className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-widest">Status Change</span>
-                                <div className="flex items-center gap-2 sm:gap-3">
-                                  <span className={`px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[8px] sm:text-[10px] font-black uppercase tracking-widest ${getStatusColor(update.previousStatus)}`}>
-                                    {update.previousStatus?.replace('-', ' ') || 'Unknown'}
-                                  </span>
-                                  <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 text-gray-300" />
-                                  <span className={`px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[8px] sm:text-[10px] font-black uppercase tracking-widest ${getStatusColor(update.newStatus)}`}>
-                                    {update.newStatus?.replace('-', ' ') || 'Updated'}
-                                  </span>
-                                </div>
-                              </div>
-                              
-                              <div className="flex items-center justify-between">
-                                <div className="text-xl sm:text-2xl font-black text-emerald-600">
-                                  {formatCurrencyCompact(update.property.price || 0)}
-                                </div>
-                                
-                                {update.agent && (
-                                  <div className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-gray-50 rounded-xl">
-                                    <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-black text-[8px] sm:text-[10px]">
-                                      {update.agent.name[0]}
-                                    </div>
-                                    <span className="text-[10px] sm:text-xs font-bold text-gray-500">Updated by {update.agent.name}</span>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </div>
+                  {/* Timeline + Right Sidebar */}
+                  <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+                    {/* Timeline */}
+                    <div className="space-y-8">
+                      {loadingUpdates ? (
+                        <div className="flex justify-center py-20">
+                          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600" />
                         </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            )}
+                      ) : updatesFilter === 'messages' ? (
+                        <div className="rounded-[28px] border border-dashed border-gray-200 bg-white px-6 py-16 text-center shadow-[0_20px_60px_rgba(15,23,42,0.04)]">
+                          <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-gray-50">
+                            <MessageSquare className="h-6 w-6 text-gray-300" />
+                          </div>
+                          <h3 className="mt-4 text-lg font-black tracking-tight text-gray-950">No agent messages yet</h3>
+                          <p className="mt-2 mx-auto max-w-sm text-sm text-gray-500">
+                            Direct agent conversations and replies will appear here as soon as they come in.
+                          </p>
+                          <button
+                            onClick={() => router.push('/dashboards/buyer/messages')}
+                            className="mt-6 inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-black px-5 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-gray-900"
+                          >
+                            Open Messages
+                            <ArrowRight className="h-4 w-4" />
+                          </button>
+                        </div>
+                      ) : updatesFilter === 'legal' ? (
+                        <div className="rounded-[28px] border border-dashed border-gray-200 bg-white px-6 py-16 text-center shadow-[0_20px_60px_rgba(15,23,42,0.04)]">
+                          <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-gray-50">
+                            <ShieldCheck className="h-6 w-6 text-gray-300" />
+                          </div>
+                          <h3 className="mt-4 text-lg font-black tracking-tight text-gray-950">No documents pending</h3>
+                          <p className="mt-2 mx-auto max-w-sm text-sm text-gray-500">
+                            Contracts, signatures, and escrow paperwork will surface here when action is required.
+                          </p>
+                        </div>
+                      ) : sortedKeys.length === 0 ? (
+                        <div className="rounded-[28px] border border-dashed border-gray-200 bg-white px-6 py-16 text-center shadow-[0_20px_60px_rgba(15,23,42,0.04)]">
+                          <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-gray-50">
+                            <Bell className="h-6 w-6 text-gray-300" />
+                          </div>
+                          <h3 className="mt-4 text-lg font-black tracking-tight text-gray-950">You&apos;re all caught up</h3>
+                          <p className="mt-2 mx-auto max-w-sm text-sm text-gray-500">
+                            New property alerts and agent updates will appear here as soon as they happen.
+                          </p>
+                        </div>
+                      ) : (
+                        sortedKeys.map((dayKey) => {
+                          const items = groups[dayKey];
+                          return (
+                            <section key={dayKey} className="relative">
+                              {/* Day label */}
+                              <div className="mb-4 flex items-baseline gap-3">
+                                <span className="text-[11px] font-black uppercase tracking-[0.22em] text-gray-400">
+                                  {dayLabel(dayKey)}
+                                </span>
+                                <span className="text-[11px] font-bold text-gray-300">— {dayDate(dayKey)}</span>
+                              </div>
 
-            {activeTab === 'notifications' && (
-              <div className="space-y-8">
-                <div>
-                  <h2 className="text-lg sm:text-2xl font-black text-gray-900">Notification Center</h2>
-                  <p className="text-xs sm:text-base text-gray-500 font-medium">Stay updated with property status changes and important platform news</p>
+                              {/* Vertical rail + cards */}
+                              <ol className="relative space-y-4 border-l border-gray-200 pl-6">
+                                {items.map((item) => {
+                                  const Icon = getStatusIcon(item.status);
+                                  const statusTone = getStatusColor(item.status);
+                                  return (
+                                    <li key={item.id} className="relative">
+                                      {/* timeline dot */}
+                                      <span className="absolute -left-[31px] top-5 grid h-10 w-10 place-items-center rounded-full border-4 border-[#f5f6fb] bg-black text-white shadow-sm">
+                                        <Icon className="h-4 w-4" />
+                                      </span>
+
+                                      <article className="group rounded-[24px] border border-gray-200/80 bg-white p-5 shadow-[0_20px_60px_rgba(15,23,42,0.04)] transition hover:-translate-y-0.5 hover:shadow-[0_24px_70px_rgba(15,23,42,0.08)] sm:p-6">
+                                        <header className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                                          <div className="min-w-0">
+                                            <h3 className="truncate text-base font-black tracking-tight text-gray-950 sm:text-lg">
+                                              {item.title}
+                                            </h3>
+                                            <p className="mt-1 text-xs font-semibold text-gray-400">{formatRelativeTime(item.timestamp)}</p>
+                                          </div>
+                                          <span className={`inline-flex w-fit items-center gap-1.5 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-widest ${statusTone}`}>
+                                            {item.status?.replace('-', ' ') || 'update'}
+                                          </span>
+                                        </header>
+
+                                        <p className="mt-3 text-sm leading-6 text-gray-600">{item.description}</p>
+
+                                        <div className="mt-5 inline-flex max-w-full items-center gap-2 truncate rounded-xl bg-gray-50 px-3 py-2 text-xs font-semibold text-gray-600">
+                                          <MapPin className="h-3.5 w-3.5 text-gray-400" />
+                                          <span className="truncate">{formatPropertyAddress(item.raw.property?.address)}</span>
+                                          {item.raw.property?.price ? (
+                                            <span className="ml-2 font-black text-emerald-700">
+                                              {formatCurrencyCompact(item.raw.property.price)}
+                                            </span>
+                                          ) : null}
+                                        </div>
+
+                                        <div className="mt-5 flex flex-wrap items-center gap-2">
+                                          <button
+                                            onClick={() => router.push('/dashboards/buyer/tracking')}
+                                            className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-black px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-gray-900"
+                                          >
+                                            Review Changes
+                                            <ArrowRight className="h-3.5 w-3.5" />
+                                          </button>
+                                          <button
+                                            onClick={() => setDismissedUpdates((s) => new Set(s).add(item.id))}
+                                            className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-4 py-2 text-xs font-bold text-gray-700 transition hover:border-gray-300 hover:bg-gray-50"
+                                          >
+                                            Dismiss
+                                          </button>
+                                        </div>
+                                      </article>
+                                    </li>
+                                  );
+                                })}
+                              </ol>
+                            </section>
+                          );
+                        })
+                      )}
+                    </div>
+
+                    {/* Right Sidebar */}
+                    <aside className="space-y-5">
+                      {/* Status Overview */}
+                      <div className="rounded-[24px] bg-gray-950 p-6 text-white shadow-[0_24px_70px_rgba(15,23,42,0.18)]">
+                        <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-gray-400">Status Overview</p>
+                        <div className="mt-5 grid grid-cols-2 gap-4">
+                          {overviewTiles.map((tile) => (
+                            <div key={tile.label} className="rounded-2xl bg-white/5 p-4">
+                              <p className="text-3xl font-black tracking-tight">{String(tile.value).padStart(2, '0')}</p>
+                              <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">{tile.label}</p>
+                            </div>
+                          ))}
+                        </div>
+                        <button
+                          onClick={() => router.push('/buy')}
+                          className="mt-6 inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-white text-gray-950 px-4 py-2.5 text-xs font-bold transition hover:bg-gray-100"
+                        >
+                          Download Weekly Report
+                        </button>
+                      </div>
+
+                      {/* Market Trends */}
+                      <div className="rounded-[24px] border border-gray-200/80 bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.04)]">
+                        <div className="mb-4 flex items-center justify-between">
+                          <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-gray-400">Market Trends</p>
+                          <TrendingUp className="h-4 w-4 text-emerald-600" />
+                        </div>
+                        {watchlist.length > 0 ? (
+                          <ul className="space-y-3">
+                            {watchlist.slice(0, 3).map((p) => (
+                              <li key={p._id} className="flex items-center gap-3 rounded-2xl border border-gray-100 p-3">
+                                <img
+                                  src={getSafeImageUrl(p.images?.[0]?.url || p.mainImage?.url || p.mainImage || '/images/01.jpg')}
+                                  alt={p.title}
+                                  className="h-10 w-10 rounded-xl object-cover"
+                                />
+                                <div className="min-w-0 flex-1">
+                                  <p className="truncate text-xs font-black text-gray-950">{p.title}</p>
+                                  <p className="text-[11px] font-semibold text-emerald-700">{formatCurrencyCompact(p.price || 0)}</p>
+                                </div>
+                                <ArrowUpRight className="h-4 w-4 text-emerald-600" />
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/60 px-4 py-8 text-center">
+                            <TrendingDown className="mx-auto h-6 w-6 text-gray-300" />
+                            <p className="mt-2 text-xs font-semibold text-gray-500">Save properties to your watchlist to see trends.</p>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Private Concierge */}
+                      <div className="rounded-[24px] border border-emerald-100 bg-emerald-50/70 p-6 shadow-[0_20px_60px_rgba(15,23,42,0.04)]">
+                        <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-emerald-700 shadow-sm">
+                          <Headphones className="h-5 w-5" />
+                        </div>
+                        <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-emerald-800">Private Concierge</p>
+                        <h3 className="mt-1 text-base font-black tracking-tight text-gray-950">Have questions about your portfolio?</h3>
+                        <p className="mt-2 text-xs font-semibold text-emerald-900/70">
+                          Our dedicated team is available 24/7 to help with high-value property decisions.
+                        </p>
+                        <button
+                          onClick={() => router.push('/dashboards/buyer/messages')}
+                          className="mt-5 inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-black px-4 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-gray-900"
+                        >
+                          <PhoneCall className="h-3.5 w-3.5" />
+                          Open Concierge Chat
+                        </button>
+                      </div>
+                    </aside>
+                  </div>
                 </div>
-                
-                <div className="bg-gray-50 rounded-3xl p-4 md:p-8">
-                  <NotificationsPanel 
-                    isOpen={true} 
-                    onClose={() => {}} 
-                    standalone={true}
-                  />
-                </div>
-              </div>
-            )}
-          </div>
+              );
+            })()}
+          </main>
         </div>
       </div>
 
+      {/* Global green footer is rendered once by AppReadyShell; it auto-offsets past #buyer-sidebar. */}
+
       {/* Notifications Panel (Drawer) */}
       {showNotifications && (
-        <NotificationsPanel 
-          isOpen={showNotifications} 
-          onClose={() => setShowNotifications(false)} 
+        <NotificationsPanel
+          isOpen={showNotifications}
+          onClose={() => setShowNotifications(false)}
         />
       )}
 
@@ -1180,13 +1379,13 @@ export default function BuyerDashboard() {
             <button
               type="button"
               onClick={handleResetCriteria}
-              className="w-full sm:flex-1 py-3 border-2 border-gray-100 text-gray-600 font-bold rounded-xl hover:bg-gray-50 transition-all"
+              className="w-full sm:flex-1 py-3 border-2 border-gray-100 text-gray-600 font-bold rounded-xl hover:bg-gray-50 transition-all cursor-pointer"
             >
               Reset
             </button>
             <button
               type="submit"
-              className="w-full sm:flex-1 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all shadow-md"
+              className="w-full sm:flex-1 py-3 bg-black text-white font-bold rounded-xl hover:bg-gray-900 transition-all shadow-md cursor-pointer"
             >
               Apply Criteria
             </button>
@@ -1212,7 +1411,7 @@ export default function BuyerDashboard() {
                 alt={selectedProperty.title || 'Property'}
                 className="w-full h-56 object-cover rounded"
               />
-              
+
               {/* Add to Watchlist Button */}
               <button
                 onClick={(e) => {
@@ -1225,18 +1424,18 @@ export default function BuyerDashboard() {
                   const isWatching = watchlist.some(p => getPropertyIdentifier(p) === targetId);
                   toggleWatchlist(targetId, isWatching);
                 }}
-                className="absolute top-4 right-4 p-2 bg-white rounded-full shadow-md hover:bg-gray-50"
+                className="absolute top-4 right-4 p-2 bg-white rounded-full shadow-md hover:bg-gray-50 cursor-pointer"
               >
-                <Heart 
+                <Heart
                   className={`h-5 w-5 ${
                     watchlist.some(p => getPropertyIdentifier(p) === getPropertyIdentifier(selectedProperty))
-                      ? 'text-red-500 fill-current' 
+                      ? 'text-red-500 fill-current'
                       : 'text-gray-400'
                   }`}
                 />
               </button>
             </div>
-            
+
             <div>
               <h3 className="text-xl font-semibold text-gray-900">
                 {selectedProperty.title || 'Untitled'}
@@ -1246,48 +1445,48 @@ export default function BuyerDashboard() {
                 {formatPropertyAddress(selectedProperty.address)}
               </p>
             </div>
-            
+
             <div className="grid grid-cols-2 gap-3">
               <div className="text-sm text-gray-600">
                 Price:
-                <span className="ml-2 font-semibold text-blue-600">
+                <span className="ml-2 font-semibold text-emerald-700">
                   {selectedProperty.price ? formatCurrencyCompact(selectedProperty.price) : '—'}
                 </span>
               </div>
-              
+
               <div className="flex items-center justify-start gap-2">
-                <Bed className="h-5 w-5 text-blue-600" />
+                <Bed className="h-5 w-5 text-gray-700" />
                 <span className="text-lg font-semibold text-gray-900">
                   {selectedProperty.beds ?? '—'} beds
                 </span>
               </div>
-              
+
               <div className="flex items-center justify-start gap-2">
-                <Bath className="h-5 w-5 text-teal-600" />
+                <Bath className="h-5 w-5 text-gray-700" />
                 <span className="text-lg font-semibold text-gray-900">
                   {selectedProperty.baths ?? '—'} baths
                 </span>
               </div>
-              
+
               <div className="flex items-center justify-start gap-2">
-                <Car className="h-5 w-5 text-amber-600" />
+                <Car className="h-5 w-5 text-gray-700" />
                 <span className="text-lg font-semibold text-gray-900">
                   {selectedProperty.carSpaces ?? selectedProperty.parkingSpaces ?? '—'} cars
                 </span>
               </div>
             </div>
-            
+
             {selectedProperty.description && (
               <div>
                 <h4 className="text-sm font-semibold text-gray-900 mb-1">Description</h4>
                 <p className="text-sm text-gray-700">{selectedProperty.description}</p>
               </div>
             )}
-            
+
             <div className="flex justify-between items-center">
               <div>
                 {watchlist.some(p => getPropertyIdentifier(p) === getPropertyIdentifier(selectedProperty)) ? (
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700">
                     <CheckCircle className="h-4 w-4 mr-1" />
                     In Watchlist
                   </span>
@@ -1295,13 +1494,13 @@ export default function BuyerDashboard() {
                   <span className="text-sm text-gray-500">Click heart to add to watchlist</span>
                 )}
               </div>
-              
+
               <button
                 onClick={() => {
                   setPropertyModalOpen(false);
                   setSelectedProperty(null);
                 }}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-900 cursor-pointer"
               >
                 Close
               </button>
@@ -1380,14 +1579,14 @@ export default function BuyerDashboard() {
 
           <div className="mt-6 flex justify-end gap-3">
             <button
-              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
+              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors cursor-pointer"
               onClick={() => setSellerModalOpen(false)}
             >
               Cancel
             </button>
             <button
               className={`px-4 py-2 rounded-md text-white transition-colors ${
-                sellerAllChecked ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-gray-300 cursor-not-allowed'
+                sellerAllChecked ? 'bg-emerald-600 hover:bg-emerald-700 cursor-pointer' : 'bg-gray-300 cursor-not-allowed'
               }`}
               disabled={!sellerAllChecked}
               onClick={handleAcceptSeller}
