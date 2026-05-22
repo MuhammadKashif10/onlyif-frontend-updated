@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 
 type UserRole = 'buyer' | 'seller' | 'agent' | 'admin' | null;
 type NonNullUserRole = Exclude<UserRole, null>;
+type AgentApprovalStatus = 'pending' | 'approved' | 'rejected' | null;
 
 interface User {
   id: string;
@@ -17,7 +18,7 @@ interface User {
     seller: boolean;
     agent: boolean;
   };
-  agentStatus?: 'pending' | 'approved' | 'rejected' | null;
+  agentStatus?: AgentApprovalStatus;
 }
 
 interface AuthContextType {
@@ -104,6 +105,26 @@ const normalizeRoles = (roles: unknown, legacyRole: unknown): NonNullUserRole[] 
   return Array.from(new Set(normalized));
 };
 
+const normalizeAgentApprovalStatus = (
+  rawStatus: unknown,
+  role: UserRole,
+  roles: NonNullUserRole[],
+  userData?: any
+): AgentApprovalStatus => {
+  if (rawStatus === 'pending' || rawStatus === 'approved' || rawStatus === 'rejected') {
+    return rawStatus;
+  }
+
+  const isAgent = role === 'agent' || roles.includes('agent');
+  if (!isAgent) return null;
+
+  if (userData?.isActive === false && !userData?.isSuspended) {
+    return 'pending';
+  }
+
+  return 'approved';
+};
+
 const resolvePrimaryRole = (
   roles: NonNullUserRole[],
   legacyRole: UserRole,
@@ -163,12 +184,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = await parseJsonSafely(response);
       const normalizedRole: UserRole = data.data.role ?? null;
       const normalizedRoles = normalizeRoles(data.data.roles, normalizedRole);
+      const agentStatus = normalizeAgentApprovalStatus(
+        data.data.agentStatus,
+        normalizedRole,
+        normalizedRoles,
+        data.data
+      );
       const userData: User = {
         ...data.data,
         id: data.data._id || data.data.id,
         type: normalizedRole,
         role: normalizedRole,
         roles: normalizedRoles,
+        agentStatus,
         acceptedRoles: data.data.acceptedRoles || {
           buyer: normalizedRole === 'buyer',
           seller: normalizedRole === 'seller',
@@ -253,12 +281,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       const normalizedRole: UserRole = data.data.user.role ?? null;
       const normalizedRoles = normalizeRoles(data.data.user.roles, normalizedRole);
+      const agentStatus = normalizeAgentApprovalStatus(
+        data.data.user.agentStatus,
+        normalizedRole,
+        normalizedRoles,
+        data.data.user
+      );
       const userData: User = {
         ...data.data.user,
         id: data.data.user._id || data.data.user.id,
         type: normalizedRole,
         role: normalizedRole,
         roles: normalizedRoles,
+        agentStatus,
         acceptedRoles: data.data.user.acceptedRoles || {
           buyer: normalizedRole === 'buyer',
           seller: normalizedRole === 'seller',
@@ -316,12 +351,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       const normalizedRole: UserRole = data.data.user.role ?? null;
       const normalizedRoles = normalizeRoles(data.data.user.roles, normalizedRole);
+      const agentStatus = normalizeAgentApprovalStatus(
+        data.data.user.agentStatus,
+        normalizedRole,
+        normalizedRoles,
+        data.data.user
+      );
       const userData: User = {
         ...data.data.user,
         id: data.data.user._id || data.data.user.id,
         type: normalizedRole,
         role: normalizedRole,
         roles: normalizedRoles,
+        agentStatus,
         acceptedRoles: data.data.user.acceptedRoles || {
           buyer: normalizedRole === 'buyer',
           seller: normalizedRole === 'seller',
@@ -404,12 +446,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       const normalizedRole: UserRole = data.data.user.role ?? null;
       const normalizedRoles = normalizeRoles(data.data.user.roles, normalizedRole);
+      const agentStatus = normalizeAgentApprovalStatus(
+        data.data.user.agentStatus,
+        normalizedRole,
+        normalizedRoles,
+        data.data.user
+      );
       const newUser: User = {
         ...data.data.user,
         id: data.data.user._id || data.data.user.id,
         type: normalizedRole,
         role: normalizedRole,
         roles: normalizedRoles,
+        agentStatus,
         acceptedRoles: data.data.user.acceptedRoles || {
           buyer: normalizedRole === 'buyer',
           seller: normalizedRole === 'seller',
@@ -466,12 +515,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = await parseJsonSafely(response);
       const normalizedRole: UserRole = data.data.role ?? null;
       const normalizedRoles = normalizeRoles(data.data.roles, normalizedRole);
+      const agentStatus = normalizeAgentApprovalStatus(
+        data.data.agentStatus,
+        normalizedRole,
+        normalizedRoles,
+        data.data
+      );
       const updatedUser: User = {
         ...data.data,
         id: data.data._id || data.data.id,
         type: normalizedRole,
         role: normalizedRole,
         roles: normalizedRoles,
+        agentStatus,
         acceptedRoles: data.data.acceptedRoles || {
           buyer: normalizedRole === 'buyer',
           seller: normalizedRole === 'seller',
@@ -522,12 +578,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = await parseJsonSafely(response);
       const normalizedRole: UserRole = data.data.role ?? null;
       const normalizedRoles = normalizeRoles(data.data.roles, normalizedRole);
+      const agentStatus = normalizeAgentApprovalStatus(
+        data.data.agentStatus,
+        normalizedRole,
+        normalizedRoles,
+        data.data
+      );
       const updatedUser: User = {
         ...data.data,
         id: data.data._id || data.data.id,
         type: normalizedRole,
         role: normalizedRole,
         roles: normalizedRoles,
+        agentStatus,
         acceptedRoles: data.data.acceptedRoles || {
           buyer: normalizedRole === 'buyer',
           seller: normalizedRole === 'seller',
@@ -576,11 +639,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const data = await parseJsonSafely(response);
       const normalizedRole: UserRole = data.data.role ?? null;
+      const normalizedRoles = normalizeRoles(data.data.roles, normalizedRole);
+      const agentStatus = normalizeAgentApprovalStatus(
+        data.data.agentStatus,
+        normalizedRole,
+        normalizedRoles,
+        data.data
+      );
       const updatedUser: User = {
         ...data.data,
+        id: data.data._id || data.data.id,
         type: normalizedRole,
         role: normalizedRole,
-        agentStatus: data.data.agentStatus
+        roles: normalizedRoles,
+        agentStatus,
+        acceptedRoles: data.data.acceptedRoles || {
+          buyer: normalizedRole === 'buyer',
+          seller: normalizedRole === 'seller',
+          agent: normalizedRole === 'agent'
+        }
       };
 
       setUser(updatedUser);
@@ -666,12 +743,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       const normalizedRole: UserRole = data.data.user.role ?? null;
       const normalizedRoles = normalizeRoles(data.data.user.roles, normalizedRole);
+      const agentStatus = normalizeAgentApprovalStatus(
+        data.data.user.agentStatus,
+        normalizedRole,
+        normalizedRoles,
+        data.data.user
+      );
       const userData: User = {
         ...data.data.user,
         id: data.data.user._id || data.data.user.id,
         type: normalizedRole,
         role: normalizedRole,
         roles: normalizedRoles,
+        agentStatus,
         acceptedRoles: data.data.user.acceptedRoles || {
           buyer: normalizedRole === 'buyer',
           seller: normalizedRole === 'seller',

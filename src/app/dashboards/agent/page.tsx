@@ -27,8 +27,18 @@ import {
   Clock,
   CheckCircle,
   AlertCircle,
-  Bell,
-  MapPin
+  MapPin,
+  MoreHorizontal,
+  Receipt,
+  BadgeCheck,
+  History,
+  LogOut,
+  Paperclip,
+  AtSign,
+  LayoutGrid,
+  List,
+  SlidersHorizontal,
+  TrendingUp
 } from 'lucide-react';
 import { Button } from '@/components/reusable/Button';
 import InputField from '@/components/reusable/InputField';
@@ -85,12 +95,14 @@ interface Inspection {
   address: string;
 }
 
+type NoteCategory = 'property' | 'inspection' | 'general' | 'client-meeting' | 'pricing';
+
 interface Note {
   id: string;
   propertyId?: string;
   title: string;
   content: string;
-  type: 'property' | 'inspection' | 'general';
+  type: NoteCategory;
   priority: 'high' | 'medium' | 'low';
   createdAt: string;
 }
@@ -191,12 +203,14 @@ function RealSellerAgentChat({ otherUserId, propertyId, currentUserId, currentUs
 }
 
 export default function AgentDashboard() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { addNotification } = useUI();
+  const isAgentUser = Boolean(user?.roles?.includes('agent') || user?.role === 'agent');
+  const agentApprovalStatus = user?.agentStatus ?? (isAgentUser ? 'approved' : null);
 
   // Polling for status update if pending
   useEffect(() => {
-    if (user?.role === 'agent' && user.agentStatus === 'pending') {
+    if (isAgentUser && agentApprovalStatus === 'pending') {
       const interval = setInterval(() => {
         // We can trigger a session validation or a specific status check
         // For simplicity, we can just reload the page or call a refresh function if available
@@ -205,9 +219,9 @@ export default function AgentDashboard() {
       }, 30000); // 30 seconds polling
       return () => clearInterval(interval);
     }
-  }, [user]);
+  }, [isAgentUser, agentApprovalStatus]);
 
-  if (user?.role === 'agent' && user.agentStatus === 'pending') {
+  if (isAgentUser && agentApprovalStatus === 'pending') {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col">
         <Navbar />
@@ -238,7 +252,7 @@ export default function AgentDashboard() {
     );
   }
 
-  if (user?.role === 'agent' && user.agentStatus === 'rejected') {
+  if (isAgentUser && agentApprovalStatus === 'rejected') {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col">
         <Navbar />
@@ -317,6 +331,25 @@ export default function AgentDashboard() {
     type: 'property' as 'property' | 'inspection' | 'general',
     priority: 'medium' as 'high' | 'medium' | 'low'
   });
+
+  // Inline entry panel used by the redesigned Notes & Updates tab
+  const [entryForm, setEntryForm] = useState<{ propertyId: string; content: string; category: NoteCategory }>({
+    propertyId: '',
+    content: '',
+    category: 'general'
+  });
+  const [notesFilter, setNotesFilter] = useState<'all' | NoteCategory>('all');
+
+  // Manage Inspections – view toggle and search (UI-only state)
+  const [inspectionView, setInspectionView] = useState<'timeline' | 'calendar'>('timeline');
+  const [inspectionSearch, setInspectionSearch] = useState('');
+
+  // Assigned Properties – view, search, filters (UI-only state)
+  const [propertiesView, setPropertiesView] = useState<'grid' | 'list'>('grid');
+  const [propertiesSearch, setPropertiesSearch] = useState('');
+  const [propertyPriorityFilter, setPropertyPriorityFilter] = useState<'all' | 'high' | 'medium' | 'low'>('all');
+  const [showPropertyFilters, setShowPropertyFilters] = useState(false);
+  const [expandedStatusId, setExpandedStatusId] = useState<string | null>(null);
   
   // Updated stats state with loading and error handling
   const [stats, setStats] = useState<AgentStats>({
@@ -794,7 +827,7 @@ export default function AgentDashboard() {
         priority: noteForm.priority,
         createdAt: new Date().toISOString()
       };
-      
+
       setNotes(prevNotes => [newNote, ...prevNotes]);
       setNoteForm({
         title: '',
@@ -804,6 +837,124 @@ export default function AgentDashboard() {
       });
       setShowNoteForm(false);
     }
+  };
+
+  const getCategoryMeta = (type: string) => {
+    switch (type) {
+      case 'inspection':
+        return { label: 'Inspection', badge: 'bg-blue-50 text-blue-700', dot: 'bg-blue-500' };
+      case 'client-meeting':
+        return { label: 'Client Meeting', badge: 'bg-amber-50 text-amber-700', dot: 'bg-amber-500' };
+      case 'pricing':
+        return { label: 'Pricing', badge: 'bg-emerald-50 text-emerald-700', dot: 'bg-emerald-500' };
+      case 'property':
+        return { label: 'Property', badge: 'bg-purple-50 text-purple-700', dot: 'bg-purple-500' };
+      default:
+        return { label: 'Update', badge: 'bg-gray-100 text-gray-700', dot: 'bg-gray-400' };
+    }
+  };
+
+  const getInspectionImage = (insp: Inspection) => {
+    const p: any = assignments.find(a => (a._id || a.id) === insp.propertyId);
+    const primary = p?.mainImage?.url
+      ?? (typeof p?.mainImage === 'string' ? p.mainImage : undefined)
+      ?? (Array.isArray(p?.images) ? (p.images[0]?.url ?? p.images[0]) : undefined)
+      ?? p?.image;
+    return primary ? getSafeImageUrl(primary as string, 'property') : '/images/default-property.jpg';
+  };
+
+  const formatInspectionTime = (timeStr: string) => {
+    if (!timeStr) return { time: '--:--', period: '' };
+    const [hRaw, mRaw] = timeStr.split(':');
+    const h = Number(hRaw);
+    const m = Number(mRaw);
+    if (Number.isNaN(h) || Number.isNaN(m)) return { time: timeStr, period: '' };
+    const period = h >= 12 ? 'PM' : 'AM';
+    const hh = ((h + 11) % 12) + 1;
+    return { time: `${String(hh).padStart(2, '0')}:${String(m).padStart(2, '0')}`, period };
+  };
+
+  const formatInspectionDayLabel = (dateStr: string) => {
+    if (!dateStr) return { primary: 'Unscheduled', secondary: '' };
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+    const date = new Date(dateStr);
+    if (Number.isNaN(date.getTime())) return { primary: dateStr, secondary: '' };
+    const sameDay = (a: Date, b: Date) => a.toDateString() === b.toDateString();
+    const primary = sameDay(date, today)
+      ? 'Today'
+      : sameDay(date, tomorrow)
+        ? 'Tomorrow'
+        : date.toLocaleDateString('en-US', { weekday: 'long' });
+    const secondary = date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }).toUpperCase();
+    return { primary, secondary };
+  };
+
+  const updateInspectionStatus = (id: string, status: Inspection['status']) => {
+    setInspections(prev => prev.map(i => (i.id === id ? { ...i, status } : i)));
+  };
+
+  const handleMessageSeller = async (assignment: PropertyAssignment) => {
+    let seller: any = assignment.seller || (assignment as any).owner;
+    if (typeof seller === 'string' || !seller?.name) {
+      const sellerId = typeof seller === 'string' ? seller : (seller?.id || seller?._id || (assignment as any).owner);
+      if (!sellerId) return;
+      try {
+        const token = localStorage.getItem('token');
+        const backendBase = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || '';
+        const response = await fetch(`${backendBase}/api/admin/users/${sellerId}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          seller = data.data || data;
+        } else {
+          seller = { id: sellerId, name: 'Property Owner', email: 'owner@example.com' };
+        }
+      } catch (error) {
+        seller = { id: sellerId, name: 'Property Owner', email: 'owner@example.com' };
+      }
+    }
+    setSelectedSeller({
+      id: seller.id || seller._id,
+      name: seller.name || 'Property Owner',
+      email: seller.email || 'owner@example.com',
+      avatar: seller.avatar
+    });
+    setSelectedProperty(assignment);
+    setShowSellerChat(true);
+  };
+
+  const handleRescheduleInspection = (insp: Inspection) => {
+    const p = assignments.find(a => (a._id || a.id) === insp.propertyId) || null;
+    setSelectedProperty(p);
+    setInspectionForm({
+      date: insp.date,
+      time: insp.time,
+      inspector: insp.inspector,
+      client: insp.client,
+      notes: insp.notes || ''
+    });
+    setShowInspectionForm(true);
+  };
+
+  const handlePostNote = () => {
+    const content = entryForm.content.trim();
+    if (!content) return;
+    const property = assignments.find(a => (a._id || a.id) === entryForm.propertyId);
+    const newNote: Note = {
+      id: Date.now().toString(),
+      propertyId: entryForm.propertyId || undefined,
+      title: property?.title || getCategoryMeta(entryForm.category).label,
+      content,
+      type: entryForm.category,
+      priority: 'medium',
+      createdAt: new Date().toISOString()
+    };
+    setNotes(prev => [newNote, ...prev]);
+    setEntryForm({ propertyId: '', content: '', category: 'general' });
   };
 
   // Function to generate settlement invoice automatically
@@ -1395,102 +1546,67 @@ export default function AgentDashboard() {
     }
   };
 
+  const agentInitials = agentName
+    .split(' ')
+    .filter(Boolean)
+    .map(n => n[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+  const agentAvatar = (user as any)?.profileImage || (user as any)?.avatar || '';
+
   return (
-    <div className="min-h-screen bg-[#f6f7fb] flex flex-col">
+    <div className="min-h-screen bg-[#f7f8fd] flex flex-col text-[#121212]">
       {/* Toast Notifications */}
       <ToastNotification />
       
-      {/* Top Navbar */}
-      <header className="h-16 sm:h-20 bg-white border-b border-gray-200 flex items-center justify-between px-4 sm:px-8 sticky top-0 z-50 w-full">
-        {/* Left: Logo */}
-        <div className="flex-shrink-0">
-          <Link href="/">
-            <img src="/images/logo.PNG" alt="Only If" className="h-8 sm:h-10 md:h-12 lg:h-14 w-auto transition-transform duration-200" />
-          </Link>
-        </div>
-
-        {/* Center: Main Site Navigation */}
-        <nav className="hidden lg:flex items-center space-x-8">
-          <Link href="/buy" className="text-sm font-semibold text-gray-700 hover:text-emerald-600 transition-colors">Buy</Link>
-          <Link href="/sell" className="text-sm font-semibold text-gray-700 hover:text-emerald-600 transition-colors">Sell</Link>
-          <Link href="/how-it-works" className="text-sm font-semibold text-gray-700 hover:text-emerald-600 transition-colors">How it Works</Link>
-          <Link href="/agents" className="text-sm font-semibold text-gray-700 hover:text-emerald-600 transition-colors">Agents</Link>
-        </nav>
-
-        {/* Right: User Info & Menu */}
-        <div className="flex items-center space-x-2 sm:space-x-6">
-          <div className="hidden sm:flex items-center space-x-4">
-            <div className="flex flex-col items-end">
-              <p className="text-sm font-bold text-gray-900">{agentName}</p>
-              <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Agent Dashboard</p>
-            </div>
-          </div>
-          
-          <div className="flex items-center space-x-2 sm:space-x-3 sm:pl-4 sm:border-l border-gray-200">
-            <button className="p-1.5 sm:p-2 text-gray-400 hover:text-gray-600 relative">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
-            </button>
-            
-            {/* Mobile Menu Button */}
-            <button 
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="lg:hidden p-2 text-gray-400 hover:text-gray-600"
-            >
-              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
-          </div>
-        </div>
-      </header>
+      <Navbar />
 
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden fixed inset-0 z-40 bg-white overflow-y-auto pb-20">
-          <div className="pt-20 px-6 space-y-8">
+        <div className="fixed inset-0 z-40 overflow-y-auto bg-white pb-20 lg:hidden">
+          <div className="px-6 pt-24 space-y-8">
             <nav className="flex flex-col space-y-2">
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] px-1 mb-2">Main Menu</p>
-              <Link href="/buy" className="text-lg font-bold text-gray-900 py-3.5 border-b border-gray-50 flex items-center justify-between group" onClick={() => setIsMobileMenuOpen(false)}>
-                Buy <ArrowRight className="w-4 h-4 text-gray-300 group-active:text-emerald-500 transition-colors" />
-              </Link>
-              <Link href="/sell" className="text-lg font-bold text-gray-900 py-3.5 border-b border-gray-50 flex items-center justify-between group" onClick={() => setIsMobileMenuOpen(false)}>
-                Sell <ArrowRight className="w-4 h-4 text-gray-300 group-active:text-emerald-500 transition-colors" />
-              </Link>
-              <Link href="/how-it-works" className="text-lg font-bold text-gray-900 py-3.5 border-b border-gray-50 flex items-center justify-between group" onClick={() => setIsMobileMenuOpen(false)}>
-                How it Works <ArrowRight className="w-4 h-4 text-gray-300 group-active:text-emerald-500 transition-colors" />
-              </Link>
-              <Link href="/agents" className="text-lg font-bold text-gray-900 py-3.5 border-b border-gray-50 flex items-center justify-between group" onClick={() => setIsMobileMenuOpen(false)}>
-                Agents <ArrowRight className="w-4 h-4 text-gray-300 group-active:text-emerald-500 transition-colors" />
-              </Link>
-
-              <div className="pt-8 space-y-2">
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] px-1 mb-2">Dashboard Menu</p>
+              <p className="px-1 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Agent Menu</p>
+              <div className="space-y-2">
                 {[
                   { id: 'overview', label: 'Overview', icon: LayoutDashboard },
-                  { id: 'properties', label: 'Properties', icon: Building2 },
-                  { id: 'inspections', label: 'Inspections', icon: Calendar },
-                  { id: 'notes', label: 'Notes', icon: MessageSquare }
+                  { id: 'properties', label: 'Assigned Properties', icon: Building2 },
+                  { id: 'inspections', label: 'Manage Inspections', icon: Calendar },
+                  { id: 'notes', label: 'Notes & Updates', icon: MessageSquare }
                 ].map((item) => (
                   <button 
                     key={item.id}
                     onClick={() => { setActiveTab(item.id); setIsMobileMenuOpen(false); }} 
-                    className={`w-full flex items-center justify-between py-4 px-2 rounded-xl transition-all ${
+                    className={`w-full flex items-center justify-between rounded-2xl px-4 py-4 transition-all duration-200 ${
                       activeTab === item.id 
-                        ? 'bg-emerald-50 text-emerald-600 font-bold border border-emerald-100 shadow-sm' 
-                        : 'text-gray-900 font-bold border-b border-gray-50'
+                        ? 'bg-[#eaf1ff] text-gray-950 font-bold shadow-sm' 
+                        : 'text-gray-600 font-semibold hover:bg-gray-50 hover:text-gray-950'
                     }`}
                   >
                     <span className="flex items-center gap-3">
-                      <item.icon className={`w-5 h-5 ${activeTab === item.id ? 'text-emerald-600' : 'text-gray-400'}`} />
+                      <item.icon className={`h-5 w-5 ${activeTab === item.id ? 'text-gray-950' : 'text-gray-400'}`} />
                       {item.label}
                     </span>
-                    {activeTab === item.id && <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full shadow-sm"></div>}
+                    {activeTab === item.id && <div className="h-1.5 w-1.5 rounded-full bg-gray-950" />}
                   </button>
                 ))}
               </div>
             </nav>
             
-            <div className="pt-4">
-              <button 
+            <div className="space-y-3 pt-4">
+              <button
+                type="button"
+                onClick={() => { setIsMobileMenuOpen(false); logout(); }}
+                className="flex w-full cursor-pointer items-center justify-between rounded-2xl border border-red-100 bg-red-50/60 px-4 py-4 text-red-600 font-bold transition-all duration-200 active:scale-[0.98]"
+              >
+                <span className="flex items-center gap-3">
+                  <LogOut className="h-5 w-5" />
+                  Sign Out
+                </span>
+                <ChevronRight className="h-5 w-5 text-red-300" />
+              </button>
+              <button
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="w-full py-4 bg-gray-900 text-white font-bold rounded-2xl shadow-xl active:scale-[0.98] transition-all"
               >
@@ -1502,10 +1618,10 @@ export default function AgentDashboard() {
       )}
 
       <div className="flex flex-1 relative">
-        {/* Sidebar - Consistent with other dashboards */}
-        <aside id="dashboard-sidebar" className="fixed left-0 top-20 bottom-0 z-30 hidden w-[280px] shrink-0 flex-col overflow-y-auto border-r border-gray-200 bg-white px-5 py-4 lg:flex">
-          <div className="flex-1">
-            <nav className="space-y-2">
+        {/* Sidebar */}
+        <aside id="dashboard-sidebar" className="fixed left-0 top-20 bottom-0 z-40 hidden w-[296px] shrink-0 flex-col overflow-y-auto border-r border-gray-100 bg-white lg:flex">
+          <div className="flex-1 pt-8">
+            <nav className="space-y-1">
               {[
                 { id: 'overview', label: 'Overview', icon: LayoutDashboard },
                 { id: 'properties', label: 'Assigned Properties', icon: Building2 },
@@ -1515,130 +1631,187 @@ export default function AgentDashboard() {
                 <button
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}
-                  className={`w-full flex items-center space-x-3 px-5 py-3.5 text-sm font-bold rounded-xl transition-all duration-200 ${
+                  className={`group relative flex w-full items-center gap-4 px-8 py-5 text-[15px] font-semibold tracking-wide transition-all duration-200 ${
                     activeTab === item.id 
-                      ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 shadow-sm' 
-                      : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
+                      ? 'bg-[#eaf1ff] text-black' 
+                      : 'text-gray-500 hover:bg-gray-50 hover:text-gray-950'
                   }`}
                 >
-                  <item.icon className={`w-5 h-5 ${activeTab === item.id ? 'text-emerald-600' : 'text-gray-400'}`} />
+                  {activeTab === item.id && <span className="absolute left-0 top-0 h-full w-1 bg-black" />}
+                  <item.icon className={`h-5 w-5 transition-colors duration-200 ${activeTab === item.id ? 'text-black' : 'text-gray-400 group-hover:text-gray-700'}`} />
                   <span>{item.label}</span>
                 </button>
               ))}
             </nav>
           </div>
 
-          <div className="border-t border-gray-100 bg-gray-50/50 py-5">
-            <div className="flex items-center space-x-4 p-2">
-              <div className="w-11 h-11 rounded-full bg-emerald-600 flex items-center justify-center text-white font-bold text-base shadow-sm">
-                {agentName.split(' ').map(n => n[0]).join('').toUpperCase()}
+          <div className="px-7 pb-7">
+            <div className="pt-5">
+              <div className="flex items-center gap-3">
+                <div className="grid h-12 w-12 place-items-center overflow-hidden rounded-full bg-black text-sm font-bold text-white">
+                  {agentAvatar ? <img src={agentAvatar} alt={agentName} className="h-full w-full object-cover" /> : agentInitials || 'A'}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-bold text-gray-950">{agentName}</p>
+                  <p className="text-[10px] font-black uppercase tracking-tight text-gray-500">Licensed Agent</p>
+                </div>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-gray-900 truncate">{agentName}</p>
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Licensed Agent</p>
-              </div>
+              <button
+                type="button"
+                onClick={logout}
+                aria-label="Sign out"
+                className="group mt-5 flex w-full cursor-pointer items-center justify-between rounded-xl border border-gray-100 bg-white px-4 py-3 text-sm font-bold text-gray-600 transition-all duration-200 hover:-translate-y-0.5 hover:border-red-100 hover:bg-red-50 hover:text-red-600 hover:shadow-sm"
+              >
+                <span className="flex items-center gap-3">
+                  <LogOut className="h-4 w-4 text-gray-400 transition-colors duration-200 group-hover:text-red-500" />
+                  Sign Out
+                </span>
+                <ChevronRight className="h-4 w-4 text-gray-300 transition-colors duration-200 group-hover:text-red-400" />
+              </button>
             </div>
           </div>
         </aside>
 
         {/* Main Content Area */}
-        <div className="flex min-h-[calc(100vh-5rem)] w-full flex-1 flex-col lg:ml-[280px]">
-          <main className="w-full flex-1 p-4 sm:p-6 lg:p-10">
-            <div className="mx-auto w-full max-w-7xl">
-            {/* Welcome Section */}
-            <section className="mb-10 animate-in fade-in slide-in-from-bottom-2 duration-500">
-              <div className="bg-white rounded-2xl sm:rounded-[2rem] border border-gray-200 p-6 sm:p-10 shadow-sm relative overflow-hidden">
+        <div className="flex min-h-[calc(100vh-5rem)] w-full flex-1 flex-col lg:ml-[296px]">
+          {/* Mobile-only tab menu trigger */}
+          <div className="sticky top-20 z-30 flex items-center justify-between gap-3 border-b border-gray-100 bg-white/90 px-4 py-3 backdrop-blur sm:px-6 lg:hidden">
+            <button
+              type="button"
+              onClick={() => setIsMobileMenuOpen(true)}
+              aria-label="Open dashboard menu"
+              className="grid h-10 w-10 cursor-pointer place-items-center rounded-2xl border border-gray-100 text-gray-700 transition-colors duration-200 hover:bg-gray-50"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+            <p className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-500">
+              {activeTab === 'overview' && 'Overview'}
+              {activeTab === 'properties' && 'Assigned Properties'}
+              {activeTab === 'inspections' && 'Manage Inspections'}
+              {activeTab === 'notes' && 'Notes & Updates'}
+            </p>
+          </div>
+          <main className="w-full flex-1 px-4 py-5 sm:px-6 sm:py-8 lg:px-12 lg:py-6">
+            <div className="mx-auto w-full max-w-[1120px]">
+            {/* Overview content */}
+            <section className="mb-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+              <div className="relative overflow-hidden rounded-[28px] border border-white bg-white px-6 py-8 shadow-[0_24px_70px_rgba(30,41,59,0.07)] sm:px-10 sm:py-11">
                 <div className="relative z-10">
-                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 tracking-tight mb-3">
+                  <h1 className="mb-3 text-3xl font-black leading-tight tracking-tight text-black sm:text-4xl">
                     Welcome back, {agentName}! 👋
                   </h1>
-                  <p className="text-sm sm:text-lg text-gray-500 font-medium max-w-2xl leading-relaxed">
-                    You have <span className="text-emerald-600 font-bold">{stats.assignedProperties} properties</span> currently under your management.
+                  <p className="max-w-2xl text-base font-medium leading-8 text-gray-600 sm:text-lg">
+                    You have <span className="font-black text-[#08a43b]">{stats.assignedProperties} properties</span> currently under your management. Your portfolio performance is stable for this quarter.
                   </p>
                 </div>
                 {/* Background Decoration */}
-                <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-50 rounded-full -mr-32 -mt-32 opacity-50"></div>
+                <div className="absolute -right-8 bottom-0 top-0 hidden w-[300px] opacity-[0.09] sm:block">
+                  <Home className="absolute right-0 top-8 h-36 w-36 text-slate-900" strokeWidth={1.6} />
+                  <Building2 className="absolute bottom-[-18px] right-4 h-56 w-56 text-slate-900" strokeWidth={1.4} />
+                </div>
               </div>
             </section>
 
             {/* Content Tabs (Overview, Properties, etc.) */}
             <div className="space-y-8">
               {activeTab === 'overview' && (
-                <div className="space-y-10">
+                <div className="space-y-8">
                   {/* Stats Cards - Stacking on mobile */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-                    <div className="bg-white p-4 sm:p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-                      <div className="flex items-center gap-4">
-                        <div className="p-2 sm:p-3 bg-emerald-50 rounded-xl">
-                          <Building2 className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600" />
+                  <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
+                    <div className="rounded-[22px] border border-white bg-white p-6 shadow-[0_18px_45px_rgba(30,41,59,0.055)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_24px_55px_rgba(30,41,59,0.08)]">
+                      <div className="flex items-center gap-5">
+                        <div className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-[#eaf1ff]">
+                          <Building2 className="h-7 w-7 text-black" />
                         </div>
                         <div>
-                          <p className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-widest">Assigned</p>
-                          <p className="text-xl sm:text-2xl font-black text-gray-900">{stats.assignedProperties}</p>
+                          <p className="text-sm font-semibold uppercase tracking-widest text-gray-600">Assigned</p>
+                          <p className="mt-1 text-4xl font-black leading-none text-black">{statsLoading ? '...' : stats.assignedProperties}</p>
                         </div>
                       </div>
                     </div>
-                    <div className="bg-white p-4 sm:p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-                      <div className="flex items-center gap-4">
-                        <div className="p-2 sm:p-3 bg-blue-50 rounded-xl">
-                          <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
+                    <div className="rounded-[22px] border border-white bg-white p-6 shadow-[0_18px_45px_rgba(30,41,59,0.055)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_24px_55px_rgba(30,41,59,0.08)]">
+                      <div className="flex items-center gap-5">
+                        <div className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-[#eaf1ff]">
+                          <Clock className="h-7 w-7 text-black" />
                         </div>
                         <div>
-                          <p className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-widest">Pending</p>
-                          <p className="text-xl sm:text-2xl font-black text-gray-900">{stats.pendingInspections || 0}</p>
+                          <p className="text-sm font-semibold uppercase tracking-widest text-gray-600">Pending</p>
+                          <p className="mt-1 text-4xl font-black leading-none text-black">{stats.pendingInspections || 0}</p>
                         </div>
                       </div>
                     </div>
-                    <div className="bg-white p-4 sm:p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-                      <div className="flex items-center gap-4">
-                        <div className="p-2 sm:p-3 bg-purple-50 rounded-xl">
-                          <MessageSquare className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
+                    <div className="rounded-[22px] border border-white bg-white p-6 shadow-[0_18px_45px_rgba(30,41,59,0.055)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_24px_55px_rgba(30,41,59,0.08)]">
+                      <div className="flex items-center gap-5">
+                        <div className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-[#eaf1ff]">
+                          <MessageSquare className="h-7 w-7 text-black" />
                         </div>
                         <div>
-                          <p className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-widest">Messages</p>
-                          <p className="text-xl sm:text-2xl font-black text-gray-900">{stats.newMessages || 0}</p>
+                          <p className="text-sm font-semibold uppercase tracking-widest text-gray-600">Messages</p>
+                          <p className="mt-1 text-4xl font-black leading-none text-black">{stats.newMessages || 0}</p>
                         </div>
                       </div>
                     </div>
-                    <div className="bg-white p-4 sm:p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-                      <div className="flex items-center gap-4">
-                        <div className="p-2 sm:p-3 bg-amber-50 rounded-xl">
-                          <Activity className="w-5 h-5 sm:w-6 sm:h-6 text-amber-600" />
+                    <div className="rounded-[22px] border border-white bg-white p-6 shadow-[0_18px_45px_rgba(30,41,59,0.055)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_24px_55px_rgba(30,41,59,0.08)]">
+                      <div className="flex items-center gap-5">
+                        <div className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-[#eaf1ff]">
+                          <BadgeCheck className="h-7 w-7 text-[#08a43b]" />
                         </div>
                         <div>
-                          <p className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-widest">Completed</p>
-                          <p className="text-xl sm:text-2xl font-black text-gray-900">{stats.completedInspections || 0}</p>
+                          <p className="text-sm font-semibold uppercase tracking-widest text-gray-600">Completed</p>
+                          <p className="mt-1 text-4xl font-black leading-none text-black">{stats.completedInspections || 0}</p>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                  <div className="grid grid-cols-1 gap-8 xl:grid-cols-[minmax(0,1fr)_340px]">
                     {/* Recent Activity */}
-                    <div className="lg:col-span-8 bg-white rounded-2xl sm:rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
-                      <div className="p-6 sm:p-8 border-b border-gray-50 flex items-center justify-between">
-                        <h3 className="text-xl font-bold text-gray-900">Recent Activity</h3>
-                        <Button variant="outline" size="sm" onClick={fetchAgentActivities} disabled={activitiesLoading}>
-                          {activitiesLoading ? '...' : 'Refresh'}
-                        </Button>
+                    <div className="min-h-[520px] rounded-[28px] border border-white bg-white p-6 shadow-[0_24px_70px_rgba(30,41,59,0.06)] sm:p-8">
+                      <div className="mb-8 flex items-center justify-between">
+                        <h3 className="text-2xl font-black tracking-tight text-black">Recent Activity</h3>
+                        <button
+                          onClick={fetchAgentActivities}
+                          disabled={activitiesLoading}
+                          className="grid h-10 w-10 place-items-center rounded-full text-gray-500 transition-all duration-200 hover:bg-gray-50 hover:text-black disabled:opacity-50"
+                          aria-label="Refresh recent activity"
+                        >
+                          <MoreHorizontal className="h-5 w-5" />
+                        </button>
                       </div>
-                      <div className="p-6 sm:p-8">
+                      <div>
                         {activitiesLoading ? (
-                          <div className="flex justify-center py-12">
-                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
+                          <div className="space-y-8 pt-10">
+                            {[0, 1, 2].map((item) => (
+                              <div key={item} className="flex animate-pulse items-center gap-5">
+                                <div className="h-14 w-14 rounded-2xl bg-gray-100" />
+                                <div className="flex-1 space-y-3">
+                                  <div className="h-4 w-44 rounded-full bg-gray-100" />
+                                  <div className="h-3 w-2/3 rounded-full bg-gray-50" />
+                                </div>
+                              </div>
+                            ))}
                           </div>
                         ) : activities.length === 0 ? (
-                          <div className="text-center py-12">
-                            <p className="text-gray-400 font-medium">No recent activity found.</p>
+                          <div className="flex min-h-[380px] flex-col items-center justify-center text-center">
+                            <div className="mb-6 grid h-20 w-20 place-items-center rounded-full bg-[#eaf1ff] text-gray-400">
+                              <History className="h-10 w-10" />
+                            </div>
+                            <h3 className="text-2xl font-black tracking-tight text-gray-300">No recent activity</h3>
+                            <p className="mt-3 max-w-xs text-base font-medium leading-7 text-gray-400">
+                              Actions you take in the dashboard will appear here once you start managing listings.
+                            </p>
                           </div>
                         ) : (
-                          <div className="space-y-6">
-                            {activities.slice(0, 5).map((activity) => (
-                              <div key={activity.id} className="flex items-start gap-4">
-                                <div className={`mt-1.5 w-2.5 h-2.5 rounded-full flex-shrink-0 ${getActivityIconColor(activity.type)}`}></div>
-                                <div className="min-w-0">
-                                  <p className="text-sm font-bold text-gray-900 truncate">{activity.title}</p>
-                                  <p className="text-xs font-medium text-gray-400 mt-1">{formatTimestamp(activity.timestamp)}</p>
+                          <div className="relative space-y-0">
+                            {activities.slice(0, 5).map((activity, index) => (
+                              <div key={activity.id} className="relative flex gap-5 pb-7 last:pb-0">
+                                {index < activities.slice(0, 5).length - 1 && <span className="absolute left-6 top-12 h-[calc(100%-2.5rem)] w-px bg-gray-100" />}
+                                <div className="relative z-10 grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#eaf1ff]">
+                                  <span className={`h-2.5 w-2.5 rounded-full ${getActivityIconColor(activity.type)}`} />
+                                </div>
+                                <div className="min-w-0 pt-1">
+                                  <p className="truncate text-sm font-bold text-gray-950">{activity.title}</p>
+                                  <p className="mt-1 text-xs font-semibold text-gray-400">{formatTimestamp(activity.timestamp)}</p>
                                 </div>
                               </div>
                             ))}
@@ -1648,29 +1821,40 @@ export default function AgentDashboard() {
                     </div>
 
                     {/* Quick Invoices */}
-                    <div className="lg:col-span-4 bg-white rounded-2xl sm:rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
-                      <div className="p-6 sm:p-8 border-b border-gray-50">
-                        <h3 className="text-xl font-bold text-gray-900">Recent Invoices</h3>
+                    <div className="rounded-[28px] border border-white bg-white p-6 shadow-[0_24px_70px_rgba(30,41,59,0.06)] sm:p-8">
+                      <div>
+                        <h3 className="text-2xl font-black tracking-tight text-black">Recent Invoices</h3>
                       </div>
-                      <div className="p-6 sm:p-8">
+                      <div className="mt-8">
                         {agentInvoices.length === 0 ? (
-                          <div className="text-center py-12">
-                            <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                              <DollarSign className="w-8 h-8 text-gray-300" />
+                          <div className="flex min-h-[380px] flex-col items-center justify-center text-center">
+                            <div className="mb-7 grid h-24 w-24 place-items-center rounded-3xl bg-[#eaf1ff] text-emerald-500">
+                              <Receipt className="h-11 w-11" strokeWidth={1.8} />
                             </div>
-                            <p className="text-sm font-medium text-gray-400">No invoices generated yet.</p>
+                            <h4 className="text-xl font-black tracking-tight text-black">Clean Slates</h4>
+                            <p className="mt-4 max-w-[220px] text-base font-medium leading-7 text-gray-500">
+                              No invoices generated yet. Your billing history is currently empty.
+                            </p>
+                            <Link
+                              href="/dashboards/agent"
+                              className="mt-12 inline-flex h-14 w-full max-w-[240px] items-center justify-center rounded-2xl border border-gray-200 bg-white text-sm font-bold text-gray-700 transition-all duration-200 hover:border-gray-300 hover:bg-gray-50 hover:text-black"
+                            >
+                              View Billing Portal
+                            </Link>
                           </div>
                         ) : (
                           <div className="space-y-4">
                             {agentInvoices.slice(0, 3).map(inv => (
-                              <div key={inv.invoiceId} className="p-4 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-between">
-                                <div className="min-w-0">
-                                  <p className="text-sm font-bold text-gray-900 truncate">#{inv.invoiceNumber}</p>
-                                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">
-                                    A${Number(inv.amount || 0).toLocaleString('en-AU')}
-                                  </p>
+                              <div key={inv.invoiceId} className="rounded-2xl border border-gray-100 bg-gray-50/70 p-4 transition-all duration-200 hover:bg-white hover:shadow-sm">
+                                <div className="flex items-center justify-between gap-4">
+                                  <div className="min-w-0">
+                                    <p className="truncate text-sm font-black text-gray-950">#{inv.invoiceNumber}</p>
+                                    <p className="mt-1 text-xs font-bold uppercase tracking-widest text-gray-400">
+                                      A${Number(inv.amount || 0).toLocaleString('en-AU')}
+                                    </p>
+                                  </div>
+                                  <ArrowRight className="h-4 w-4 shrink-0 text-gray-300" />
                                 </div>
-                                <ArrowRight className="w-4 h-4 text-gray-300" />
                               </div>
                             ))}
                           </div>
@@ -1681,292 +1865,948 @@ export default function AgentDashboard() {
                 </div>
               )}
 
-              {activeTab === 'properties' && (
-                <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">Your Properties</h2>
-                    <Button onClick={fetchAgentProperties} variant="outline" size="sm" disabled={assignmentsLoading} className="w-full sm:w-auto">
-                      {assignmentsLoading ? 'Refreshing...' : 'Refresh List'}
-                    </Button>
-                  </div>
+              {activeTab === 'properties' && (() => {
+                const search = propertiesSearch.trim().toLowerCase();
+                const filteredAssignments = assignments.filter((a) => {
+                  if (propertyPriorityFilter !== 'all' && a.priority !== propertyPriorityFilter) return false;
+                  if (!search) return true;
+                  const addr = typeof a.address === 'string'
+                    ? a.address
+                    : `${a.address?.street ?? ''} ${a.address?.city ?? ''}`;
+                  const sellerName = (a.seller as any)?.name || '';
+                  return [a.title, addr, sellerName]
+                    .filter(Boolean)
+                    .some(v => String(v).toLowerCase().includes(search));
+                });
 
-                  {assignmentsLoading ? (
-                    <div className="flex flex-col items-center justify-center py-20 gap-4">
-                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
-                      <p className="text-gray-500 font-medium">Fetching properties...</p>
-                    </div>
-                  ) : assignments.length === 0 ? (
-                    <div className="bg-white rounded-3xl border border-dashed border-gray-200 py-20 px-6 text-center">
-                      <div className="w-20 h-20 bg-gray-50 rounded-3xl flex items-center justify-center mx-auto mb-6">
-                        <Home className="w-10 h-10 text-gray-300" />
+                const totalAssetValue = assignments.reduce((s, a) => s + (Number(a.price) || 0), 0);
+                const activeListings = assignments.filter(a => String(a.status).toLowerCase() === 'active').length;
+                const clientInquiries = stats.newMessages || 0;
+                const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0);
+                const upcomingInspections = inspections
+                  .filter((i) => {
+                    if (i.status !== 'scheduled' || !i.date) return false;
+                    const d = new Date(i.date);
+                    return !Number.isNaN(d.getTime()) && d >= todayStart;
+                  })
+                  .sort((a, b) => `${a.date}T${a.time || ''}`.localeCompare(`${b.date}T${b.time || ''}`));
+                const scheduledWalks = upcomingInspections.length;
+                const nextWalkLabel = upcomingInspections[0]
+                  ? formatInspectionDayLabel(upcomingInspections[0].date).primary
+                  : '';
+
+                const priorityToBadge = (priority?: string) => {
+                  switch ((priority || '').toLowerCase()) {
+                    case 'high':
+                      return { label: 'Urgent Action', cls: 'bg-red-500 text-white' };
+                    case 'medium':
+                      return { label: 'High Interest', cls: 'bg-emerald-500 text-white' };
+                    case 'low':
+                      return { label: 'Under Review', cls: 'bg-white text-gray-700' };
+                    default:
+                      return { label: 'Listed', cls: 'bg-white text-gray-700' };
+                  }
+                };
+
+                const renderPropertyCard = (assignment: any) => {
+                  const primaryImage = assignment?.mainImage?.url
+                    ?? (typeof assignment?.mainImage === 'string' ? assignment.mainImage : undefined)
+                    ?? (Array.isArray(assignment?.images) ? (assignment.images[0]?.url ?? assignment.images[0]) : undefined)
+                    ?? assignment?.image;
+                  const safeImageUrl = primaryImage ? getSafeImageUrl(primaryImage as string, 'property') : '/images/default-property.jpg';
+                  const isActive = String(assignment.status).toLowerCase() === 'active';
+                  const badge = priorityToBadge(assignment.priority);
+                  const id = assignment._id || assignment.id;
+                  const isStatusOpen = expandedStatusId === id;
+                  const hasSeller = Boolean(assignment.seller || assignment.owner);
+                  const addressText = typeof assignment.address === 'string'
+                    ? assignment.address
+                    : `${assignment.address?.street ?? ''}${assignment.address?.city ? `, ${assignment.address.city}` : ''}`;
+
+                  return (
+                    <div
+                      key={id}
+                      className="flex flex-col overflow-hidden rounded-[24px] border border-white bg-white shadow-[0_18px_45px_rgba(30,41,59,0.055)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_24px_55px_rgba(30,41,59,0.09)]"
+                    >
+                      <div className="relative h-56 overflow-hidden">
+                        <img src={safeImageUrl} alt={assignment.title} className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 hover:scale-105" />
+                        <div className="absolute left-4 top-4 flex flex-wrap gap-2">
+                          <span className={`rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] shadow-sm ${isActive ? 'bg-white text-gray-900' : 'bg-white/90 text-gray-500'}`}>
+                            {isActive ? 'Active' : (assignment.status || 'Listed')}
+                          </span>
+                          <span className={`rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] shadow-sm ${badge.cls}`}>
+                            {badge.label}
+                          </span>
+                        </div>
+                        <div className="absolute bottom-4 right-4">
+                          <span className="rounded-xl bg-black/90 px-4 py-1.5 text-base font-black text-white shadow-lg backdrop-blur">
+                            {formatCurrencyCompact(assignment.price)}
+                          </span>
+                        </div>
                       </div>
-                      <h3 className="text-xl font-bold text-gray-900 mb-2">No Properties Assigned</h3>
-                      <p className="text-gray-500 max-w-sm mx-auto mb-8 font-medium">Properties will automatically appear here when they are assigned to you by sellers.</p>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-8">
-                      {assignments.map((assignment) => {
-                        const primaryImage = assignment?.mainImage?.url
-                          ?? (typeof (assignment as any)?.mainImage === 'string' ? (assignment as any).mainImage : undefined)
-                          ?? (Array.isArray((assignment as any)?.images) ? ((assignment as any).images[0]?.url ?? (assignment as any).images[0]) : undefined)
-                          ?? assignment?.image;
-                        const safeImageUrl = primaryImage ? getSafeImageUrl(primaryImage as string, "property") : "/images/default-property.jpg";
-                        
-                        return (
-                          <div key={assignment._id || assignment.id} className="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden group hover:shadow-xl transition-all duration-300 flex flex-col">
-                            <div className="relative h-56 sm:h-64 overflow-hidden">
-                              <img
-                                src={safeImageUrl}
-                                alt={assignment.title}
-                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                              />
-                              <div className="absolute top-4 right-4">
-                                <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm ${getPriorityColor(assignment.priority)}`}>
-                                  {assignment.priority} Priority
-                                </span>
-                              </div>
-                              <div className="absolute bottom-4 left-4">
-                                <span className="bg-white/90 backdrop-blur-md px-4 py-1.5 rounded-xl text-lg font-black text-emerald-600 shadow-sm">
-                                  {formatCurrencyCompact(assignment.price)}
-                                </span>
-                              </div>
-                            </div>
-                            
-                            <div className="p-6 sm:p-8 flex-1 flex flex-col">
-                              <div className="flex-1">
-                                <div className="flex items-center justify-between mb-2">
-                                  <h3 className="text-xl font-bold text-gray-900 truncate">{assignment.title}</h3>
-                                  <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
-                                    assignment.status === "active" ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-700"
-                                  }`}>
-                                    {assignment.status}
-                                  </span>
-                                </div>
-                                <p className="text-sm font-medium text-gray-500 mb-6 flex items-center gap-1.5 truncate">
-                                  <MapPin className="w-4 h-4 opacity-50" />
-                                  {typeof assignment.address === "string" ? assignment.address : `${assignment.address.street}, ${assignment.address.city}`}
-                                </p>
-                                
-                                <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-8">
-                                  <div className="bg-gray-50 rounded-2xl p-2 sm:p-3 text-center">
-                                    <p className="text-base sm:text-lg font-black text-gray-900">{assignment.beds}</p>
-                                    <p className="text-[8px] sm:text-[10px] font-black text-gray-400 uppercase tracking-widest">Beds</p>
-                                  </div>
-                                  <div className="bg-gray-50 rounded-2xl p-2 sm:p-3 text-center">
-                                    <p className="text-base sm:text-lg font-black text-gray-900">{assignment.baths}</p>
-                                    <p className="text-[8px] sm:text-[10px] font-black text-gray-400 uppercase tracking-widest">Baths</p>
-                                  </div>
-                                  <div className="bg-gray-50 rounded-2xl p-2 sm:p-3 text-center">
-                                    <p className="text-base sm:text-lg font-black text-gray-900">{assignment.size}</p>
-                                    <p className="text-[8px] sm:text-[10px] font-black text-gray-400 uppercase tracking-widest">Sqft</p>
-                                  </div>
-                                </div>
 
-                                <div className="mb-8 p-4 bg-emerald-50 rounded-2xl border border-emerald-100">
-                                  <p className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.2em] mb-3">Sales Status</p>
-                                  <SalesStatusSelector
-                                    propertyId={assignment._id || assignment.id}
-                                    propertyTitle={assignment.title}
-                                    currentStatus={assignment.salesStatus || null}
-                                    onStatusUpdate={handleStatusUpdate}
-                                  />
-                                </div>
-                              </div>
+                      <div className="flex flex-1 flex-col gap-5 p-6">
+                        <div>
+                          <h3 className="truncate text-xl font-black tracking-tight text-black">{assignment.title}</h3>
+                          <p className="mt-1 flex items-center gap-1.5 truncate text-sm font-medium text-gray-500">
+                            <MapPin className="h-4 w-4 shrink-0 opacity-60" />
+                            <span className="truncate">{addressText}</span>
+                          </p>
+                        </div>
 
-                              <div className="space-y-3">
-                                <div className="flex flex-col sm:flex-row gap-3">
-                                  <button onClick={() => handleSelectProperty(assignment)} className="w-full sm:flex-1 py-3 bg-gray-900 text-white rounded-xl font-bold text-sm hover:bg-black transition-colors shadow-sm active:scale-[0.98]">
-                                    View Details
-                                  </button>
-                                  <button onClick={handleShowInspectionForm} className="w-full sm:flex-1 py-3 border-2 border-gray-100 text-gray-900 rounded-xl font-bold text-sm hover:bg-gray-50 transition-colors active:scale-[0.98]">
-                                    Inspection
-                                  </button>
-                                </div>
-                                <button
-                                  disabled={!assignment.seller && !assignment.owner}
-                                  onClick={async () => {
-                                    let seller = assignment.seller || assignment.owner;
-                                    if (typeof seller === 'string' || !seller?.name) {
-                                      const sellerId = typeof seller === 'string' ? seller : (seller?.id || seller?._id || assignment.owner);
-                                      if (!sellerId) return;
-                                      try {
-                                        const token = localStorage.getItem('token');
-                                        const backendBase = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || '';
-                                        const response = await fetch(`${backendBase}/api/admin/users/${sellerId}`, {
-                                          headers: { 'Authorization': `Bearer ${token}` }
-                                        });
-                                        if (response.ok) {
-                                          const data = await response.json();
-                                          seller = data.data || data;
-                                        } else {
-                                          seller = { id: sellerId, name: 'Property Owner', email: 'owner@example.com' };
-                                        }
-                                      } catch (error) {
-                                        seller = { id: sellerId, name: 'Property Owner', email: 'owner@example.com' };
-                                      }
-                                    }
-                                    setSelectedSeller({ 
-                                      id: seller.id || seller._id,
-                                      name: seller.name || 'Property Owner', 
-                                      email: seller.email || 'owner@example.com', 
-                                      avatar: seller.avatar 
-                                    });
-                                    setSelectedProperty(assignment);
-                                    setShowSellerChat(true);
-                                  }}
-                                  className="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold text-sm hover:bg-emerald-700 transition-colors shadow-sm active:scale-[0.98] disabled:opacity-50"
-                                >
-                                  Message Seller
-                                </button>
-                              </div>
-                            </div>
+                        <div className="grid grid-cols-3 gap-2">
+                          <div className="rounded-2xl bg-gray-50 px-3 py-2">
+                            <p className="text-base font-black text-black">{assignment.beds ?? '—'}</p>
+                            <p className="mt-0.5 text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">Beds</p>
                           </div>
-                        );
-                      })}
+                          <div className="rounded-2xl bg-gray-50 px-3 py-2">
+                            <p className="text-base font-black text-black">{assignment.baths ?? '—'}</p>
+                            <p className="mt-0.5 text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">Baths</p>
+                          </div>
+                          <div className="rounded-2xl bg-gray-50 px-3 py-2">
+                            <p className="text-base font-black text-black">{assignment.size ?? '—'}</p>
+                            <p className="mt-0.5 text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">Sqft</p>
+                          </div>
+                        </div>
+
+                        <div className="mt-auto grid grid-cols-3 gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleMessageSeller(assignment)}
+                            disabled={!hasSeller}
+                            className="group flex cursor-pointer flex-col items-center gap-1.5 rounded-2xl bg-[#eef3ff] py-3 transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#dde7ff] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0"
+                          >
+                            <MessageSquare className="h-5 w-5 text-gray-600 transition-colors duration-200 group-hover:text-black" />
+                            <span className="text-[10px] font-black uppercase tracking-[0.18em] text-gray-500 group-hover:text-black">Chat</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleSelectProperty(assignment)}
+                            className="group flex cursor-pointer flex-col items-center gap-1.5 rounded-2xl bg-[#eef3ff] py-3 transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#dde7ff]"
+                          >
+                            <Settings className="h-5 w-5 text-gray-600 transition-colors duration-200 group-hover:text-black" />
+                            <span className="text-[10px] font-black uppercase tracking-[0.18em] text-gray-500 group-hover:text-black">Manage</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setExpandedStatusId(prev => prev === id ? null : id)}
+                            aria-expanded={isStatusOpen}
+                            className={`group flex cursor-pointer flex-col items-center gap-1.5 rounded-2xl py-3 transition-all duration-200 hover:-translate-y-0.5 ${isStatusOpen ? 'bg-black text-white' : 'bg-[#eef3ff] hover:bg-[#dde7ff]'}`}
+                          >
+                            <Activity className={`h-5 w-5 transition-colors duration-200 ${isStatusOpen ? 'text-white' : 'text-gray-600 group-hover:text-black'}`} />
+                            <span className={`text-[10px] font-black uppercase tracking-[0.18em] ${isStatusOpen ? 'text-white' : 'text-gray-500 group-hover:text-black'}`}>Status</span>
+                          </button>
+                        </div>
+
+                        {isStatusOpen && (
+                          <div className="rounded-2xl border border-emerald-100 bg-emerald-50/70 p-4">
+                            <p className="mb-3 text-[10px] font-black uppercase tracking-[0.2em] text-emerald-700">Sales Status</p>
+                            <SalesStatusSelector
+                              propertyId={id}
+                              propertyTitle={assignment.title}
+                              currentStatus={assignment.salesStatus || null}
+                              onStatusUpdate={handleStatusUpdate}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => { setSelectedProperty(assignment); setShowInspectionForm(true); }}
+                              className="mt-4 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-white px-4 py-2.5 text-xs font-bold text-emerald-700 transition-all duration-200 hover:-translate-y-0.5 hover:bg-emerald-100"
+                            >
+                              <Calendar className="h-4 w-4" /> Schedule Inspection
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  )}
-                </div>
-              )}
+                  );
+                };
 
-              {activeTab === 'inspections' && (
-                <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">Inspections</h2>
-                    <Button onClick={() => setShowInspectionForm(true)} className="w-full sm:w-auto">
-                      <Plus className="w-4 h-4 mr-2" /> Schedule Inspection
-                    </Button>
-                  </div>
+                return (
+                  <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                    {/* Page header + controls */}
+                    <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+                      <div className="min-w-0">
+                        <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.2em] text-gray-400">
+                          <span>Portfolio</span>
+                          <ChevronRight className="h-3 w-3" />
+                          <span className="text-gray-700">Assigned Properties</span>
+                        </nav>
+                        <h2 className="mt-3 text-2xl font-extrabold tracking-tight text-gray-900 sm:text-3xl">Manage Your Portfolio</h2>
+                        <p className="mt-2 max-w-2xl text-base font-medium leading-7 text-gray-500">
+                          Overseeing <span className="font-black text-black">{assignments.length}</span> high-value property listing{assignments.length === 1 ? '' : 's'} under current management.
+                        </p>
+                      </div>
 
-                  <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
-                    {/* Desktop Table View */}
-                    <div className="hidden sm:block overflow-x-auto">
-                      <table className="min-w-full divide-y divide-gray-100">
-                        <thead>
-                          <tr className="bg-gray-50/50">
-                            <th className="px-8 py-5 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Property</th>
-                            <th className="px-8 py-5 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Schedule</th>
-                            <th className="px-8 py-5 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Parties</th>
-                            <th className="px-8 py-5 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-50">
-                          {inspections.length === 0 ? (
-                            <tr>
-                              <td colSpan={4} className="px-8 py-20 text-center text-gray-400 font-medium">No inspections scheduled yet.</td>
-                            </tr>
-                          ) : (
-                            inspections.map((inspection) => (
-                              <tr key={inspection.id} className="hover:bg-gray-50/50 transition-colors group">
-                                <td className="px-8 py-6">
-                                  <p className="text-sm font-bold text-gray-900 group-hover:text-emerald-600 transition-colors">{inspection.propertyName}</p>
-                                  <p className="text-xs text-gray-400 mt-1 truncate max-w-[200px]">{inspection.address}</p>
-                                </td>
-                                <td className="px-8 py-6">
-                                  <div className="flex flex-col">
-                                    <span className="text-sm font-bold text-gray-900">{inspection.date}</span>
-                                    <span className="text-xs text-gray-400 mt-1 flex items-center gap-1"><Clock className="w-3 h-3" /> {inspection.time}</span>
-                                  </div>
-                                </td>
-                                <td className="px-8 py-6">
-                                  <div className="flex flex-col">
-                                    <span className="text-sm font-bold text-gray-900">{inspection.inspector}</span>
-                                    <span className="text-xs text-gray-400 mt-1">{inspection.client}</span>
-                                  </div>
-                                </td>
-                                <td className="px-8 py-6">
-                                  <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${getStatusColor(inspection.status)}`}>
-                                    {inspection.status}
-                                  </span>
-                                </td>
-                              </tr>
-                            ))
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                        <div className="inline-flex rounded-full bg-gray-100 p-1">
+                          {([
+                            { id: 'grid' as const, icon: LayoutGrid, label: 'Grid view' },
+                            { id: 'list' as const, icon: List, label: 'List view' }
+                          ]).map((v) => (
+                            <button
+                              key={v.id}
+                              type="button"
+                              onClick={() => setPropertiesView(v.id)}
+                              aria-label={v.label}
+                              aria-pressed={propertiesView === v.id}
+                              className={`grid h-9 w-10 cursor-pointer place-items-center rounded-full transition-all duration-200 ${
+                                propertiesView === v.id ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-gray-900'
+                              }`}
+                            >
+                              <v.icon className="h-4 w-4" />
+                            </button>
+                          ))}
+                        </div>
+
+                        <div className="relative">
+                          <button
+                            type="button"
+                            onClick={() => setShowPropertyFilters(prev => !prev)}
+                            className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-bold text-gray-700 transition-all duration-200 hover:-translate-y-0.5 hover:border-gray-300 hover:bg-gray-50 sm:w-auto"
+                          >
+                            <SlidersHorizontal className="h-4 w-4" /> Filters
+                            {propertyPriorityFilter !== 'all' && (
+                              <span className="ml-1 h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                            )}
+                          </button>
+                          {showPropertyFilters && (
+                            <div className="absolute right-0 top-full z-20 mt-2 w-60 rounded-2xl border border-gray-100 bg-white p-4 shadow-[0_24px_55px_rgba(30,41,59,0.12)]">
+                              <p className="mb-3 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Priority</p>
+                              <div className="grid grid-cols-2 gap-2">
+                                {(['all', 'high', 'medium', 'low'] as const).map((p) => (
+                                  <button
+                                    key={p}
+                                    type="button"
+                                    onClick={() => { setPropertyPriorityFilter(p); setShowPropertyFilters(false); }}
+                                    className={`cursor-pointer rounded-xl px-3 py-2 text-xs font-bold capitalize transition-colors duration-200 ${
+                                      propertyPriorityFilter === p
+                                        ? 'bg-black text-white'
+                                        : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                                    }`}
+                                  >
+                                    {p === 'all' ? 'All' : p}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
                           )}
-                        </tbody>
-                      </table>
-                    </div>
-
-                    {/* Mobile Card View */}
-                    <div className="sm:hidden divide-y divide-gray-50">
-                      {inspections.length === 0 ? (
-                        <div className="px-6 py-12 text-center text-gray-400 font-medium">No inspections scheduled yet.</div>
-                      ) : (
-                        inspections.map((inspection) => (
-                          <div key={inspection.id} className="p-6 space-y-4">
-                            <div className="flex justify-between items-start">
-                              <div className="min-w-0 pr-4">
-                                <p className="text-sm font-bold text-gray-900 truncate">{inspection.propertyName}</p>
-                                <p className="text-xs text-gray-400 mt-1 truncate">{inspection.address}</p>
-                              </div>
-                              <span className={`px-2 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${getStatusColor(inspection.status)} flex-shrink-0`}>
-                                {inspection.status}
-                              </span>
-                            </div>
-                            
-                            <div className="grid grid-cols-2 gap-4">
-                              <div className="space-y-1">
-                                <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Schedule</p>
-                                <div className="flex flex-col">
-                                  <span className="text-xs font-bold text-gray-900">{inspection.date}</span>
-                                  <span className="text-[10px] text-gray-400 flex items-center gap-1"><Clock className="w-3 h-3" /> {inspection.time}</span>
-                                </div>
-                              </div>
-                              <div className="space-y-1">
-                                <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Parties</p>
-                                <div className="flex flex-col">
-                                  <span className="text-xs font-bold text-gray-900 truncate">{inspection.inspector}</span>
-                                  <span className="text-[10px] text-gray-400 truncate">{inspection.client}</span>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {activeTab === 'notes' && (
-                <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">Notes & Updates</h2>
-                    <Button onClick={() => setShowNoteForm(true)} className="w-full sm:w-auto">
-                      <Plus className="w-4 h-4 mr-2" /> Add New Note
-                    </Button>
-                  </div>
-
-                  {notes.length === 0 ? (
-                    <div className="bg-white rounded-3xl border border-dashed border-gray-200 py-20 text-center">
-                      <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                        <MessageSquare className="w-8 h-8 text-gray-300" />
+                        </div>
                       </div>
-                      <p className="text-gray-400 font-medium">Keep track of property details and updates here.</p>
                     </div>
-                  ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {notes.map((note) => (
-                        <div key={note.id} className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
-                          <div className={`absolute top-0 left-0 w-1.5 h-full ${
-                            note.priority === 'high' ? 'bg-red-500' : note.priority === 'medium' ? 'bg-amber-500' : 'bg-emerald-500'
-                          }`}></div>
-                          <div className="flex justify-between items-start mb-4">
-                            <h3 className="text-lg font-bold text-gray-900">{note.title}</h3>
-                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                              {new Date(note.createdAt).toLocaleDateString()}
+
+                    {/* Search */}
+                    <div className="relative max-w-xl">
+                      <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                      <input
+                        type="search"
+                        value={propertiesSearch}
+                        onChange={(e) => setPropertiesSearch(e.target.value)}
+                        placeholder="Search properties or sellers..."
+                        className="h-11 w-full rounded-full border border-gray-100 bg-white pl-11 pr-4 text-sm font-medium text-gray-700 outline-none transition-all duration-200 placeholder:text-gray-400 focus:border-gray-300 focus:shadow-sm"
+                      />
+                    </div>
+
+                    {/* Summary cards */}
+                    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
+                      <div className="rounded-[22px] border border-white bg-white p-6 shadow-[0_18px_45px_rgba(30,41,59,0.055)]">
+                        <div className="flex items-start justify-between">
+                          <span className="grid h-12 w-12 place-items-center rounded-2xl bg-[#eef3ff]">
+                            <Building2 className="h-5 w-5 text-gray-700" />
+                          </span>
+                          {assignments.length > 0 && (
+                            <span className="inline-flex items-center gap-1 text-xs font-black text-emerald-600">
+                              <TrendingUp className="h-3.5 w-3.5" /> Portfolio
                             </span>
+                          )}
+                        </div>
+                        <p className="mt-5 text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">Total Assets</p>
+                        <p className="mt-1 text-3xl font-black tracking-tight text-black">
+                          {totalAssetValue > 0 ? formatCurrencyCompact(totalAssetValue) : '$0'}
+                        </p>
+                      </div>
+                      <div className="rounded-[22px] border border-white bg-white p-6 shadow-[0_18px_45px_rgba(30,41,59,0.055)]">
+                        <div className="flex items-start justify-between">
+                          <span className="grid h-12 w-12 place-items-center rounded-2xl bg-[#eef3ff]">
+                            <TrendingUp className="h-5 w-5 text-gray-700" />
+                          </span>
+                          {activeListings > 0 && (
+                            <span className="text-xs font-black text-emerald-600">Active</span>
+                          )}
+                        </div>
+                        <p className="mt-5 text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">Under Review</p>
+                        <p className="mt-1 text-3xl font-black tracking-tight text-black">
+                          {activeListings} <span className="text-base font-bold text-gray-400">Listing{activeListings === 1 ? '' : 's'}</span>
+                        </p>
+                      </div>
+                      <div className="rounded-[22px] border border-white bg-white p-6 shadow-[0_18px_45px_rgba(30,41,59,0.055)]">
+                        <div className="flex items-start justify-between">
+                          <span className="grid h-12 w-12 place-items-center rounded-2xl bg-[#eef3ff]">
+                            <MessageSquare className="h-5 w-5 text-gray-700" />
+                          </span>
+                          {clientInquiries > 0 && (
+                            <span className="rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.18em] text-red-500">
+                              {clientInquiries} New
+                            </span>
+                          )}
+                        </div>
+                        <p className="mt-5 text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">Client Inquiries</p>
+                        <p className="mt-1 text-3xl font-black tracking-tight text-black">
+                          {clientInquiries} <span className="text-base font-bold text-gray-400">Chat{clientInquiries === 1 ? '' : 's'}</span>
+                        </p>
+                      </div>
+                      <div className="rounded-[22px] border border-white bg-white p-6 shadow-[0_18px_45px_rgba(30,41,59,0.055)]">
+                        <div className="flex items-start justify-between">
+                          <span className="grid h-12 w-12 place-items-center rounded-2xl bg-[#eef3ff]">
+                            <Clock className="h-5 w-5 text-gray-700" />
+                          </span>
+                          {nextWalkLabel && (
+                            <span className="text-xs font-black text-gray-700">{nextWalkLabel}</span>
+                          )}
+                        </div>
+                        <p className="mt-5 text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">Scheduled Walks</p>
+                        <p className="mt-1 text-3xl font-black tracking-tight text-black">
+                          {scheduledWalks} <span className="text-base font-bold text-gray-400">Tour{scheduledWalks === 1 ? '' : 's'}</span>
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Property cards */}
+                    {assignmentsLoading ? (
+                      <div className="flex flex-col items-center justify-center gap-4 py-20">
+                        <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-emerald-600" />
+                        <p className="font-medium text-gray-500">Fetching properties...</p>
+                      </div>
+                    ) : filteredAssignments.length === 0 ? (
+                      <div className="rounded-[28px] border border-dashed border-gray-200 bg-white px-6 py-20 text-center">
+                        <div className="mx-auto mb-6 grid h-20 w-20 place-items-center rounded-3xl bg-[#eaf1ff] text-gray-400">
+                          <Home className="h-10 w-10" />
+                        </div>
+                        <h3 className="text-xl font-black tracking-tight text-gray-400">
+                          {search || propertyPriorityFilter !== 'all' ? 'No matching properties' : 'No properties assigned'}
+                        </h3>
+                        <p className="mx-auto mt-3 max-w-sm text-sm font-medium leading-7 text-gray-400">
+                          {search || propertyPriorityFilter !== 'all'
+                            ? 'Adjust your search or filters to see more listings from your portfolio.'
+                            : 'Properties will appear here automatically once they are assigned to you by sellers.'}
+                        </p>
+                        <button
+                          type="button"
+                          onClick={fetchAgentProperties}
+                          disabled={assignmentsLoading}
+                          className="mt-6 inline-flex cursor-pointer items-center gap-2 rounded-full border border-gray-200 bg-white px-5 py-2.5 text-sm font-bold text-gray-700 transition-all duration-200 hover:-translate-y-0.5 hover:bg-gray-50 disabled:opacity-50"
+                        >
+                          Refresh List
+                        </button>
+                      </div>
+                    ) : propertiesView === 'list' ? (
+                      <div className="space-y-4">
+                        {filteredAssignments.map((assignment: any) => {
+                          const primaryImage = assignment?.mainImage?.url
+                            ?? (typeof assignment?.mainImage === 'string' ? assignment.mainImage : undefined)
+                            ?? (Array.isArray(assignment?.images) ? (assignment.images[0]?.url ?? assignment.images[0]) : undefined)
+                            ?? assignment?.image;
+                          const safeImageUrl = primaryImage ? getSafeImageUrl(primaryImage as string, 'property') : '/images/default-property.jpg';
+                          const badge = priorityToBadge(assignment.priority);
+                          const id = assignment._id || assignment.id;
+                          const hasSeller = Boolean(assignment.seller || assignment.owner);
+                          const addressText = typeof assignment.address === 'string'
+                            ? assignment.address
+                            : `${assignment.address?.street ?? ''}${assignment.address?.city ? `, ${assignment.address.city}` : ''}`;
+                          return (
+                            <div
+                              key={id}
+                              className="grid grid-cols-1 gap-0 overflow-hidden rounded-[24px] border border-white bg-white shadow-[0_14px_38px_rgba(30,41,59,0.05)] transition-all duration-200 hover:shadow-[0_22px_55px_rgba(30,41,59,0.09)] sm:grid-cols-[220px_minmax(0,1fr)]"
+                            >
+                              <div className="relative h-48 w-full sm:h-full sm:min-h-[160px]">
+                                <img src={safeImageUrl} alt={assignment.title} className="absolute inset-0 h-full w-full object-cover" />
+                                <span className={`absolute left-3 top-3 rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] shadow-sm ${badge.cls}`}>
+                                  {badge.label}
+                                </span>
+                              </div>
+                              <div className="flex flex-col gap-4 p-6">
+                                <div className="flex flex-wrap items-start justify-between gap-3">
+                                  <div className="min-w-0">
+                                    <h3 className="truncate text-lg font-black tracking-tight text-black sm:text-xl">{assignment.title}</h3>
+                                    <p className="mt-1 flex items-center gap-1.5 truncate text-sm font-medium text-gray-500">
+                                      <MapPin className="h-4 w-4 shrink-0 opacity-60" />
+                                      <span className="truncate">{addressText}</span>
+                                    </p>
+                                  </div>
+                                  <span className="rounded-xl bg-black px-3 py-1.5 text-sm font-black text-white">
+                                    {formatCurrencyCompact(assignment.price)}
+                                  </span>
+                                </div>
+                                <div className="flex flex-wrap gap-2 text-[11px] font-bold text-gray-600">
+                                  <span className="rounded-full bg-gray-50 px-3 py-1">{assignment.beds ?? '—'} Beds</span>
+                                  <span className="rounded-full bg-gray-50 px-3 py-1">{assignment.baths ?? '—'} Baths</span>
+                                  <span className="rounded-full bg-gray-50 px-3 py-1">{assignment.size ?? '—'} sqft</span>
+                                </div>
+                                <div className="mt-auto flex flex-wrap items-center justify-end gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleMessageSeller(assignment)}
+                                    disabled={!hasSeller}
+                                    className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-bold text-gray-700 transition-all duration-200 hover:-translate-y-0.5 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+                                  >
+                                    <MessageSquare className="h-4 w-4" /> Chat
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleSelectProperty(assignment)}
+                                    className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-bold text-gray-700 transition-all duration-200 hover:-translate-y-0.5 hover:bg-gray-50"
+                                  >
+                                    <Settings className="h-4 w-4" /> Manage
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => setExpandedStatusId(prev => prev === id ? null : id)}
+                                    className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-black px-3 py-2 text-xs font-bold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-gray-900"
+                                  >
+                                    <Activity className="h-4 w-4" /> Status
+                                  </button>
+                                </div>
+                                {expandedStatusId === id && (
+                                  <div className="rounded-2xl border border-emerald-100 bg-emerald-50/70 p-4">
+                                    <SalesStatusSelector
+                                      propertyId={id}
+                                      propertyTitle={assignment.title}
+                                      currentStatus={assignment.salesStatus || null}
+                                      onStatusUpdate={handleStatusUpdate}
+                                    />
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+                        {filteredAssignments.map(renderPropertyCard)}
+                      </div>
+                    )}
+
+                    {/* Lower sections */}
+                    <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+                      <div className="rounded-[28px] border border-white bg-white p-6 shadow-[0_24px_70px_rgba(30,41,59,0.06)] sm:p-8">
+                        <div className="flex items-center justify-between gap-3">
+                          <h3 className="text-xl font-black tracking-tight text-black sm:text-2xl">Pending Seller Agreements</h3>
+                          <button
+                            type="button"
+                            onClick={fetchAgentProperties}
+                            className="cursor-pointer text-xs font-black uppercase tracking-[0.18em] text-emerald-600 transition-colors duration-200 hover:text-emerald-700"
+                          >
+                            View All Pipeline
+                          </button>
+                        </div>
+                        <div className="mt-8 flex min-h-[220px] flex-col items-center justify-center text-center">
+                          <div className="mb-5 grid h-16 w-16 place-items-center rounded-2xl bg-[#eaf1ff] text-gray-400">
+                            <BadgeCheck className="h-8 w-8" />
                           </div>
-                          <p className="text-gray-500 text-sm leading-relaxed mb-6">{note.content}</p>
-                          <div className="flex items-center gap-2">
-                            <span className="px-3 py-1 rounded-full bg-gray-50 text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                              {note.type}
-                            </span>
+                          <h4 className="text-base font-black tracking-tight text-gray-500">All caught up</h4>
+                          <p className="mx-auto mt-2 max-w-xs text-sm font-medium leading-7 text-gray-400">
+                            Pending listing agreements and signed paperwork will show up here as sellers respond.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="rounded-[28px] bg-[#0b0d12] p-6 text-white shadow-[0_24px_70px_rgba(0,0,0,0.25)] sm:p-7">
+                        <div className="flex items-center justify-between gap-3">
+                          <h3 className="text-xl font-black tracking-tight text-white">Inspections</h3>
+                          <span className="grid h-9 w-9 place-items-center rounded-2xl bg-white/10 text-white">
+                            <Calendar className="h-4 w-4" />
+                          </span>
+                        </div>
+
+                        <div className="mt-6 space-y-5">
+                          {upcomingInspections.length === 0 ? (
+                            <div className="rounded-2xl border border-white/10 bg-white/5 p-5 text-center">
+                              <p className="text-sm font-bold text-white/80">No upcoming inspections</p>
+                              <p className="mt-1 text-xs font-medium text-white/50">
+                                Schedule a viewing to populate your week.
+                              </p>
+                            </div>
+                          ) : (
+                            upcomingInspections.slice(0, 3).map((insp) => {
+                              const day = formatInspectionDayLabel(insp.date);
+                              const t = formatInspectionTime(insp.time);
+                              return (
+                                <div key={insp.id} className="relative pl-6">
+                                  <span className="absolute left-0 top-1.5 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-4 ring-emerald-500/20" />
+                                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-300">
+                                    {day.primary}{t.time !== '--:--' && `, ${t.time} ${t.period}`}
+                                  </p>
+                                  <p className="mt-1 text-sm font-black text-white">{insp.propertyName}</p>
+                                  <p className="mt-1 text-xs font-medium text-white/60">
+                                    {insp.client ? `Lead: ${insp.client}` : insp.inspector ? `Inspector: ${insp.inspector}` : insp.address}
+                                  </p>
+                                </div>
+                              );
+                            })
+                          )}
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => setShowInspectionForm(true)}
+                          className="mt-6 inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-black text-black transition-all duration-200 hover:-translate-y-0.5 hover:bg-gray-100"
+                        >
+                          Schedule New
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {activeTab === 'inspections' && (() => {
+                const searchTerm = inspectionSearch.trim().toLowerCase();
+                const filteredInspections = inspections.filter((i) => {
+                  if (!searchTerm) return true;
+                  return [i.propertyName, i.address, i.inspector, i.client]
+                    .filter(Boolean)
+                    .some(v => String(v).toLowerCase().includes(searchTerm));
+                });
+
+                const scheduledCount = inspections.filter(i => i.status === 'scheduled').length;
+                const completedCount = inspections.filter(i => i.status === 'completed').length;
+                const todayStart = new Date();
+                todayStart.setHours(0, 0, 0, 0);
+                const pendingCount = inspections.filter(i => {
+                  if (i.status !== 'scheduled' || !i.date) return false;
+                  const d = new Date(i.date);
+                  return !Number.isNaN(d.getTime()) && d < todayStart;
+                }).length;
+
+                const groupsMap = new Map<string, Inspection[]>();
+                filteredInspections.forEach((i) => {
+                  const key = i.date || '';
+                  if (!groupsMap.has(key)) groupsMap.set(key, []);
+                  groupsMap.get(key)!.push(i);
+                });
+                const groupedDays = Array.from(groupsMap.entries())
+                  .sort(([a], [b]) => a.localeCompare(b))
+                  .map(([date, items]) => ({
+                    date,
+                    items: items.sort((x, y) => (x.time || '').localeCompare(y.time || ''))
+                  }));
+
+                return (
+                  <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                    {/* Page header + controls */}
+                    <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+                      <div>
+                        <h2 className="text-2xl font-extrabold tracking-tight text-gray-900 sm:text-3xl">Manage Inspections</h2>
+                        <p className="mt-2 max-w-2xl text-base font-medium leading-7 text-gray-500">
+                          Manage your viewing schedule and property interactions.
+                        </p>
+                      </div>
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                        <div className="relative w-full sm:w-72">
+                          <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                          <input
+                            type="search"
+                            value={inspectionSearch}
+                            onChange={(e) => setInspectionSearch(e.target.value)}
+                            placeholder="Search inspections or properties..."
+                            className="h-11 w-full rounded-full border border-gray-100 bg-white pl-11 pr-4 text-sm font-medium text-gray-700 outline-none transition-all duration-200 placeholder:text-gray-400 focus:border-gray-300 focus:shadow-sm"
+                          />
+                        </div>
+                        <div className="inline-flex w-full rounded-full bg-gray-100 p-1 sm:w-auto">
+                          {(['timeline', 'calendar'] as const).map((mode) => (
+                            <button
+                              key={mode}
+                              type="button"
+                              onClick={() => setInspectionView(mode)}
+                              className={`flex-1 cursor-pointer rounded-full px-5 py-2 text-xs font-bold capitalize tracking-wide transition-all duration-200 sm:flex-none ${
+                                inspectionView === mode
+                                  ? 'bg-black text-white shadow-sm'
+                                  : 'text-gray-600 hover:text-gray-900'
+                              }`}
+                            >
+                              {mode}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Stats row */}
+                    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
+                      {[
+                        { id: 'scheduled', label: 'Scheduled', value: scheduledCount, icon: Calendar, tint: 'bg-[#eaf1ff] text-blue-600' },
+                        { id: 'pending', label: 'Pending', value: pendingCount, icon: Clock, tint: 'bg-emerald-50 text-emerald-600' },
+                        { id: 'completed', label: 'Completed', value: completedCount, icon: CheckCircle, tint: 'bg-violet-50 text-violet-600' }
+                      ].map((stat) => (
+                        <div
+                          key={stat.id}
+                          className="rounded-[22px] border border-white bg-white p-6 shadow-[0_18px_45px_rgba(30,41,59,0.055)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_24px_55px_rgba(30,41,59,0.08)]"
+                        >
+                          <div className="flex items-center gap-5">
+                            <div className={`grid h-14 w-14 shrink-0 place-items-center rounded-2xl ${stat.tint}`}>
+                              <stat.icon className="h-6 w-6" />
+                            </div>
+                            <div>
+                              <p className="text-xs font-black uppercase tracking-[0.18em] text-gray-400">{stat.label}</p>
+                              <p className="mt-1 text-4xl font-black leading-none text-black">{String(stat.value).padStart(2, '0')}</p>
+                            </div>
                           </div>
                         </div>
                       ))}
+                      <button
+                        type="button"
+                        onClick={() => setShowInspectionForm(true)}
+                        className="group relative flex cursor-pointer items-center justify-between gap-5 rounded-[22px] bg-black p-6 text-white shadow-[0_18px_45px_rgba(0,0,0,0.16)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-gray-900"
+                      >
+                        <span className="flex items-center gap-5">
+                          <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-white/10 text-white">
+                            <Plus className="h-6 w-6" />
+                          </span>
+                          <span className="flex flex-col text-left">
+                            <span className="text-xs font-black uppercase tracking-[0.18em] text-white/60">Add New</span>
+                            <span className="text-lg font-black tracking-tight">Schedule Inspection</span>
+                          </span>
+                        </span>
+                        <ChevronRight className="h-5 w-5 shrink-0 text-white/60 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-white" />
+                      </button>
                     </div>
-                  )}
-                </div>
-              )}
+
+                    {/* Body */}
+                    {inspectionView === 'calendar' ? (
+                      <div className="rounded-[28px] border border-dashed border-gray-200 bg-white px-6 py-20 text-center">
+                        <div className="mx-auto mb-6 grid h-20 w-20 place-items-center rounded-3xl bg-[#eaf1ff] text-gray-400">
+                          <Calendar className="h-10 w-10" />
+                        </div>
+                        <h3 className="text-xl font-black tracking-tight text-gray-400">Calendar view</h3>
+                        <p className="mx-auto mt-3 max-w-sm text-sm font-medium leading-7 text-gray-400">
+                          A monthly calendar is coming soon. Switch to Timeline to manage your bookings now.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => setInspectionView('timeline')}
+                          className="mt-6 inline-flex cursor-pointer items-center gap-2 rounded-full bg-black px-5 py-2.5 text-sm font-bold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-gray-900"
+                        >
+                          Switch to Timeline <ArrowRight className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ) : groupedDays.length === 0 ? (
+                      <div className="rounded-[28px] border border-dashed border-gray-200 bg-white px-6 py-20 text-center">
+                        <div className="mx-auto mb-6 grid h-20 w-20 place-items-center rounded-3xl bg-[#eaf1ff] text-gray-400">
+                          <Calendar className="h-10 w-10" />
+                        </div>
+                        <h3 className="text-xl font-black tracking-tight text-gray-400">
+                          {searchTerm ? 'No matching inspections' : 'No inspections scheduled yet'}
+                        </h3>
+                        <p className="mx-auto mt-3 max-w-sm text-sm font-medium leading-7 text-gray-400">
+                          {searchTerm
+                            ? 'Try a different keyword, or clear the search to see your full schedule.'
+                            : 'Book a viewing from the Schedule Inspection card to populate your timeline.'}
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-10">
+                        {groupedDays.map((group) => {
+                          const dayLabel = formatInspectionDayLabel(group.date);
+                          return (
+                            <section key={group.date || 'unscheduled'} className="space-y-5">
+                              <div className="flex flex-wrap items-baseline justify-between gap-2">
+                                <h3 className="text-xl font-black tracking-tight text-black sm:text-2xl">{dayLabel.primary}</h3>
+                                {dayLabel.secondary && (
+                                  <p className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-400">{dayLabel.secondary}</p>
+                                )}
+                              </div>
+
+                              <div className="space-y-5">
+                                {group.items.map((insp) => {
+                                  const t = formatInspectionTime(insp.time);
+                                  const image = getInspectionImage(insp);
+                                  const isCompleted = insp.status === 'completed';
+                                  const isCancelled = insp.status === 'cancelled';
+                                  return (
+                                    <article
+                                      key={insp.id}
+                                      className="grid grid-cols-1 gap-4 sm:grid-cols-[88px_minmax(0,1fr)] sm:gap-6"
+                                    >
+                                      <div className="flex flex-row items-baseline gap-2 pt-2 sm:flex-col sm:items-end sm:gap-0 sm:pt-6 sm:text-right">
+                                        <p className="text-2xl font-black tracking-tight text-black sm:text-3xl">{t.time}</p>
+                                        <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gray-400">{t.period}</p>
+                                      </div>
+
+                                      <div className="overflow-hidden rounded-[24px] border border-white bg-white shadow-[0_14px_38px_rgba(30,41,59,0.05)] transition-shadow duration-200 hover:shadow-[0_22px_55px_rgba(30,41,59,0.09)]">
+                                        <div className="grid grid-cols-1 gap-0 sm:grid-cols-[240px_minmax(0,1fr)]">
+                                          <div className="relative h-44 w-full sm:h-full sm:min-h-[180px]">
+                                            <img
+                                              src={image}
+                                              alt={insp.propertyName}
+                                              className="absolute inset-0 h-full w-full object-cover"
+                                            />
+                                            <span className={`absolute left-3 top-3 rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] shadow-sm ${getStatusColor(insp.status)}`}>
+                                              {insp.status}
+                                            </span>
+                                          </div>
+
+                                          <div className="flex flex-col gap-5 p-6 sm:p-7">
+                                            <div className="flex flex-wrap items-start justify-between gap-4">
+                                              <div className="min-w-0">
+                                                <h4 className="truncate text-lg font-black tracking-tight text-black sm:text-xl">{insp.propertyName}</h4>
+                                                <p className="mt-1 flex items-center gap-1.5 truncate text-sm font-medium text-gray-500">
+                                                  <MapPin className="h-4 w-4 shrink-0 opacity-60" />
+                                                  <span className="truncate">{insp.address}</span>
+                                                </p>
+                                              </div>
+                                              <div className="text-right">
+                                                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">
+                                                  {insp.client ? 'Potential Buyer' : 'Agent Liaison'}
+                                                </p>
+                                                <p className="mt-1 text-sm font-bold text-gray-950">
+                                                  {insp.client || insp.inspector || '—'}
+                                                </p>
+                                              </div>
+                                            </div>
+
+                                            <div className="flex flex-wrap items-center gap-2">
+                                              {[insp.inspector && { label: insp.inspector }, insp.notes && { label: insp.notes }]
+                                                .filter(Boolean)
+                                                .slice(0, 4)
+                                                .map((chip: any, idx) => (
+                                                  <span
+                                                    key={idx}
+                                                    className="rounded-full bg-gray-50 px-3 py-1 text-[11px] font-bold text-gray-600"
+                                                  >
+                                                    {chip.label}
+                                                  </span>
+                                                ))}
+                                              {!insp.inspector && !insp.notes && (
+                                                <span className="rounded-full bg-gray-50 px-3 py-1 text-[11px] font-bold text-gray-500">
+                                                  Initial Tour
+                                                </span>
+                                              )}
+                                            </div>
+
+                                            <div className="mt-auto flex flex-wrap items-center justify-end gap-2 pt-2">
+                                              {!isCompleted && !isCancelled && (
+                                                <button
+                                                  type="button"
+                                                  onClick={() => updateInspectionStatus(insp.id, 'cancelled')}
+                                                  className="cursor-pointer rounded-xl px-4 py-2 text-sm font-bold text-red-500 transition-colors duration-200 hover:bg-red-50 hover:text-red-600"
+                                                >
+                                                  Cancel
+                                                </button>
+                                              )}
+                                              {!isCancelled && (
+                                                <button
+                                                  type="button"
+                                                  onClick={() => handleRescheduleInspection(insp)}
+                                                  className="cursor-pointer rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-bold text-gray-700 transition-all duration-200 hover:-translate-y-0.5 hover:border-gray-300 hover:bg-gray-50"
+                                                >
+                                                  Reschedule
+                                                </button>
+                                              )}
+                                              {!isCompleted && !isCancelled && (
+                                                <button
+                                                  type="button"
+                                                  onClick={() => updateInspectionStatus(insp.id, 'completed')}
+                                                  className="cursor-pointer rounded-xl bg-emerald-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-emerald-700"
+                                                >
+                                                  Confirm
+                                                </button>
+                                              )}
+                                              {isCompleted && (
+                                                <span className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-50 px-4 py-2 text-sm font-bold text-emerald-700">
+                                                  <CheckCircle className="h-4 w-4" /> Completed
+                                                </span>
+                                              )}
+                                              {isCancelled && (
+                                                <span className="inline-flex items-center gap-1.5 rounded-xl bg-red-50 px-4 py-2 text-sm font-bold text-red-600">
+                                                  <X className="h-4 w-4" /> Cancelled
+                                                </span>
+                                              )}
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </article>
+                                  );
+                                })}
+                              </div>
+                            </section>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+
+              {activeTab === 'notes' && (() => {
+                const filteredNotes = notesFilter === 'all'
+                  ? notes
+                  : notes.filter(n => (n.type as string) === notesFilter);
+                const quickFilters: { id: 'all' | NoteCategory; label: string }[] = [
+                  { id: 'all', label: 'All Notes' },
+                  { id: 'client-meeting', label: 'Client Meetings' },
+                  { id: 'inspection', label: 'Inspections' },
+                  { id: 'pricing', label: 'Pricing' }
+                ];
+                return (
+                  <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                    <div>
+                      <h2 className="text-2xl font-extrabold tracking-tight text-gray-900 sm:text-3xl">Notes &amp; Updates</h2>
+                      <p className="mt-2 max-w-2xl text-base font-medium leading-7 text-gray-500">
+                        Keep track of every detail and interaction across your portfolio.
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-8 lg:grid-cols-[360px_minmax(0,1fr)]">
+                      {/* Left column: new entry + quick filters */}
+                      <div className="space-y-6">
+                        <div className="rounded-[28px] border border-white bg-white p-6 shadow-[0_18px_45px_rgba(30,41,59,0.06)] sm:p-7">
+                          <div className="mb-6 flex items-center gap-2">
+                            <span className="grid h-7 w-7 place-items-center rounded-full bg-[#eaf1ff] text-gray-500">
+                              <Plus className="h-3.5 w-3.5" />
+                            </span>
+                            <h3 className="text-base font-black tracking-tight text-black">New Entry</h3>
+                          </div>
+
+                          <label className="mb-2 block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">
+                            Property Reference
+                          </label>
+                          <div className="relative mb-5">
+                            <select
+                              value={entryForm.propertyId}
+                              onChange={(e) => setEntryForm({ ...entryForm, propertyId: e.target.value })}
+                              className="h-12 w-full cursor-pointer appearance-none rounded-2xl border border-gray-100 bg-gray-50/60 px-4 pr-10 text-sm font-semibold text-gray-700 outline-none transition-all duration-200 focus:border-gray-300 focus:bg-white"
+                            >
+                              <option value="">Select Property</option>
+                              {assignments.map((a) => (
+                                <option key={a._id || a.id} value={a._id || a.id}>{a.title}</option>
+                              ))}
+                            </select>
+                            <ChevronRight className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 rotate-90 text-gray-400" />
+                          </div>
+
+                          <label className="mb-2 block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">
+                            Note Details
+                          </label>
+                          <textarea
+                            value={entryForm.content}
+                            onChange={(e) => setEntryForm({ ...entryForm, content: e.target.value })}
+                            placeholder="Type your update here..."
+                            rows={5}
+                            className="mb-5 w-full resize-none rounded-2xl border border-gray-100 bg-gray-50/60 px-4 py-3 text-sm font-medium leading-6 text-gray-700 outline-none transition-all duration-200 placeholder:text-gray-400 focus:border-gray-300 focus:bg-white"
+                          />
+
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-1">
+                              <button
+                                type="button"
+                                aria-label="Attach file"
+                                className="grid h-9 w-9 cursor-pointer place-items-center rounded-full text-gray-400 transition-colors duration-200 hover:bg-gray-50 hover:text-gray-700"
+                              >
+                                <Paperclip className="h-4 w-4" />
+                              </button>
+                              <button
+                                type="button"
+                                aria-label="Mention or tag"
+                                className="grid h-9 w-9 cursor-pointer place-items-center rounded-full text-gray-400 transition-colors duration-200 hover:bg-gray-50 hover:text-gray-700"
+                              >
+                                <AtSign className="h-4 w-4" />
+                              </button>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={handlePostNote}
+                              disabled={!entryForm.content.trim()}
+                              className="cursor-pointer rounded-xl bg-black px-5 py-2.5 text-sm font-bold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-gray-900 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0"
+                            >
+                              Post Note
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="rounded-[28px] border border-white bg-white p-6 shadow-[0_18px_45px_rgba(30,41,59,0.06)] sm:p-7">
+                          <h3 className="mb-4 text-base font-black tracking-tight text-black">Quick Filters</h3>
+                          <div className="flex flex-wrap gap-2">
+                            {quickFilters.map((f) => (
+                              <button
+                                key={f.id}
+                                type="button"
+                                onClick={() => setNotesFilter(f.id)}
+                                className={`cursor-pointer rounded-full px-4 py-2 text-xs font-bold tracking-wide transition-all duration-200 ${
+                                  notesFilter === f.id
+                                    ? 'bg-black text-white shadow-sm'
+                                    : 'bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                                }`}
+                              >
+                                {f.label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Right column: timeline */}
+                      <div className="min-w-0">
+                        {filteredNotes.length === 0 ? (
+                          <div className="rounded-[28px] border border-dashed border-gray-200 bg-white px-6 py-20 text-center">
+                            <div className="mx-auto mb-6 grid h-20 w-20 place-items-center rounded-3xl bg-[#eaf1ff] text-gray-400">
+                              <MessageSquare className="h-10 w-10" />
+                            </div>
+                            <h3 className="text-xl font-black tracking-tight text-gray-400">No updates yet</h3>
+                            <p className="mx-auto mt-3 max-w-sm text-sm font-medium leading-7 text-gray-400">
+                              {notesFilter === 'all'
+                                ? 'Post your first note from the New Entry panel to start your portfolio timeline.'
+                                : 'No entries match this filter. Try another category or post a new note.'}
+                            </p>
+                          </div>
+                        ) : (
+                          <>
+                            <div className="relative">
+                              <span className="absolute bottom-4 left-[7px] top-4 w-px bg-gray-100 sm:left-[11px]" aria-hidden="true" />
+                              <div className="space-y-6">
+                                {filteredNotes.map((note) => {
+                                  const cat = getCategoryMeta(note.type);
+                                  return (
+                                    <article key={note.id} className="relative pl-9 sm:pl-14">
+                                      <span className="absolute left-0 top-7 grid h-4 w-4 place-items-center rounded-full bg-white ring-4 ring-[#f7f8fd] sm:left-1">
+                                        <span className={`h-2 w-2 rounded-full ${cat.dot}`} />
+                                      </span>
+                                      <div className="rounded-[24px] border border-white bg-white p-6 shadow-[0_14px_38px_rgba(30,41,59,0.05)] transition-shadow duration-200 hover:shadow-[0_20px_50px_rgba(30,41,59,0.09)] sm:p-7">
+                                        <div className="flex flex-wrap items-start justify-between gap-3">
+                                          <div className="min-w-0">
+                                            <h4 className="truncate text-base font-black tracking-tight text-black sm:text-lg">
+                                              {note.title}
+                                            </h4>
+                                            <p className="mt-1 text-xs font-semibold text-gray-400">
+                                              Added by {agentName} · {formatTimestamp(note.createdAt)}
+                                            </p>
+                                          </div>
+                                          <span className={`shrink-0 rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] ${cat.badge}`}>
+                                            {cat.label}
+                                          </span>
+                                        </div>
+                                        <p className="mt-4 text-sm font-medium leading-7 text-gray-600">{note.content}</p>
+                                      </div>
+                                    </article>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                            <div className="mt-10 flex justify-center">
+                              <button
+                                type="button"
+                                className="cursor-pointer text-sm font-bold text-gray-500 transition-colors duration-200 hover:text-black"
+                              >
+                                Show older updates ↓
+                              </button>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
             </div>
           </main>

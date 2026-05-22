@@ -2,9 +2,14 @@
 
 import { AgentProvider } from '@/context/AgentContext';
 import AgentWizard from '@/components/agent/AgentWizard';
-import { Navbar, Footer } from '@/components';
+import { Footer, Navbar } from '@/components';
+import { useAuth } from '@/context/AuthContext';
 
 export default function AgentFlowPage() {
+  const { user } = useAuth();
+  const agentName = user?.name || 'Agent';
+  const agentAvatar = (user as any)?.profileImage || (user as any)?.avatar || '';
+
   return (
     <AgentProvider>
       <div className="min-h-screen bg-gray-50">

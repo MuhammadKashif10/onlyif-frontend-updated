@@ -1,9 +1,14 @@
 'use client';
 
-import { Navbar, Footer } from '@/components';
+import { Footer, Navbar } from '@/components';
+import { useAuth } from '@/context/AuthContext';
 import EnhancedNotificationPanel from '@/components/reusable/EnhancedNotificationPanel';
 
 export default function AgentNotifications() {
+  const { user } = useAuth();
+  const agentName = user?.name || 'Agent';
+  const agentAvatar = (user as any)?.profileImage || (user as any)?.avatar || '';
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />

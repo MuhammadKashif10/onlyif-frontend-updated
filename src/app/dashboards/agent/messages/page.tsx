@@ -4,9 +4,12 @@ import React from 'react';
 import { useAuth } from '@/context/AuthContext';
 import SecureMessageBoard from '@/components/communication/SecureMessageBoard';
 import { Card, Badge } from '@/components/reusable';
+import { Navbar } from '@/components';
 
 const AgentMessagesPage: React.FC = () => {
   const { user } = useAuth();
+  const agentName = user?.name || 'Agent';
+  const agentAvatar = (user as any)?.profileImage || (user as any)?.avatar || '';
 
   if (!user || user.role !== 'agent') {
     return (
@@ -21,6 +24,7 @@ const AgentMessagesPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <Navbar />
       <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-6">
