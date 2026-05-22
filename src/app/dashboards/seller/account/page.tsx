@@ -85,9 +85,24 @@ interface NotificationMessage extends Message {
   isNotification: boolean;
 }
 
+const safeTextValue = (value: unknown, fallback = '') => {
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+  return fallback;
+};
+
 const SellerAccount = () => {
   const router = useRouter();
-  const { user, logout } = useAuth();
+  const { user: authUser, logout } = useAuth();
+  const user = authUser
+    ? {
+        ...authUser,
+        id: safeTextValue(authUser.id),
+        name: safeTextValue(authUser.name),
+        email: safeTextValue(authUser.email),
+        role: typeof authUser.role === 'string' ? authUser.role : null
+      }
+    : null;
   const hasSellerAccess = !!user?.roles?.includes('seller');
 
   // Password change state
@@ -120,6 +135,91 @@ const SellerAccount = () => {
     }
     return response.json();
   };
+
+  const toSafeText = (value: unknown, fallback = '—') => {
+    if (typeof value === 'string') return value;
+    if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+    return fallback;
+  };
+
+  const toSafeMessage = (value: unknown, fallback = 'Something went wrong') => {
+    if (typeof value === 'string') return value;
+    if (value instanceof Error) return value.message || fallback;
+    if (value && typeof value === 'object') {
+      const messageValue = (value as { message?: unknown; error?: unknown }).message || (value as { error?: unknown }).error;
+      if (typeof messageValue === 'string') return messageValue;
+      try {
+        const serialized = JSON.stringify(value);
+        return serialized && serialized !== '{}' ? serialized : fallback;
+      } catch {
+        return fallback;
+      }
+    }
+    return fallback;
+  };
+
+  const toSafeNumber = (value: unknown, fallback = 0) => {
+    const numericValue = typeof value === 'number' ? value : Number(value);
+    return Number.isFinite(numericValue) ? numericValue : fallback;
+  };
+
+  const toSafeDateText = (value: unknown) => {
+    const rawValue = toSafeText(value, '');
+    const date = rawValue ? new Date(rawValue) : null;
+    if (!date || Number.isNaN(date.getTime())) return '—';
+
+    return date.toLocaleDateString('en-AU', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  const getInitials = (name: unknown, fallback = 'S') => {
+    const safeName = toSafeText(name, '').trim();
+    if (!safeName) return fallback;
+    return safeName
+      .split(/\s+/)
+      .map((part) => part[0])
+      .join('')
+      .slice(0, 2)
+      .toUpperCase() || fallback;
+  };
+
+  const normalizeInvoice = (invoice: any): Invoice => ({
+    _id: toSafeText(invoice?._id || invoice?.id, `invoice-${Math.random().toString(36).slice(2)}`),
+    invoiceNumber: toSafeText(invoice?.invoiceNumber, 'Invoice'),
+    property: {
+      _id: toSafeText(invoice?.property?._id || invoice?.property?.id, ''),
+      title: toSafeText(invoice?.property?.title, '—'),
+      address: toSafeText(invoice?.property?.address, '')
+    },
+    invoiceDate: toSafeText(invoice?.invoiceDate, ''),
+    dueDate: toSafeText(invoice?.dueDate, ''),
+    settlementDate: toSafeText(invoice?.settlementDate, ''),
+    propertyValue: toSafeNumber(invoice?.propertyValue),
+    commissionRate: toSafeNumber(invoice?.commissionRate),
+    commissionAmount: toSafeNumber(invoice?.commissionAmount),
+    totalAmount: toSafeNumber(invoice?.totalAmount),
+    amountPaid: toSafeNumber(invoice?.amountPaid),
+    amountDue: toSafeNumber(invoice?.amountDue),
+    status: ['draft', 'pending', 'sent', 'viewed', 'paid', 'overdue', 'cancelled'].includes(toSafeText(invoice?.status, ''))
+      ? toSafeText(invoice?.status) as Invoice['status']
+      : 'pending',
+    isOverdue: Boolean(invoice?.isOverdue),
+    payments: Array.isArray(invoice?.payments)
+      ? invoice.payments.map((payment: any) => ({
+          amount: toSafeNumber(payment?.amount),
+          paymentDate: toSafeText(payment?.paymentDate, ''),
+          paymentMethod: toSafeText(payment?.paymentMethod, ''),
+          transactionId: toSafeText(payment?.transactionId, ''),
+          reference: toSafeText(payment?.reference, '')
+        }))
+      : [],
+    transactionId: toSafeText(invoice?.transactionId, ''),
+    stripeAccountId: toSafeText(invoice?.stripeAccountId, ''),
+    stripeAccountEmail: toSafeText(invoice?.stripeAccountEmail, '')
+  });
 
   // Helper to style status badge
   const getStatusClass = (status: string) => {
@@ -165,8 +265,8 @@ const SellerAccount = () => {
       
       console.log('📋 Backend invoices response:', data);
       
-      if (data.success && data.data) {
-        setInvoices(data.data);
+      if (data.success && Array.isArray(data.data)) {
+        setInvoices(data.data.map(normalizeInvoice));
       } else {
         console.log('⚠️ No invoices found or API error:', data);
         setInvoices([]);
@@ -217,7 +317,7 @@ const SellerAccount = () => {
   const fetchNotifications = React.useCallback(async () => {
     if (!user?.id) return;
     
-    console.log('Fetching notifications for seller user:', user.id, user.name);
+    console.log('Fetching notifications for seller user:', user.id, toSafeText(user.name, 'Seller'));
     
     setLoadingNotifications(true);
     try {
@@ -268,13 +368,19 @@ const SellerAccount = () => {
                     messagesData.data
                       .filter((msg: any) => msg.senderId !== user.id && msg.senderId !== seller?.userId && msg.senderId === agent.userId)
                       .forEach((msg: any) => {
+                        const messageText = toSafeText(msg.messageText, '');
                         const notificationMessage: NotificationMessage = {
                           ...msg,
-                          senderName: agent.name || 'Agent',
+                          id: toSafeText(msg.id || msg._id, `${conversation.id || 'notification'}-${allMessages.length}`),
+                          conversationId: toSafeText(conversation.id || conversation._id, ''),
+                          senderName: toSafeText(agent.name, 'Agent'),
                           senderRole: 'agent',
-                          propertyId: conversation.propertyId,
-                          propertyTitle: conversation.propertyTitle,
-                          type: msg.messageText.includes('🎉') && msg.messageText.includes('settled') ? 'settlement' : 'general',
+                          messageText,
+                          timestamp: toSafeText(msg.timestamp || msg.createdAt, new Date().toISOString()),
+                          read: Boolean(msg.read),
+                          propertyId: toSafeText(conversation.propertyId, ''),
+                          propertyTitle: toSafeText(conversation.propertyTitle, ''),
+                          type: messageText.includes('settled') ? 'settlement' : 'general',
                           isNotification: true
                         };
                         allMessages.push(notificationMessage);
@@ -502,7 +608,7 @@ const SellerAccount = () => {
   };
 
   const sidebarButtonClass = (isActive: boolean) =>
-    `w-full flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all ${
+    `w-full flex cursor-pointer items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-200 ease-out hover:shadow-sm ${
       isActive
         ? 'bg-black text-white shadow-lg shadow-black/10'
         : 'text-gray-600 hover:bg-white hover:text-gray-950'
@@ -559,16 +665,16 @@ const SellerAccount = () => {
           <div className="border-t border-gray-200 pt-5">
             <button
               onClick={() => router.push('/dashboards/seller/add-property')}
-              className="mb-5 w-full rounded-xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-900/10 transition hover:bg-emerald-700"
+              className="mb-5 w-full cursor-pointer rounded-xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-900/10 transition-all duration-200 ease-out hover:bg-emerald-700 hover:shadow-xl"
             >
               List Property
             </button>
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-600 text-sm font-bold text-white shadow-sm">
-                {user?.name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'S'}
+                {getInitials(user?.name)}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-bold text-gray-950">{user?.name || 'Seller Name'}</p>
+                <p className="truncate text-sm font-bold text-gray-950">{toSafeText(user?.name, 'Seller Name')}</p>
                 <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">Premium Account</p>
               </div>
             </div>
@@ -675,8 +781,8 @@ const SellerAccount = () => {
                         For security, your existing password cannot be displayed. Use the toggles to view what you type.
                       </p>
 
-                      {error && <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-600 rounded-2xl font-bold">{String(error)}</div>}
-                      {message && <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 text-emerald-600 rounded-2xl font-bold">{String(message)}</div>}
+                      {error && <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-600 rounded-2xl font-bold">{toSafeMessage(error)}</div>}
+                      {message && <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 text-emerald-600 rounded-2xl font-bold">{toSafeMessage(message, 'Saved successfully.')}</div>}
 
                       <form onSubmit={handleChangePassword} className="space-y-8 max-w-xl">
                         <div className="space-y-2">
@@ -789,6 +895,12 @@ const SellerAccount = () => {
                     ) : (
                       <div className="space-y-6">
                         {notifications.map((notification) => {
+                          const senderName = toSafeText(notification.senderName, 'Agent');
+                          const propertyTitle = toSafeText(notification.propertyTitle, '');
+                          const messageText = toSafeText(notification.messageText, '');
+                          const timestamp = toSafeText(notification.timestamp, new Date().toISOString());
+                          const notificationId = toSafeText(notification.id, `${notification.conversationId || 'notification'}-${senderName}`);
+                          const conversationId = toSafeText(notification.conversationId, '');
                           const isSettlement = notification.type === 'settlement';
                           const formatDate = (dateString: string) => {
                             return new Date(dateString).toLocaleDateString('en-AU', {
@@ -802,13 +914,13 @@ const SellerAccount = () => {
 
                           return (
                             <div
-                              key={notification.id}
+                              key={notificationId}
                               className={`border rounded-[2rem] p-8 transition-all hover:shadow-md cursor-pointer ${
                                 notification.read ? 'bg-white border-gray-200' : 'bg-emerald-50 border-emerald-200'
                               }`}
                               onClick={() => {
                                 if (!notification.read) {
-                                  markNotificationAsRead(notification.id, notification.conversationId);
+                                  markNotificationAsRead(notificationId, conversationId);
                                 }
                               }}
                             >
@@ -829,9 +941,9 @@ const SellerAccount = () => {
                                   <div className="flex items-center justify-between mb-4">
                                     <div className="flex items-center space-x-3">
                                       <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-bold text-xs">
-                                        {notification.senderName?.[0] || 'A'}
+                                        {senderName[0] || 'A'}
                                       </div>
-                                      <span className="text-sm font-bold text-gray-900 uppercase tracking-wider">{notification.senderName}</span>
+                                      <span className="text-sm font-bold text-gray-900 uppercase tracking-wider">{senderName}</span>
                                       {isSettlement && (
                                         <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-green-100 text-green-700 border border-green-200">
                                           Settlement Complete
@@ -839,28 +951,28 @@ const SellerAccount = () => {
                                       )}
                                     </div>
                                     <div className="flex items-center space-x-3">
-                                      <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">{formatDate(notification.timestamp)}</span>
+                                      <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">{formatDate(timestamp)}</span>
                                       {!notification.read && (
                                         <div className="w-3 h-3 bg-emerald-600 rounded-full shadow-sm"></div>
                                       )}
                                     </div>
                                   </div>
                                   
-                                  {notification.propertyTitle && (
+                                  {propertyTitle && (
                                     <div className="flex items-center space-x-2 mb-4 bg-gray-50 w-fit px-4 py-1.5 rounded-full border border-gray-100">
                                       <Home className="h-3.5 w-3.5 text-gray-400" />
-                                      <span className="text-xs font-bold text-gray-600">Property: {notification.propertyTitle}</span>
+                                      <span className="text-xs font-bold text-gray-600">Property: {propertyTitle}</span>
                                     </div>
                                   )}
                                   
                                   <div className="bg-gray-50/50 rounded-2xl p-6 border border-gray-100">
                                     <p className="text-gray-700 font-medium whitespace-pre-line leading-relaxed">
-                                      {notification.messageText}
+                                      {messageText}
                                     </p>
                                   </div>
                                   
                                   {/* Invoice Information for Settlement Notifications */}
-                                  {isSettlement && notification.messageText.includes('COMMISSION INVOICE') && (
+                                  {isSettlement && messageText.includes('COMMISSION INVOICE') && (
                                     <div className="mt-6 p-6 bg-green-50 border border-green-200 rounded-[1.5rem] shadow-sm">
                                       <h4 className="text-sm font-black text-green-800 mb-4 flex items-center uppercase tracking-widest">
                                         <Receipt className="h-4 w-4 mr-2" />
@@ -871,14 +983,14 @@ const SellerAccount = () => {
                                           onClick={(e) => {
                                             e.stopPropagation();
                                             // Extract invoice number from message (basic parsing)
-                                            const invoiceMatch = notification.messageText.match(/Invoice Number: (INV-\d+-\d+)/);
+                                            const invoiceMatch = messageText.match(/Invoice Number: (INV-\d+-\d+)/);
                                             const invoiceNumber = invoiceMatch?.[1] || 'latest';
                                             const downloadUrl = `/api/invoices/inv_${Date.now()}/pdf`;
                                             
                                             // Download PDF with a meaningful filename including the property title when available
                                             const link = document.createElement('a');
                                             link.href = downloadUrl;
-                                            const propPart = toSafeFilePart(notification.propertyTitle || invoiceNumber);
+                                            const propPart = toSafeFilePart(propertyTitle || invoiceNumber);
                                             link.download = `Invoice_${propPart}.pdf`;
                                             document.body.appendChild(link);
                                             link.click();
@@ -917,7 +1029,7 @@ const SellerAccount = () => {
                                     <button
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        markNotificationAsRead(notification.id, notification.conversationId);
+                                        markNotificationAsRead(notificationId, conversationId);
                                       }}
                                       className="mt-4 text-xs font-black text-emerald-600 hover:text-emerald-700 uppercase tracking-widest"
                                     >

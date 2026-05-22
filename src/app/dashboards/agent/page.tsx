@@ -1396,7 +1396,7 @@ export default function AgentDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-[#f6f7fb] flex flex-col">
       {/* Toast Notifications */}
       <ToastNotification />
       
@@ -1503,8 +1503,8 @@ export default function AgentDashboard() {
 
       <div className="flex flex-1 relative">
         {/* Sidebar - Consistent with other dashboards */}
-        <aside className="hidden lg:flex w-72 bg-white border-r border-gray-200 flex-col fixed left-0 top-20 bottom-0 z-20 overflow-y-auto">
-          <div className="p-8 flex-1">
+        <aside id="dashboard-sidebar" className="fixed left-0 top-20 bottom-0 z-30 hidden w-[280px] shrink-0 flex-col overflow-y-auto border-r border-gray-200 bg-white px-5 py-4 lg:flex">
+          <div className="flex-1">
             <nav className="space-y-2">
               {[
                 { id: 'overview', label: 'Overview', icon: LayoutDashboard },
@@ -1528,7 +1528,7 @@ export default function AgentDashboard() {
             </nav>
           </div>
 
-          <div className="p-6 border-t border-gray-100 bg-gray-50/50">
+          <div className="border-t border-gray-100 bg-gray-50/50 py-5">
             <div className="flex items-center space-x-4 p-2">
               <div className="w-11 h-11 rounded-full bg-emerald-600 flex items-center justify-center text-white font-bold text-base shadow-sm">
                 {agentName.split(' ').map(n => n[0]).join('').toUpperCase()}
@@ -1542,8 +1542,9 @@ export default function AgentDashboard() {
         </aside>
 
         {/* Main Content Area */}
-        <div className="flex-1 lg:ml-72 flex flex-col w-full">
-          <main className="p-4 sm:p-6 lg:p-10 w-full max-w-7xl mx-auto min-h-[calc(100vh-5rem)]">
+        <div className="flex min-h-[calc(100vh-5rem)] w-full flex-1 flex-col lg:ml-[280px]">
+          <main className="w-full flex-1 p-4 sm:p-6 lg:p-10">
+            <div className="mx-auto w-full max-w-7xl">
             {/* Welcome Section */}
             <section className="mb-10 animate-in fade-in slide-in-from-bottom-2 duration-500">
               <div className="bg-white rounded-2xl sm:rounded-[2rem] border border-gray-200 p-6 sm:p-10 shadow-sm relative overflow-hidden">
@@ -1966,6 +1967,7 @@ export default function AgentDashboard() {
                   )}
                 </div>
               )}
+            </div>
             </div>
           </main>
         </div>

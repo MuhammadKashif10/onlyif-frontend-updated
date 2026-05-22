@@ -111,8 +111,88 @@ img, video, canvas { border-radius: var(--radius-sm); }
 /* Generous whitespace defaults */
 section { padding-block: clamp(1.5rem, 3vh, 3rem); }
 
-/* Smooth transitions */
-a, button, .btn, input, select, textarea { transition: all 200ms ease; }
+/* Smooth dashboard/app interactions */
+:where(
+  a[href],
+  button,
+  [role="button"],
+  [role="tab"],
+  [role="menuitem"],
+  summary,
+  label[for],
+  select,
+  input[type="button"],
+  input[type="submit"],
+  input[type="reset"],
+  input[type="checkbox"],
+  input[type="radio"],
+  input[type="file"],
+  [tabindex]:not([tabindex="-1"]),
+  .btn,
+  .cursor-pointer,
+  [class*="hover:bg"],
+  [class*="hover:text"],
+  [class*="hover:border"],
+  [class*="hover:shadow"],
+  [class*="hover:scale"],
+  [class*="hover:-translate"]
+):not(:disabled):not([aria-disabled="true"]) {
+  cursor: pointer;
+  transition-property: color, background-color, border-color, box-shadow, opacity, transform, filter;
+  transition-duration: 200ms;
+  transition-timing-function: ease;
+}
+
+:where(
+  button,
+  .btn,
+  [role="button"],
+  [role="tab"],
+  [role="menuitem"],
+  a[href],
+  .cursor-pointer
+):not(:disabled):not([aria-disabled="true"]):active {
+  transform: translateY(1px);
+}
+
+:where(
+  button:disabled,
+  [aria-disabled="true"],
+  .disabled\:cursor-not-allowed,
+  .cursor-not-allowed
+) {
+  cursor: not-allowed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :where(
+    a[href],
+    button,
+    [role="button"],
+    [role="tab"],
+    [role="menuitem"],
+    summary,
+    label[for],
+    select,
+    input[type="button"],
+    input[type="submit"],
+    input[type="reset"],
+    input[type="checkbox"],
+    input[type="radio"],
+    input[type="file"],
+    [tabindex]:not([tabindex="-1"]),
+    .btn,
+    .cursor-pointer,
+    [class*="hover:bg"],
+    [class*="hover:text"],
+    [class*="hover:border"],
+    [class*="hover:shadow"],
+    [class*="hover:scale"],
+    [class*="hover:-translate"]
+  ) {
+    transition-duration: 1ms;
+  }
+}
 
 /* Micro-interaction animations */
 @keyframes fade-in { from { opacity: 0 } to { opacity: 1 } }

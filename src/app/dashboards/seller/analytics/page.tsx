@@ -9,14 +9,25 @@ import { sellerApi, AnalyticsData } from '@/api/seller';
 
 export default function SellerAnalytics() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [timeRange, setTimeRange] = useState('6months');
+  const sellerId = user?.id || (user as any)?._id;
+  const hasSellerAccess = !!user?.roles?.includes('seller');
+  const hasAnalyticsData = !!analyticsData && (
+    analyticsData.totalViews > 0 ||
+    analyticsData.totalInquiries > 0 ||
+    analyticsData.totalOffers > 0 ||
+    analyticsData.averageViewsPerListing > 0 ||
+    analyticsData.conversionRate > 0 ||
+    !!analyticsData.topPerformingListing ||
+    analyticsData.chartData.some((item) => item.views > 0 || item.inquiries > 0 || item.offers > 0)
+  );
 
   const sidebarButtonClass = (isActive: boolean) =>
-    `w-full flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all ${
+    `w-full flex cursor-pointer items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-200 ease-out hover:shadow-sm ${
       isActive
         ? 'bg-black text-white shadow-lg shadow-black/10'
         : 'text-gray-600 hover:bg-white hover:text-gray-950'
@@ -26,14 +37,22 @@ export default function SellerAnalytics() {
     `h-4 w-4 ${isActive ? 'text-white' : 'text-gray-500'}`;
 
   useEffect(() => {
-    if (user?.id) {
-      fetchAnalyticsData();
-    }
-  }, [timeRange, user?.id]);
+    if (authLoading) return;
 
-  const fetchAnalyticsData = async () => {
-    if (!user?.id) {
-      setError('User not authenticated');
+    if (!user || !hasSellerAccess) {
+      setLoading(false);
+      setAnalyticsData(null);
+      return;
+    }
+
+    if (sellerId) {
+      fetchAnalyticsData(sellerId);
+    }
+  }, [authLoading, hasSellerAccess, sellerId, timeRange, user]);
+
+  const fetchAnalyticsData = async (id = sellerId) => {
+    if (!id || !hasSellerAccess) {
+      setAnalyticsData(null);
       setLoading(false);
       return;
     }
@@ -42,17 +61,17 @@ export default function SellerAnalytics() {
       setLoading(true);
       setError(null);
       
-      const data = await sellerApi.getSellerAnalytics(user.id, timeRange);
+      const data = await sellerApi.getSellerAnalytics(id, timeRange);
       setAnalyticsData(data);
     } catch (err) {
       setError('Failed to load analytics data');
-      console.error('Analytics fetch error:', err);
+      setAnalyticsData(null);
     } finally {
       setLoading(false);
     }
   };
 
-  if (!user) {
+  if (authLoading || loading && !user) {
     return (
       <div className="min-h-screen bg-[#f5f6fb] flex flex-col">
         <Navbar />
@@ -85,7 +104,49 @@ export default function SellerAnalytics() {
           </aside>
           <main className="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-8">
             <div className="text-center py-8">
-              <p className="text-gray-500">Please log in to view analytics.</p>
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
+              <p className="mt-2 text-gray-600">Loading analytics...</p>
+            </div>
+          </main>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user || !hasSellerAccess) {
+    return (
+      <div className="min-h-screen bg-[#f5f6fb] flex flex-col">
+        <Navbar />
+        <div className="flex w-full flex-1 bg-[#f5f6fb] lg:pl-[280px]">
+          <aside id="dashboard-sidebar" className="fixed left-0 top-20 bottom-0 z-30 hidden w-[280px] shrink-0 flex-col overflow-y-auto border-r border-gray-200 bg-white px-5 py-4 lg:flex">
+            <div className="flex-1">
+              <nav className="space-y-2 pt-3">
+                <button onClick={() => router.push('/dashboards/seller')} className={sidebarButtonClass(false)}>
+                  <LayoutDashboard className={sidebarIconClass(false)} />
+                  <span>Dashboard</span>
+                </button>
+                <button onClick={() => router.push('/dashboards/seller/listings')} className={sidebarButtonClass(false)}>
+                  <Home className={sidebarIconClass(false)} />
+                  <span>Listings</span>
+                </button>
+                <button onClick={() => router.push('/dashboards/seller/marketplace')} className={sidebarButtonClass(false)}>
+                  <Store className={sidebarIconClass(false)} />
+                  <span>Marketplace</span>
+                </button>
+                <button className={sidebarButtonClass(true)}>
+                  <BarChart3 className={sidebarIconClass(true)} />
+                  <span>Analytics</span>
+                </button>
+                <button onClick={() => router.push('/dashboards/seller/account')} className={sidebarButtonClass(false)}>
+                  <Settings className={sidebarIconClass(false)} />
+                  <span>Settings</span>
+                </button>
+              </nav>
+            </div>
+          </aside>
+          <main className="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-8">
+            <div className="text-center py-8">
+              <p className="text-gray-500">Please log in with a seller account to view analytics.</p>
             </div>
           </main>
         </div>
@@ -126,7 +187,7 @@ export default function SellerAnalytics() {
           <div className="border-t border-gray-200 pt-5">
             <button
               onClick={() => router.push('/dashboards/seller/add-property')}
-              className="mb-5 w-full rounded-xl bg-black px-4 py-3 text-sm font-bold text-white shadow-lg shadow-black/10 transition hover:bg-gray-900"
+              className="mb-5 w-full cursor-pointer rounded-xl bg-black px-4 py-3 text-sm font-bold text-white shadow-lg shadow-black/10 transition-all duration-200 ease-out hover:bg-gray-900 hover:shadow-xl"
             >
               List Property
             </button>
@@ -197,7 +258,7 @@ export default function SellerAnalytics() {
             <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
               <p className="text-red-600">{error}</p>
               <button 
-                onClick={fetchAnalyticsData}
+                onClick={() => fetchAnalyticsData()}
                 className="mt-2 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
               >
                 Retry
@@ -213,7 +274,7 @@ export default function SellerAnalytics() {
                 <p className="mt-2 text-sm leading-6 text-gray-500">Views, inquiries, and offers for the selected period.</p>
               </div>
 
-              {analyticsData?.chartData?.length ? (
+              {hasAnalyticsData && analyticsData?.chartData?.length ? (
                 <>
                   <div className="flex h-80 items-end justify-between gap-3 overflow-x-auto pb-2">
                     {analyticsData.chartData.map((data, index) => (

@@ -33,6 +33,69 @@ interface PropertyFormData {
   carSpaces?: string;
 }
 
+interface AustralianLocation {
+  city: string;
+  state: string;
+  stateName: string;
+  postcode: string;
+}
+
+const AUSTRALIAN_STATES = [
+  { code: 'NSW', name: 'New South Wales' },
+  { code: 'VIC', name: 'Victoria' },
+  { code: 'QLD', name: 'Queensland' },
+  { code: 'WA', name: 'Western Australia' },
+  { code: 'SA', name: 'South Australia' },
+  { code: 'TAS', name: 'Tasmania' },
+  { code: 'ACT', name: 'Australian Capital Territory' },
+  { code: 'NT', name: 'Northern Territory' },
+];
+
+const AUSTRALIAN_LOCATIONS: AustralianLocation[] = [
+  { city: 'Sydney', state: 'NSW', stateName: 'New South Wales', postcode: '2000' },
+  { city: 'Melbourne', state: 'VIC', stateName: 'Victoria', postcode: '3000' },
+  { city: 'Brisbane', state: 'QLD', stateName: 'Queensland', postcode: '4000' },
+  { city: 'Perth', state: 'WA', stateName: 'Western Australia', postcode: '6000' },
+  { city: 'Adelaide', state: 'SA', stateName: 'South Australia', postcode: '5000' },
+  { city: 'Gold Coast', state: 'QLD', stateName: 'Queensland', postcode: '4217' },
+  { city: 'Canberra', state: 'ACT', stateName: 'Australian Capital Territory', postcode: '2601' },
+  { city: 'Hobart', state: 'TAS', stateName: 'Tasmania', postcode: '7000' },
+  { city: 'Darwin', state: 'NT', stateName: 'Northern Territory', postcode: '0800' },
+  { city: 'Newcastle', state: 'NSW', stateName: 'New South Wales', postcode: '2300' },
+  { city: 'Geelong', state: 'VIC', stateName: 'Victoria', postcode: '3220' },
+  { city: 'Sunshine Coast', state: 'QLD', stateName: 'Queensland', postcode: '4558' },
+  { city: 'Wollongong', state: 'NSW', stateName: 'New South Wales', postcode: '2500' },
+  { city: 'Fremantle', state: 'WA', stateName: 'Western Australia', postcode: '6160' },
+  { city: 'Parramatta', state: 'NSW', stateName: 'New South Wales', postcode: '2150' },
+  { city: 'Bondi', state: 'NSW', stateName: 'New South Wales', postcode: '2026' },
+  { city: 'Bondi Beach', state: 'NSW', stateName: 'New South Wales', postcode: '2026' },
+  { city: 'Manly', state: 'NSW', stateName: 'New South Wales', postcode: '2095' },
+  { city: 'Surry Hills', state: 'NSW', stateName: 'New South Wales', postcode: '2010' },
+  { city: 'Chatswood', state: 'NSW', stateName: 'New South Wales', postcode: '2067' },
+  { city: 'St Kilda', state: 'VIC', stateName: 'Victoria', postcode: '3182' },
+  { city: 'Richmond', state: 'VIC', stateName: 'Victoria', postcode: '3121' },
+  { city: 'South Yarra', state: 'VIC', stateName: 'Victoria', postcode: '3141' },
+  { city: 'Carlton', state: 'VIC', stateName: 'Victoria', postcode: '3053' },
+  { city: 'Fitzroy', state: 'VIC', stateName: 'Victoria', postcode: '3065' },
+  { city: 'South Brisbane', state: 'QLD', stateName: 'Queensland', postcode: '4101' },
+  { city: 'Fortitude Valley', state: 'QLD', stateName: 'Queensland', postcode: '4006' },
+  { city: 'Noosa Heads', state: 'QLD', stateName: 'Queensland', postcode: '4567' },
+  { city: 'Surfers Paradise', state: 'QLD', stateName: 'Queensland', postcode: '4217' },
+  { city: 'Southport', state: 'QLD', stateName: 'Queensland', postcode: '4215' },
+  { city: 'Cottesloe', state: 'WA', stateName: 'Western Australia', postcode: '6011' },
+  { city: 'Subiaco', state: 'WA', stateName: 'Western Australia', postcode: '6008' },
+  { city: 'Joondalup', state: 'WA', stateName: 'Western Australia', postcode: '6027' },
+  { city: 'Glenelg', state: 'SA', stateName: 'South Australia', postcode: '5045' },
+  { city: 'Norwood', state: 'SA', stateName: 'South Australia', postcode: '5067' },
+  { city: 'North Adelaide', state: 'SA', stateName: 'South Australia', postcode: '5006' },
+  { city: 'Launceston', state: 'TAS', stateName: 'Tasmania', postcode: '7250' },
+  { city: 'Sandy Bay', state: 'TAS', stateName: 'Tasmania', postcode: '7005' },
+  { city: 'Belconnen', state: 'ACT', stateName: 'Australian Capital Territory', postcode: '2617' },
+  { city: 'Kingston', state: 'ACT', stateName: 'Australian Capital Territory', postcode: '2604' },
+  { city: 'Palmerston', state: 'NT', stateName: 'Northern Territory', postcode: '0830' },
+  { city: 'Alice Springs', state: 'NT', stateName: 'Northern Territory', postcode: '0870' },
+];
+
 export default function AddProperty() {
   const router = useRouter();
   const { user } = useAuth();
@@ -63,6 +126,19 @@ export default function AddProperty() {
   const [videoTours, setVideoTours] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [contactAutoFilled, setContactAutoFilled] = useState(false);
+  const [isLocationDropdownOpen, setIsLocationDropdownOpen] = useState(false);
+
+  const filteredLocations = formData.city.trim()
+    ? AUSTRALIAN_LOCATIONS.filter((location) => {
+        const query = formData.city.trim().toLowerCase();
+        return (
+          location.city.toLowerCase().includes(query) ||
+          location.state.toLowerCase().includes(query) ||
+          location.stateName.toLowerCase().includes(query) ||
+          location.postcode.includes(query)
+        );
+      }).slice(0, 8)
+    : AUSTRALIAN_LOCATIONS.slice(0, 8);
 
   // Auto-fill contact details from seller's account profile
   useEffect(() => {
@@ -79,6 +155,25 @@ export default function AddProperty() {
 
   const handleInputChange = (field: keyof PropertyFormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleCitySearchChange = (value: string) => {
+    setFormData(prev => ({ ...prev, city: value }));
+    setIsLocationDropdownOpen(true);
+  };
+
+  const handleLocationSelect = (location: AustralianLocation) => {
+    setFormData(prev => ({
+      ...prev,
+      city: location.city,
+      state: location.state,
+      zipCode: location.postcode || prev.zipCode
+    }));
+    setIsLocationDropdownOpen(false);
+  };
+
+  const handlePostcodeChange = (value: string) => {
+    handleInputChange('zipCode', value.replace(/\D/g, '').slice(0, 4));
   };
 
   const handleFileUpload = (files: FileList | null, type: 'images' | 'floorPlans' | 'videos') => {
@@ -161,7 +256,12 @@ export default function AddProperty() {
       toast.error(`Please fill in all required fields: ${missingFields.join(', ')}`);
       return;
     }
-  
+
+    if (!/^\d{4}$/.test(normalizedFormData.zipCode)) {
+      toast.error('Please enter a valid 4-digit Australian postcode.');
+      return;
+    }
+
     try {
       setIsSubmitting(true);
       
@@ -245,7 +345,7 @@ export default function AddProperty() {
   };
 
   const sidebarButtonClass = (isActive: boolean) =>
-    `w-full flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all ${
+    `w-full flex cursor-pointer items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-200 ease-out hover:shadow-sm ${
       isActive
         ? 'bg-black text-white shadow-lg shadow-black/10'
         : 'text-gray-600 hover:bg-white hover:text-gray-950'
@@ -303,7 +403,7 @@ export default function AddProperty() {
           <div className="border-t border-gray-200 pt-5">
             <button
               onClick={() => router.push('/dashboards/seller/add-property')}
-              className="mb-5 w-full rounded-xl bg-black px-4 py-3 text-sm font-bold text-white shadow-lg shadow-black/10 transition hover:bg-gray-900"
+              className="mb-5 w-full cursor-pointer rounded-xl bg-black px-4 py-3 text-sm font-bold text-white shadow-lg shadow-black/10 transition-all duration-200 ease-out hover:bg-gray-900 hover:shadow-xl"
             >
               List Property
             </button>
@@ -390,35 +490,85 @@ export default function AddProperty() {
                     />
                     
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                      <InputField
-                        label="City"
-                        placeholder="Enter city"
-                        value={formData.city}
-                        onChange={(e) => handleInputChange('city', e.target.value)}
-                        required
-                        id="city"
-                        name="city"
-                      />
+                      <div className="relative">
+                        <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
+                          City/Suburb<span className="text-red-500 ml-1">*</span>
+                        </label>
+                        <input
+                          id="city"
+                          name="city"
+                          type="text"
+                          value={formData.city}
+                          onChange={(e) => handleCitySearchChange(e.target.value)}
+                          onFocus={() => setIsLocationDropdownOpen(true)}
+                          onBlur={() => window.setTimeout(() => setIsLocationDropdownOpen(false), 150)}
+                          placeholder="Search suburb or city"
+                          required
+                          autoComplete="off"
+                          className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 border-gray-300 focus:border-blue-500"
+                        />
+                        {isLocationDropdownOpen && filteredLocations.length > 0 && (
+                          <div className="absolute z-30 mt-2 max-h-72 w-full overflow-y-auto rounded-xl border border-gray-200 bg-white shadow-xl">
+                            {filteredLocations.map((location) => (
+                              <button
+                                key={`${location.city}-${location.state}-${location.postcode}`}
+                                type="button"
+                                onMouseDown={(e) => e.preventDefault()}
+                                onClick={() => handleLocationSelect(location)}
+                                className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition hover:bg-emerald-50"
+                              >
+                                <span>
+                                  <span className="block text-sm font-bold text-gray-900">{location.city}</span>
+                                  <span className="block text-xs font-semibold text-gray-500">{location.stateName}</span>
+                                </span>
+                                <span className="shrink-0 rounded-full bg-gray-100 px-3 py-1 text-xs font-bold text-gray-700">
+                                  {location.state} {location.postcode}
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                       
-                      <InputField
-                        label="State"
-                        placeholder="Enter state"
-                        value={formData.state}
-                        onChange={(e) => handleInputChange('state', e.target.value)}
-                        required
-                        id="state"
-                        name="state"
-                      />
+                      <div>
+                        <label htmlFor="state" className="block text-sm font-medium text-gray-700 mb-1">
+                          State/Territory<span className="text-red-500 ml-1">*</span>
+                        </label>
+                        <select
+                          id="state"
+                          name="state"
+                          value={formData.state}
+                          onChange={(e) => handleInputChange('state', e.target.value)}
+                          required
+                          className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 border-gray-300 focus:border-blue-500 bg-white"
+                        >
+                          <option value="">Select state</option>
+                          {AUSTRALIAN_STATES.map((state) => (
+                            <option key={state.code} value={state.code}>
+                              {state.code} — {state.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
                       
-                      <InputField
-                        label="Postcode"
-                        placeholder="AU: 4 digits (e.g. 3000)"
-                        value={formData.zipCode}
-                        onChange={(e) => handleInputChange('zipCode', e.target.value)}
-                        required
-                        id="zipCode"
-                        name="zipCode"
-                      />
+                      <div>
+                        <label htmlFor="zipCode" className="block text-sm font-medium text-gray-700 mb-1">
+                          Postcode<span className="text-red-500 ml-1">*</span>
+                        </label>
+                        <input
+                          id="zipCode"
+                          name="zipCode"
+                          type="text"
+                          value={formData.zipCode}
+                          onChange={(e) => handlePostcodeChange(e.target.value)}
+                          placeholder="AU: 4 digits (e.g. 3000)"
+                          required
+                          inputMode="numeric"
+                          pattern="\d{4}"
+                          maxLength={4}
+                          className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 border-gray-300 focus:border-blue-500"
+                        />
+                      </div>
                     </div>
                   </section>
 

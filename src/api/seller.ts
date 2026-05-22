@@ -34,6 +34,53 @@ export interface ChartData {
   offers: number;
 }
 
+const emptyAnalyticsData: AnalyticsData = {
+  totalViews: 0,
+  totalInquiries: 0,
+  totalOffers: 0,
+  averageViewsPerListing: 0,
+  conversionRate: 0,
+  topPerformingListing: null,
+  chartData: []
+};
+
+const getEmptyAnalyticsData = (): AnalyticsData => ({
+  ...emptyAnalyticsData,
+  chartData: []
+});
+
+const normalizeAnalyticsData = (payload: any): AnalyticsData => {
+  const data = payload?.data?.data || payload?.data || payload || {};
+
+  return {
+    totalViews: Number(data.totalViews) || 0,
+    totalInquiries: Number(data.totalInquiries) || 0,
+    totalOffers: Number(data.totalOffers) || 0,
+    averageViewsPerListing: Number(data.averageViewsPerListing) || 0,
+    conversionRate: Number(data.conversionRate) || 0,
+    topPerformingListing: data.topPerformingListing || null,
+    chartData: Array.isArray(data.chartData)
+      ? data.chartData.map((item: any) => ({
+          month: typeof item?.month === 'string' ? item.month : '',
+          views: Number(item?.views) || 0,
+          inquiries: Number(item?.inquiries) || 0,
+          offers: Number(item?.offers) || 0
+        }))
+      : []
+  };
+};
+
+const fetchJsonSafely = async (response: Response): Promise<any> => {
+  const contentType = response.headers.get('content-type') || '';
+  if (!contentType.includes('application/json')) return {};
+
+  try {
+    return await response.json();
+  } catch {
+    return {};
+  }
+};
+
 // Seller API functions
 export const sellerApi = {
   // Fix route to match backend implementation
@@ -51,11 +98,32 @@ export const sellerApi = {
   // New analytics endpoint
   async getSellerAnalytics(sellerId: string, timeRange: string = '6months'): Promise<AnalyticsData> {
     try {
-      const response = await apiClient.get(`/sellers/${sellerId}/analytics?timeRange=${timeRange}`);
-      return response.data.data;
-    } catch (error) {
-      console.error('Error fetching seller analytics:', error);
-      throw new Error('Failed to fetch seller analytics');
+      if (!sellerId) {
+        return getEmptyAnalyticsData();
+      }
+
+      const baseUrl = (process.env.NEXT_PUBLIC_API_URL || '/api').replace(/\/$/, '');
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      const response = await fetch(
+        `${baseUrl}/sellers/${sellerId}/analytics?timeRange=${encodeURIComponent(timeRange)}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {})
+          },
+          cache: 'no-store'
+        }
+      );
+
+      if (!response.ok) {
+        return getEmptyAnalyticsData();
+      }
+
+      const payload = await fetchJsonSafely(response);
+      return normalizeAnalyticsData(payload);
+    } catch {
+      return getEmptyAnalyticsData();
     }
   },
 

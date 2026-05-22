@@ -14,7 +14,7 @@ const SellerMessagesPage: React.FC = () => {
   const canAccessSellerDashboard = !!user?.roles?.includes('seller');
 
   const sidebarButtonClass = (isActive: boolean) =>
-    `w-full flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all ${
+    `w-full flex cursor-pointer items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-200 ease-out hover:shadow-sm ${
       isActive
         ? 'bg-black text-white shadow-lg shadow-black/10'
         : 'text-gray-600 hover:bg-white hover:text-gray-950'
@@ -68,7 +68,7 @@ const SellerMessagesPage: React.FC = () => {
           <div className="border-t border-gray-200 pt-5">
             <button
               onClick={() => router.push('/dashboards/seller/add-property')}
-              className="mb-5 w-full rounded-xl bg-black px-4 py-3 text-sm font-bold text-white shadow-lg shadow-black/10 transition hover:bg-gray-900"
+              className="mb-5 w-full cursor-pointer rounded-xl bg-black px-4 py-3 text-sm font-bold text-white shadow-lg shadow-black/10 transition-all duration-200 ease-out hover:bg-gray-900 hover:shadow-xl"
             >
               List Property
             </button>
