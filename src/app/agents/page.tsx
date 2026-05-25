@@ -11,18 +11,7 @@ const AGENTS_HERO_IMAGE =
 export default function AgentsPage() {
   return (
     <div className="min-h-screen bg-[#f4f5f6]">
-      <Navbar
-        logo="/images/logo.PNG"
-        logoText=""
-        navigationItems={[
-          { label: 'Buy', href: '/buy', isActive: false },
-          { label: 'Sell', href: '/sell', isActive: false },
-          { label: 'How it Works', href: '/how-it-works', isActive: false },
-          { label: 'Agents', href: '/agents', isActive: true },
-        ]}
-        ctaText="Sign In"
-        ctaHref="/signin"
-      />
+      <Navbar logo="/images/logo.PNG" logoText="" />
 
       <section className="relative overflow-hidden pb-24 pt-10 sm:pb-28 sm:pt-14">
         <Image

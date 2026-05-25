@@ -1,158 +1,244 @@
 import { Navbar } from '@/components';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Check } from 'lucide-react';
-import { HowItWorksSellerSteps } from '@/components/marketing/HowItWorksSellerSteps';
+import sellHeroImage from '@/assets/modern-luxury-home-with-contemporary-architecture-landscaping.jpg';
+import {
+  ArrowRight,
+  BadgeDollarSign,
+  CheckCircle2,
+  EyeOff,
+  ShieldCheck,
+  Sparkles,
+  WalletCards,
+} from 'lucide-react';
 
-/** Unsplash (see next.config.ts remotePatterns) */
-const HERO_STOCK_IMAGE =
-  'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=2400&q=80';
-/** Living space with large windows / city light (stock) */
-const SMARTER_SECTION_STOCK_IMAGE =
-  'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1600&q=80';
+const HERO_IMAGE = sellHeroImage;
+const PROCESS_IMAGE = '/images/How_it_works.jpg';
 
-function SmarterTick() {
-  return (
-    <span
-      className="flex-shrink-0 w-6 h-6 sm:w-7 sm:h-7 rounded-sm border-2 border-[#24A148] bg-transparent flex items-center justify-center mt-0.5"
-      aria-hidden
-    >
-      <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#24A148]" strokeWidth={2.5} />
-    </span>
-  );
-}
+const advantages = [
+  {
+    title: 'Set Your Price',
+    description:
+      "Don't let the market dictate your home's worth. List at the price that would genuinely make you move.",
+    Icon: WalletCards,
+  },
+  {
+    title: 'Stay Private',
+    description:
+      'No public listings, no open homes for neighbours to browse. Only verified, serious buyers gain access.',
+    Icon: ShieldCheck,
+  },
+  {
+    title: "Sell Only If It's Right",
+    description:
+      "There's no pressure to accept. If an offer doesn't hit your target price, you don't sell. Simple.",
+    Icon: CheckCircle2,
+  },
+];
+
+const steps = [
+  {
+    title: 'Set Your Price',
+    description:
+      'Define the dream offer that would make selling worthwhile. You are in control of the valuation from day one.',
+  },
+  {
+    title: 'Stay Private',
+    description:
+      'Your home is only shown to buyers who have been vetted and have expressed direct interest in your specific property type.',
+  },
+  {
+    title: "Sell Only If It's Right",
+    description:
+      'When a serious offer comes in, our expert agents handle the negotiation. If it meets your price, the deal is done.',
+  },
+];
 
 export default function SellPage() {
   return (
-    <div className="min-h-screen bg-white flex flex-col">
-      <Navbar />
+    <div className="min-h-screen bg-[#effdea] text-[#071109]">
+      <Navbar logo="/images/logo.PNG" logoText="" />
 
-      {/* Hero — full-bleed image, left-aligned copy (header unchanged) */}
-      <section className="relative min-h-[72vh] sm:min-h-[78vh] flex items-center bg-neutral-900">
-        <Image
-          src={HERO_STOCK_IMAGE}
-          alt="Luxury modern villa with swimming pool at sunset"
-          fill
-          priority
-          className="object-cover object-right sm:object-[75%_center]"
-          sizes="100vw"
-        />
-        {/* Base dim + left-heavy gradient so white copy stays readable on bright exteriors */}
-        <div className="absolute inset-0 bg-black/35" aria-hidden />
-        <div
-          className="absolute inset-0 bg-gradient-to-r from-black/[0.78] via-black/[0.5] to-black/[0.22]"
-          aria-hidden
-        />
-        <div
-          className="absolute inset-y-0 left-0 w-[min(100%,42rem)] bg-gradient-to-r from-black/45 to-transparent"
-          aria-hidden
-        />
-        <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 md:py-28">
-          {/* Narrow column (~550px) — matches client hero: left band, multi-line wrap */}
-          <div className="w-full max-w-[550px] text-left">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[3.25rem] font-bold text-white leading-[1.15] tracking-tight drop-shadow-[0_2px_24px_rgba(0,0,0,0.75)]">
-              Sell Only If the Price Is Right
-            </h1>
-            <p className="mt-5 text-base sm:text-lg text-white/95 leading-relaxed drop-shadow-[0_1px_12px_rgba(0,0,0,0.65)]">
-              Set your price. Stay in control. Connect with serious buyers without committing to a traditional
-              campaign.
-            </p>
-            <div className="mt-8 flex flex-col sm:flex-row sm:flex-wrap gap-3 sm:gap-4">
-              <Link
-                href="/dashboards/seller/register"
-                className="inline-flex items-center justify-center rounded-lg bg-[#3AB861] hover:bg-[#329d56] text-white px-7 py-3.5 text-base font-semibold shadow-lg transition-colors text-center"
-              >
-                List Your Property
-              </Link>
-              <Link
-                href="#how-it-works-steps"
-                className="inline-flex items-center justify-center rounded-lg bg-white text-gray-900 px-7 py-3.5 text-base font-semibold border border-white shadow-md hover:bg-gray-50 transition-colors text-center"
-              >
-                How It Works
-              </Link>
+      <main>
+        {/* Hero */}
+        <section className="px-4 pb-14 pt-12 sm:px-6 sm:pb-20 sm:pt-16 lg:px-8 lg:pb-24">
+          <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[0.92fr_1.08fr] lg:gap-16">
+            <div className="max-w-xl">
+              <div className="inline-flex items-center gap-2 rounded-full bg-[#d9f0d5] px-4 py-2 text-[11px] font-black uppercase tracking-[0.16em] text-[#007a38] shadow-sm ring-1 ring-[#c8e5c4]">
+                <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
+                Private Marketplace
+              </div>
+              <h1 className="mt-6 text-4xl font-black leading-[1.05] tracking-tight text-[#071109] sm:text-5xl lg:text-6xl">
+                Sell on Your Terms,{' '}
+                <span className="text-[#007a38]">Not the Market&apos;s.</span>
+              </h1>
+              <p className="mt-6 max-w-lg text-base font-medium leading-8 text-[#294232] sm:text-lg">
+                Test the market without the noise. Set your price, keep your privacy, and only sell if an offer meets your exact valuation.
+              </p>
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <Link
+                  href="/dashboards/seller/register"
+                  className="inline-flex min-h-12 items-center justify-center rounded-lg bg-[#007a38] px-7 text-sm font-black text-white shadow-[0_16px_35px_rgba(0,122,56,0.22)] transition hover:bg-[#006b31]"
+                >
+                  List Privately
+                </Link>
+                <Link
+                  href="#how-it-works-sellers"
+                  className="inline-flex min-h-12 items-center justify-center rounded-lg border border-[#c9dcc7] bg-[#f7fff4] px-7 text-sm font-black text-[#007a38] transition hover:border-[#007a38] hover:bg-white"
+                >
+                  How it Works
+                </Link>
+              </div>
+            </div>
+
+            <div className="relative mx-auto w-full max-w-2xl lg:mx-0">
+              <div className="relative aspect-[0.94] overflow-hidden rounded-lg border-4 border-white bg-[#dcefd9] shadow-[0_28px_80px_rgba(7,17,9,0.16)] sm:aspect-[1.02]">
+                <Image
+                  src={HERO_IMAGE}
+                  alt="Private modern luxury home with warm interior lights"
+                  fill
+                  priority
+                  className="h-full w-full object-cover"
+                  sizes="(max-width: 1024px) 100vw, 55vw"
+                />
+              </div>
+              <div className="absolute -bottom-8 left-4 right-4 rounded-xl border border-[#9de6a8] bg-white p-5 shadow-[0_24px_60px_rgba(7,17,9,0.14)] sm:left-[-2rem] sm:right-auto sm:w-80">
+                <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-[#e6f6e3] text-[#007a38]">
+                  <EyeOff className="h-5 w-5" aria-hidden="true" />
+                </div>
+                <h2 className="text-base font-black tracking-tight text-[#071109]">
+                  Zero Visibility
+                </h2>
+                <p className="mt-2 text-sm font-medium leading-6 text-[#395342]">
+                  Your property remains completely hidden from public real estate portals until you say otherwise.
+                </p>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <HowItWorksSellerSteps />
+        {/* Seller Advantages */}
+        <section className="bg-white px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+          <div className="mx-auto max-w-7xl">
+            <div className="text-center">
+              <h2 className="text-3xl font-black tracking-tight text-[#071109] sm:text-4xl">
+                The Only If Seller Advantage
+              </h2>
+              <p className="mt-4 text-sm font-medium text-[#294232] sm:text-base">
+                Discretion is the ultimate luxury in real estate.
+              </p>
+            </div>
 
-      {/* A smarter way — split (ticks: green border square + green check, per design) */}
-      <section className="py-16 sm:py-20 md:py-24 bg-[#f9f9f9]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            <div className="mt-12 grid gap-6 md:grid-cols-3">
+              {advantages.map(({ title, description, Icon }) => (
+                <article
+                  key={title}
+                  className="group rounded-lg border border-[#9de6a8] bg-white p-8 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_22px_55px_rgba(7,17,9,0.08)]"
+                >
+                  <div className="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-lg bg-[#e6f6e3] text-[#007a38] transition group-hover:bg-[#007a38] group-hover:text-white">
+                    <Icon className="h-6 w-6" aria-hidden="true" />
+                  </div>
+                  <h3 className="text-base font-black tracking-tight text-[#071109]">
+                    {title}
+                  </h3>
+                  <p className="mt-4 text-sm font-medium leading-7 text-[#294232]">
+                    {description}
+                  </p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* How It Works */}
+        <section
+          id="how-it-works-sellers"
+          className="scroll-mt-24 px-4 py-16 sm:px-6 sm:py-20 lg:px-8"
+        >
+          <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[0.98fr_1fr] lg:gap-16">
+            <div className="relative">
+              <div className="relative aspect-[1.04] overflow-hidden rounded-lg shadow-[0_24px_70px_rgba(7,17,9,0.14)]">
+                <Image
+                  src={PROCESS_IMAGE}
+                  alt="Luxury interior with refined timber and stone finishes"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                />
+              </div>
+              <div className="absolute -top-5 left-1/2 -translate-x-1/2 rounded-lg bg-[#007a38] px-5 py-4 text-sm font-black uppercase tracking-wide text-white shadow-[0_16px_35px_rgba(0,122,56,0.24)]">
+                Step-by-Step
+              </div>
+            </div>
+
             <div>
-              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight">
-                A smarter way to test the market
+              <h2 className="text-3xl font-black tracking-tight text-[#071109] sm:text-4xl">
+                How It Works for Sellers
               </h2>
-              <p className="mt-5 text-gray-600 text-base sm:text-lg leading-relaxed">
-                Only If gives homeowners a private, flexible way to gauge real buyer demand without jumping
-                straight into a full public campaign.
-              </p>
-              <ul className="mt-8 space-y-5">
-                <li className="flex gap-3.5 text-left items-start">
-                  <SmarterTick />
-                  <span className="text-gray-800 text-sm sm:text-base leading-relaxed pt-0.5">
-                    <strong>You set the price</strong>
-                  </span>
-                </li>
-                <li className="flex gap-3.5 text-left items-start">
-                  <SmarterTick />
-                  <span className="text-gray-800 text-sm sm:text-base leading-relaxed pt-0.5">
-                    <strong>Quietly</strong> test the market
-                  </span>
-                </li>
-                <li className="flex gap-3.5 text-left items-start">
-                  <SmarterTick />
-                  <span className="text-gray-800 text-sm sm:text-base leading-relaxed pt-0.5">
-                    <strong>Serious buyers only</strong>
-                  </span>
-                </li>
-                <li className="flex gap-3.5 text-left items-start">
-                  <SmarterTick />
-                  <span className="text-gray-800 text-sm sm:text-base leading-relaxed pt-0.5">
-                    <strong>Move forward only</strong> when it suits you
-                  </span>
-                </li>
-              </ul>
-            </div>
-            <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden shadow-xl border border-gray-200/80">
-              <Image
-                src={SMARTER_SECTION_STOCK_IMAGE}
-                alt="Modern living room with large windows"
-                fill
-                className="object-cover"
-                sizes="(max-width: 1024px) 100vw, 50vw"
-              />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA — solid brand green; white copy; contrasting button */}
-      <section className="w-full bg-[#3AB861] py-12 sm:py-14 md:py-16 border-t border-black/10">
-        <div className="max-w-7xl mx-auto w-full px-5 sm:px-8 lg:px-10 xl:px-14">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-8 md:gap-10 lg:gap-12">
-            <div className="max-w-2xl w-full text-center md:text-left">
-              <h2 className="text-white font-bold text-2xl sm:text-[1.65rem] md:text-[1.75rem] leading-snug tracking-tight">
-                Ready to see what your property could attract?
-              </h2>
-              <p className="mt-3 text-[#e0e0e0] text-base font-normal leading-relaxed">
-                Create your listing, set your price, and start attracting serious buyer interest — without
-                the pressure of a traditional sale.
-              </p>
-            </div>
-            <div className="flex w-full md:w-auto justify-center md:justify-end md:shrink-0">
+              <ol className="mt-8 space-y-10">
+                {steps.map((step, index) => (
+                  <li key={step.title} className="grid grid-cols-[3rem_1fr] gap-5">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-[#007a38] bg-[#effdea] text-lg font-black text-[#071109]">
+                      {index + 1}
+                    </div>
+                    <div>
+                      <h3 className="text-base font-black text-[#071109]">
+                        {step.title}
+                      </h3>
+                      <p className="mt-2 max-w-2xl text-sm font-medium leading-7 text-[#294232]">
+                        {step.description}
+                      </p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
               <Link
                 href="/dashboards/seller/register"
-                className="inline-flex w-full max-w-sm md:max-w-none md:w-auto items-center justify-center rounded-xl bg-white px-8 sm:px-10 py-3.5 text-base font-bold text-[#2e7d32] shadow-[0_4px_16px_rgba(0,0,0,0.2)] transition hover:bg-white/95 hover:shadow-[0_6px_20px_rgba(0,0,0,0.25)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                className="mt-10 inline-flex min-h-12 items-center justify-center rounded-lg bg-[#007a38] px-7 text-sm font-black text-white shadow-[0_16px_35px_rgba(0,122,56,0.18)] transition hover:bg-[#006b31]"
               >
-                Create Seller Account
+                Get Started Now
+                <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
               </Link>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+
+        {/* CTA */}
+        <section className="relative overflow-hidden bg-[#007a38] px-4 py-20 text-center text-white sm:px-6 sm:py-24 lg:px-8">
+          <div className="absolute inset-0 opacity-[0.12]" aria-hidden="true">
+            <div className="h-full w-full bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.55)_1px,transparent_0)] [background-size:18px_18px]" />
+          </div>
+          <div className="relative mx-auto max-w-4xl">
+            <h2 className="text-4xl font-black leading-tight tracking-tight text-white sm:text-5xl">
+              Ready to See What Your Home Could Fetch?
+            </h2>
+            <p className="mx-auto mt-5 max-w-2xl text-base font-semibold leading-8 text-[#bdf2c4]">
+              List privately today. There are zero upfront marketing fees. You only pay a commission if we find a buyer at your price.
+            </p>
+
+            <div className="mx-auto mt-9 max-w-xs rounded-xl bg-white px-8 py-7 text-[#071109] shadow-[0_24px_60px_rgba(0,0,0,0.18)]">
+              <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#395342]">
+                Success Commission
+              </p>
+              <div className="mt-3 flex items-end justify-center gap-2">
+                <span className="pb-2 text-sm font-black text-[#007a38]">AUD</span>
+                <span className="text-5xl font-black tracking-tight text-[#007a38]">2.2%</span>
+              </div>
+              <p className="mt-3 text-xs font-medium text-[#395342]">
+                Paid only upon successful settlement
+              </p>
+            </div>
+
+            <Link
+              href="/dashboards/seller/register"
+              className="mt-10 inline-flex min-h-14 items-center justify-center rounded-lg bg-[#009447] px-10 text-sm font-black text-white shadow-[0_18px_42px_rgba(0,0,0,0.16)] transition hover:bg-[#00a34f]"
+            >
+              <BadgeDollarSign className="mr-2 h-5 w-5" aria-hidden="true" />
+              List My Home Privately
+            </Link>
+          </div>
+        </section>
+      </main>
     </div>
   );
 }

@@ -85,6 +85,7 @@ export default function EnhancedPropertyGrid({
               image={property.mainImage || '/images/default-property.jpg'}
               featured={property.featured}
               carSpaces={property.carSpaces}
+              variant="buy"
               onClick={() => handlePropertyClick(property)}
             />
           );

@@ -1,270 +1,282 @@
 import Link from 'next/link';
 import { Navbar } from '@/components';
 import {
-  Lightbulb,
-  Home,
-  Lock,
-  Handshake,
-  Search,
+  BadgeCheck,
   Check,
-  MessageCircle,
-  Tag,
   CheckCircle2,
+  Handshake,
+  Home,
+  KeyRound,
+  Lock,
+  MapPin,
+  MessageSquareText,
+  Search,
+  ShieldCheck,
+  Tag,
 } from 'lucide-react';
 
-const EMERALD = 'text-emerald-600';
+const sellerCards = [
+  {
+    step: 'STEP 1',
+    title: 'Set Your Price',
+    body: 'Choose the price that would genuinely make you sell. No pressure to list lower.',
+    Icon: Tag,
+  },
+  {
+    step: 'STEP 2',
+    title: 'Stay Private',
+    body: 'Your home is hidden from the public and only visible to serious, verified buyers.',
+    Icon: Lock,
+  },
+  {
+    step: 'STEP 3',
+    title: "Sell Only If It's Right",
+    body: 'If an offer meets your price, our licensed agents handle the negotiation and settlement.',
+    Icon: Handshake,
+  },
+];
+
+const buyerCards = [
+  {
+    n: 1,
+    title: 'Browse Hidden Homes',
+    body: "Explore a curated selection of privately listed properties before they ever hit the public market.",
+    Icon: Home,
+  },
+  {
+    n: 2,
+    title: 'Unlock Full Details',
+    body: 'Reveal address, private photos, and direct seller requirements to see if it fits.',
+    Icon: KeyRound,
+    badge: '$49 unlock fee applies',
+  },
+  {
+    n: 3,
+    title: 'Make Your Move',
+    body: "If it's the right fit, submit a direct offer or request a private viewing through the platform.",
+    Icon: MessageSquareText,
+  },
+];
 
 export default function HowItWorksPage() {
   return (
-    <div className="min-h-screen bg-white flex flex-col">
-      <Navbar
-        navigationItems={[
-          { label: 'Buy', href: '/buy', isActive: false },
-          { label: 'Sell', href: '/sell', isActive: false },
-          { label: 'How it Works', href: '/how-it-works', isActive: true },
-          { label: 'Agents', href: '/agents', isActive: false },
-        ]}
-        ctaText="Sign In"
-        ctaHref="/signin"
-      />
+    <div className="min-h-screen bg-[#effdea] text-[#071109]">
+      <Navbar logo="/images/logo.PNG" logoText="" />
 
-      <main className="flex-1">
-        {/* Hero - Intro */}
-        <section className="pt-10 pb-14 sm:pt-14 sm:pb-20 px-4 sm:px-6">
-          <div className="max-w-[1200px] mx-auto text-center">
-            <div className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs sm:text-sm font-semibold uppercase tracking-wide border border-emerald-200 bg-emerald-50 text-[#3AB861]">
-              <Lightbulb className="h-4 w-4 shrink-0 text-[#3AB861]" aria-hidden />
+      <main>
+        {/* Hero */}
+        <section className="px-4 pb-14 pt-16 text-center sm:px-6 sm:pb-20 sm:pt-20 lg:px-8">
+          <div className="mx-auto max-w-4xl">
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#9ed9ac] bg-[#dff4da] px-4 py-2 text-[11px] font-black uppercase tracking-[0.16em] text-[#007a38] shadow-sm">
+              <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
               You don&apos;t need to be selling to get started
             </div>
-            <h1 className="mt-8 text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 tracking-tight">
-              How{' '}
-              <span className="text-[#3AB861]">Only If</span> Works
+            <h1 className="mt-8 text-4xl font-black leading-tight tracking-tight text-[#071109] sm:text-5xl lg:text-6xl">
+              How <span className="text-[#007a38]">Only If</span> Works
             </h1>
-            <p className="mt-4 text-lg sm:text-xl text-gray-700 max-w-2xl mx-auto leading-relaxed">
-              A smarter way to sell — without committing to the market.
+            <p className="mx-auto mt-6 max-w-2xl text-lg font-medium leading-8 text-[#294232]">
+              A smarter way to sell without committing to the market.
             </p>
-            <p className="mt-3 text-base sm:text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
+            <p className="mx-auto mt-4 max-w-xl text-sm font-medium leading-7 text-[#6c8172] sm:text-base">
               Only If gives you control, privacy, and the chance to sell only if the price is right.
             </p>
           </div>
         </section>
 
         {/* For Sellers */}
-        <section className="py-14 sm:py-20 px-4 sm:px-6 bg-white border-t border-gray-100">
-          <div className="max-w-[1200px] mx-auto">
-            <div className="flex flex-col sm:flex-row sm:items-start gap-4 mb-10">
-              <div className="flex items-center gap-3">
-                <span className="relative flex h-12 w-12 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700">
-                  <Home className="h-6 w-6" strokeWidth={2} aria-hidden />
-                  <span className="absolute -bottom-1 -right-1 rounded bg-emerald-600 px-1 text-[9px] font-bold text-white leading-none py-0.5">
-                    SALE
-                  </span>
-                </span>
-                <div>
-                  <p className={`text-xs font-bold uppercase tracking-widest ${EMERALD}`}>For sellers</p>
-                  <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mt-1">
-                    Sell on Your Terms, Not the Market&apos;s
-                  </h2>
-                </div>
+        <section className="px-4 py-14 sm:px-6 sm:py-18 lg:px-8">
+          <div className="mx-auto max-w-7xl">
+            <div className="mb-9 flex items-start gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-[#cfeecd] text-[#007a38] shadow-sm">
+                <MapPin className="h-5 w-5" aria-hidden="true" />
+              </div>
+              <div>
+                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[#007a38]">
+                  For Sellers
+                </p>
+                <h2 className="mt-1 text-3xl font-black tracking-tight text-[#071109] sm:text-4xl">
+                  Sell on Your Terms, Not the Market&apos;s
+                </h2>
               </div>
             </div>
-            <p className="text-gray-600 text-base sm:text-lg max-w-3xl mb-12">
-              List privately, set your price, and decide if — and when — you want to sell.
+            <p className="mb-8 max-w-3xl text-base font-medium leading-8 text-[#294232]">
+              List privately, set your price, and decide if, and when, you want to sell.
             </p>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
-              {[
-                {
-                  step: 'STEP 1',
-                  title: 'Set Your Price',
-                  body: 'Choose the price that would genuinely make you sell.',
-                  icon: <Tag className="h-8 w-8 text-[#3AB861]" strokeWidth={1.75} />,
-                },
-                {
-                  step: 'STEP 2',
-                  title: 'Stay Private',
-                  body: 'Your home is hidden from the public and only visible to serious, verified buyers.',
-                  icon: <Lock className="h-8 w-8 text-[#3AB861]" strokeWidth={1.75} />,
-                },
-                {
-                  step: 'STEP 3',
-                  title: "Sell Only If It's Right",
-                  body: 'If an offer meets your price, our licensed agents handle the negotiation, paperwork, and settlement.',
-                  icon: <Handshake className="h-8 w-8 text-[#3AB861]" strokeWidth={1.75} />,
-                },
-              ].map((card) => (
+            <div className="grid gap-6 md:grid-cols-3">
+              {sellerCards.map(({ step, title, body, Icon }) => (
                 <article
-                  key={card.step}
-                  className="rounded-2xl border border-gray-200 bg-white p-6 shadow-md shadow-gray-200/60 hover:shadow-lg transition-shadow"
+                  key={step}
+                  className="group rounded-lg border border-[#9ed9ac] bg-white p-8 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_22px_55px_rgba(7,17,9,0.08)]"
                 >
-                  <div className="flex h-14 items-center justify-center rounded-xl bg-emerald-50 mb-4">
-                    {card.icon}
+                  <div className="mb-7 flex h-44 items-center justify-center rounded-lg bg-[#e6f6e3] text-[#007a38] transition group-hover:bg-[#d8f0d5]">
+                    <Icon className="h-8 w-8" aria-hidden="true" />
                   </div>
-                  <span className="inline-block rounded-md bg-emerald-100 px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide text-emerald-800">
-                    {card.step}
+                  <span className="inline-flex rounded bg-[#dff4da] px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-[#007a38]">
+                    {step}
                   </span>
-                  <h3 className="mt-3 text-lg font-bold text-gray-900">{card.title}</h3>
-                  <p className="mt-2 text-sm text-gray-600 leading-relaxed">{card.body}</p>
+                  <h3 className="mt-4 text-xl font-black tracking-tight text-[#071109]">
+                    {title}
+                  </h3>
+                  <p className="mt-4 text-sm font-medium leading-7 text-[#294232]">
+                    {body}
+                  </p>
                 </article>
               ))}
             </div>
 
-            <div className="mt-10 flex flex-col sm:flex-row sm:items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50/80 px-5 py-4 sm:px-8 sm:py-5">
-              <Lock className="h-6 w-6 text-emerald-700 shrink-0" aria-hidden />
-              <p className="text-sm sm:text-base text-gray-800 text-left">
-                <strong className="text-gray-900">You&apos;re in control the entire time.</strong> No inspections.
-                No open homes. No pressure to sell.
+            <div className="mt-8 flex flex-col gap-3 rounded-lg border border-[#9ed9ac] bg-[#d8f0d5] px-6 py-5 text-[#071109] shadow-sm sm:flex-row sm:items-center">
+              <ShieldCheck className="h-5 w-5 shrink-0 text-[#007a38]" aria-hidden="true" />
+              <p className="text-sm font-medium leading-6">
+                <strong className="font-black">You&apos;re in control the entire time.</strong> No inspections. No open homes. No pressure to sell.
               </p>
             </div>
           </div>
         </section>
 
         {/* For Buyers */}
-        <section className="py-14 sm:py-20 px-4 sm:px-6 bg-slate-50/80 border-t border-gray-100">
-          <div className="max-w-[1200px] mx-auto">
-            <div className="flex flex-col sm:flex-row sm:items-start gap-4 mb-10">
-              <div className="flex items-center gap-3">
-                <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-sky-100 text-sky-600">
-                  <Search className="h-6 w-6" strokeWidth={2} aria-hidden />
-                </span>
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-widest text-sky-600">For buyers</p>
-                  <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mt-1">
-                    Unlock Exclusive, Off-Market Properties
-                  </h2>
-                </div>
+        <section className="px-4 py-14 sm:px-6 sm:py-18 lg:px-8">
+          <div className="mx-auto max-w-7xl">
+            <div className="mb-9 flex items-start gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-[#dff4da] text-[#005fd6] shadow-sm">
+                <Search className="h-5 w-5" aria-hidden="true" />
+              </div>
+              <div>
+                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[#005fd6]">
+                  For Buyers
+                </p>
+                <h2 className="mt-1 text-3xl font-black tracking-tight text-[#071109] sm:text-4xl">
+                  Unlock Exclusive, Off-Market Properties
+                </h2>
               </div>
             </div>
-            <p className="text-gray-600 text-base sm:text-lg max-w-3xl mb-12">
+            <p className="mb-8 max-w-3xl text-base font-medium leading-8 text-[#294232]">
               Serious buyers get access to homes you won&apos;t find anywhere else.
             </p>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
-              {[
-                {
-                  n: 1,
-                  title: 'Browse Hidden Homes',
-                  body: 'Explore a curated selection of privately listed properties.',
-                  icon: <Home className="h-6 w-6 text-sky-600" />,
-                },
-                {
-                  n: 2,
-                  title: 'Unlock Full Details',
-                  body: 'Pay $49 to reveal the address, photos, and connect with the seller.',
-                  icon: <Lock className="h-6 w-6 text-sky-600" />,
-                },
-                {
-                  n: 3,
-                  title: 'Make Your Move',
-                  body: "If it's the right fit, submit an offer directly through the platform.",
-                  icon: <MessageCircle className="h-6 w-6 text-sky-600" />,
-                },
-              ].map((card) => (
+            <div className="grid gap-6 md:grid-cols-3">
+              {buyerCards.map(({ n, title, body, Icon, badge }) => (
                 <article
-                  key={card.n}
-                  className="rounded-2xl border border-sky-100 bg-sky-50/90 p-6 shadow-sm hover:shadow-md transition-shadow"
+                  key={n}
+                  className="rounded-lg border border-[#c9dcc7] bg-[#f9fff6] p-8 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_22px_55px_rgba(7,17,9,0.07)]"
                 >
-                  <div className="flex items-center gap-3 mb-4">
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-sky-500 text-sm font-bold text-white">
-                      {card.n}
+                  <div className="mb-5 flex items-center gap-4">
+                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#005fd6] text-sm font-black text-white">
+                      {n}
                     </span>
-                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-white text-sky-600 shadow-sm">
-                      {card.icon}
-                    </div>
+                    <Icon className="h-5 w-5 text-[#005fd6]" aria-hidden="true" />
                   </div>
-                  <h3 className="text-lg font-bold text-gray-900">{card.title}</h3>
-                  <p className="mt-2 text-sm text-gray-600 leading-relaxed">{card.body}</p>
-                  {card.n === 2 && (
-                    <p className="mt-3 text-sm font-medium text-sky-600">$49 unlock fee applies</p>
-                  )}
+                  <h3 className="text-xl font-black tracking-tight text-[#071109]">
+                    {title}
+                  </h3>
+                  <p className="mt-3 text-sm font-medium leading-7 text-[#294232]">
+                    {body}
+                  </p>
+                  {badge ? (
+                    <span className="mt-5 inline-flex rounded bg-[#d8e8ff] px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-[#005fd6]">
+                      {badge}
+                    </span>
+                  ) : null}
                 </article>
               ))}
             </div>
 
-            <ul className="mt-12 flex flex-col sm:flex-row sm:flex-wrap justify-center gap-4 sm:gap-10 text-sm sm:text-base text-gray-800">
-              {['Verified buyers only', 'Secure & transparent process', 'Direct connection with sellers'].map(
-                (line) => (
-                  <li key={line} className="flex items-center gap-2 justify-center sm:justify-start">
-                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#3AB861] text-white">
-                      <Check
-                        className="h-3.5 w-3.5 shrink-0 text-white stroke-white"
-                        strokeWidth={3}
-                        aria-hidden
-                      />
-                    </span>
-                    {line}
-                  </li>
-                )
-              )}
+            <ul className="mt-12 flex flex-col items-center justify-center gap-4 text-sm font-medium text-[#071109] sm:flex-row sm:flex-wrap sm:gap-10">
+              {['Verified buyers only', 'Secure & transparent process', 'Direct connection with sellers'].map((line) => (
+                <li key={line} className="flex items-center gap-2">
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#007a38]">
+                    <Check className="h-3.5 w-3.5 text-white" strokeWidth={3} aria-hidden="true" />
+                  </span>
+                  {line}
+                </li>
+              ))}
             </ul>
           </div>
         </section>
 
-        {/* Agent Involvement */}
-        <section className="py-14 sm:py-20 px-4 sm:px-6 bg-white border-t border-gray-100">
-          <div className="max-w-[1200px] mx-auto">
-            <div className="flex flex-col sm:flex-row sm:items-start gap-4 mb-10">
-              <div className="flex items-center gap-3">
-                <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700">
-                  <Handshake className="h-6 w-6" strokeWidth={2} aria-hidden />
-                </span>
-                <div>
-                  <p className={`text-xs font-bold uppercase tracking-widest ${EMERALD}`}>Agents</p>
-                  <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mt-1">
-                    Expert Support, Only When You Need It
-                  </h2>
-                </div>
+        {/* Agent Support */}
+        <section className="border-t border-[#d7e6d4] px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+          <div className="mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:gap-16">
+            <div>
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-[#007a38] text-white shadow-[0_14px_30px_rgba(0,122,56,0.2)]">
+                <BadgeCheck className="h-5 w-5" aria-hidden="true" />
               </div>
+              <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[#007a38]">
+                Agents
+              </p>
+              <h2 className="mt-2 max-w-lg text-3xl font-black leading-tight tracking-tight text-[#071109] sm:text-4xl">
+                Expert Support, Only When You Need It
+              </h2>
+              <p className="mt-6 max-w-xl text-lg font-medium leading-8 text-[#294232]">
+                Stay in control. When the time is right, trusted local agents will handle everything, negotiation, paperwork, and settlement, only when your price is met.
+              </p>
             </div>
-            <p className="text-gray-600 text-base sm:text-lg max-w-3xl mb-12">
-              Stay in control. When the time is right, trusted local agents will handle everything—negotiation, paperwork, and settlement—only when your price is met.
-            </p>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
-              <div className="rounded-2xl border border-gray-200 bg-[#e7efe8] p-6 shadow-sm">
-                <h3 className="text-xl font-bold text-[#2d6d48] mb-4">With Only If</h3>
-                <ul className="space-y-3">
+            <div className="grid gap-5 md:grid-cols-2">
+              <article className="rounded-lg border border-[#c9dcc7] bg-white p-7 shadow-[0_18px_45px_rgba(7,17,9,0.06)]">
+                <h3 className="text-xl font-black tracking-tight text-[#071109]">
+                  With Only If
+                </h3>
+                <ul className="mt-5 space-y-4">
                   {[
                     'Test the market without committing to an agent',
                     'Agents handle negotiation only when your price is met',
                     'Full support with paperwork and settlement',
                     'Pay commission only on a successful sale',
                   ].map((item) => (
-                    <li key={item} className="flex items-start gap-2.5 text-base text-gray-800">
-                      <CheckCircle2 className="h-5 w-5 shrink-0 text-[#3AB861] mt-0.5" />
-                      <span>{item}</span>
+                    <li key={item} className="flex gap-3 text-sm font-medium leading-6 text-[#071109]">
+                      <Check className="mt-1 h-4 w-4 shrink-0 text-[#007a38]" aria-hidden="true" />
+                      {item}
                     </li>
                   ))}
                 </ul>
-              </div>
-              <div className="rounded-2xl border border-gray-200 bg-gray-50 p-6 shadow-sm">
-                <h3 className="text-xl font-bold text-gray-900 mb-4">Professional Guidance</h3>
-                <p className="text-gray-600 leading-relaxed">
+              </article>
+
+              <article className="rounded-lg border border-[#c9dcc7] bg-[#dcefd9] p-7 shadow-sm">
+                <h3 className="text-xl font-black tracking-tight text-[#071109]">
+                  Professional Guidance
+                </h3>
+                <p className="mt-5 text-sm font-medium leading-7 text-[#294232]">
                   Our network of top-performing local agents are experts in their areas. They work for you to ensure that once a serious buyer meets your price, the transaction is smooth, secure, and professional.
                 </p>
-              </div>
+                <div className="mt-7 flex items-center gap-3">
+                  <div className="flex -space-x-2">
+                    <span className="grid h-8 w-8 place-items-center rounded-full border-2 border-[#dcefd9] bg-white text-xs font-black text-[#007a38]">
+                      A
+                    </span>
+                    <span className="grid h-8 w-8 place-items-center rounded-full border-2 border-[#dcefd9] bg-[#007a38] text-xs font-black text-white">
+                      L
+                    </span>
+                    <span className="grid h-8 w-8 place-items-center rounded-full border-2 border-[#dcefd9] bg-[#071109] text-xs font-black text-white">
+                      M
+                    </span>
+                  </div>
+                  <p className="text-sm font-black text-[#071109]">500+ Local Experts</p>
+                </div>
+              </article>
             </div>
           </div>
         </section>
 
-        {/* Footer CTA */}
-        <section className="py-12 sm:py-16 px-4 sm:px-6 bg-gray-100">
-          <div className="max-w-[1200px] mx-auto">
-            <div className="rounded-2xl bg-[#3AB861] px-6 py-12 sm:px-10 sm:py-14 text-center shadow-lg border border-black/10">
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white tracking-tight">
+        {/* Final CTA */}
+        <section className="px-4 pb-16 pt-8 sm:px-6 sm:pb-20 lg:px-8">
+          <div className="relative mx-auto max-w-7xl overflow-hidden rounded-[28px] bg-[#007a38] px-6 py-14 text-center text-white shadow-[0_24px_70px_rgba(0,122,56,0.2)] sm:px-10 sm:py-16">
+            <div className="absolute inset-0 opacity-[0.12]" aria-hidden="true">
+              <div className="h-full w-full bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.55)_1px,transparent_0)] [background-size:18px_18px]" />
+            </div>
+            <div className="relative mx-auto max-w-4xl">
+              <h2 className="text-4xl font-black leading-tight tracking-tight text-white sm:text-5xl">
                 Ready to See What Your Home Could Fetch?
               </h2>
-              <p className="mt-4 text-base sm:text-lg text-white/95 max-w-2xl mx-auto leading-relaxed">
-                List privately today — and only sell if the offer is worth it.
+              <p className="mx-auto mt-5 max-w-2xl text-base font-black leading-8 text-[#bdf2c4]">
+                List privately today, and only sell if the offer is worth it.
               </p>
-              <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Link
-                  href="/dashboards/seller/register"
-                  className="inline-flex w-full sm:w-auto min-w-[200px] items-center justify-center rounded-xl bg-white px-8 py-3.5 text-base font-bold text-[#3AB861] shadow-md hover:bg-white/95 transition-colors"
-                >
-                  Sell Only If
-                </Link>
-              </div>
+              <Link
+                href="/dashboards/seller/register"
+                className="mt-9 inline-flex min-h-14 items-center justify-center rounded-lg bg-white px-10 text-sm font-black text-[#007a38] shadow-sm transition hover:bg-[#f7fff4]"
+              >
+                Sell Only If
+              </Link>
             </div>
           </div>
         </section>

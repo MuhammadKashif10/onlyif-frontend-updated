@@ -28,7 +28,7 @@ interface PropertyCardProps {
   carSpaces?: number | null | undefined;
   isWatched?: boolean;
   onToggleWatchlist?: (e: React.MouseEvent) => void;
-  variant?: 'default' | 'vault';
+  variant?: 'default' | 'vault' | 'buy';
 }
 
 export default function PropertyCard({
@@ -116,6 +116,11 @@ export default function PropertyCard({
 
   const safeImageUrl = getSafeImageUrl(image, 'property');
   const hasValidImage = safeImageUrl && safeImageUrl.trim() !== '';
+  const privateAddress = (() => {
+    const parts = (address || title || '').split(',');
+    const locality = parts.length > 1 ? parts.slice(1).join(',').trim() : (title || 'Private listing');
+    return `••••••••, ${locality}`;
+  })();
 
   if (variant === 'vault') {
     return (
@@ -179,6 +184,105 @@ export default function PropertyCard({
             </span>
           </div>
         </button>
+      </article>
+    );
+  }
+
+  if (variant === 'buy') {
+    return (
+      <article
+        className={`group relative overflow-hidden rounded-lg border border-[#c9dcc7] bg-white shadow-[0_18px_40px_rgba(7,17,9,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_24px_60px_rgba(7,17,9,0.13)] ${className}`}
+      >
+        <button
+          type="button"
+          onClick={handleCheckout}
+          className="block w-full text-left focus:outline-none focus:ring-2 focus:ring-[#007a38] focus:ring-offset-2"
+          aria-label={`Unlock details for ${title} - ${formatSafePrice(price)}`}
+        >
+          <div className="relative h-64 overflow-hidden bg-[#dcefd9]">
+            {hasValidImage ? (
+              <img
+                src={safeImageUrl}
+                alt={`${title} - ${address}`}
+                className="h-full w-full scale-105 object-cover blur-[5px] brightness-[0.72] transition-transform duration-500 group-hover:scale-110"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center bg-[#dcefd9]">
+                <p className="text-xs font-semibold text-[#6c8172]">No Image</p>
+              </div>
+            )}
+            <div className="absolute left-4 top-4 rounded-full bg-[#007a38] px-3 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-white shadow-sm">
+              Off-Market
+            </div>
+            <div className="absolute inset-0 grid place-items-center">
+              <span className="grid h-16 w-16 place-items-center rounded-full bg-white/95 shadow-[0_14px_35px_rgba(7,17,9,0.18)]">
+                <LockKeyhole className="h-7 w-7 text-[#007a38]" aria-hidden="true" />
+              </span>
+            </div>
+          </div>
+
+          <div className="p-5">
+            <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-start">
+              <div className="min-w-0">
+                <h3 className="text-lg font-black leading-tight tracking-tight text-[#071109] line-clamp-2">
+                  {privateAddress}
+                </h3>
+                <p className="mt-1 truncate text-xs font-semibold text-[#6c8172]">
+                  {title || 'Private off-market residence'}
+                </p>
+              </div>
+              <p className="text-left text-lg font-black leading-tight text-[#007a38] sm:text-right">
+                {price == null || isNaN(price)
+                  ? 'Price on Request'
+                  : `AUD ${formatCurrencyCompact(price).replace('$', '$')}`}
+              </p>
+            </div>
+
+            <div className="mt-5 border-t border-[#d7e6d4] pt-4">
+              <div className="flex flex-wrap items-center gap-4 text-sm font-black text-[#007a38]">
+                <span className="inline-flex items-center gap-1.5">
+                  <Bed className="h-4 w-4" aria-hidden="true" />
+                  {formatSafeNumber(beds)}
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <Bath className="h-4 w-4" aria-hidden="true" />
+                  {formatSafeNumber(baths)}
+                </span>
+                {carSpaces != null && !isNaN(carSpaces) ? (
+                  <span className="inline-flex items-center gap-1.5">
+                    <Car className="h-4 w-4" aria-hidden="true" />
+                    {formatSafeNumber(carSpaces)}
+                  </span>
+                ) : null}
+                <span className="inline-flex items-center gap-1.5 text-[#395342]">
+                  {formatSize(size)} sq m
+                </span>
+              </div>
+            </div>
+
+            <span className="mt-5 inline-flex min-h-12 w-full items-center justify-center rounded-lg border-2 border-[#007a38] bg-white px-5 text-sm font-black text-[#007a38] transition group-hover:bg-[#007a38] group-hover:text-white">
+              Unlock Details ($49)
+            </span>
+          </div>
+        </button>
+
+        {onToggleWatchlist && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              onToggleWatchlist(e);
+            }}
+            className="absolute right-4 top-4 z-30 rounded-full bg-white/95 p-2 shadow-md transition-all hover:bg-white hover:scale-110 active:scale-95"
+            aria-label={isWatched ? "Remove from watchlist" : "Add to watchlist"}
+          >
+            <Heart
+              className={`h-5 w-5 transition-all duration-300 ${isWatched ? 'scale-110' : 'hover:scale-110'}`}
+              stroke={isWatched ? "#ef4444" : "#007a38"}
+              fill={isWatched ? "#ef4444" : "transparent"}
+            />
+          </button>
+        )}
       </article>
     );
   }

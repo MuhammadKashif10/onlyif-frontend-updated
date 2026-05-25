@@ -135,18 +135,18 @@ export default function EnhancedPropertyFilters({
   }, [filters, searchQuery]);
 
   const pillInactive =
-    'bg-gray-100 text-gray-700 border-0 shadow-sm hover:bg-gray-200/90';
-  const pillActive = 'bg-[#3AB861] text-white border-0 shadow-sm';
+    'border border-[#cfe2cb] bg-[#f7fff4] text-[#294232] shadow-sm hover:border-[#007a38] hover:bg-white';
+  const pillActive = 'border border-[#007a38] bg-[#007a38] text-white shadow-[0_10px_24px_rgba(0,122,56,0.18)]';
 
   const inner = (
     <>
           {/* Search Bar */}
           <div className={heroStacked ? 'mb-3 flex justify-center' : 'mb-4 flex justify-center'}>
             <div
-              className={`relative w-full bg-white shadow-xl max-w-5xl ${
+              className={`relative w-full bg-white shadow-[0_18px_45px_rgba(7,17,9,0.08)] ring-1 ring-[#d5e7d1] max-w-5xl ${
                 heroStacked
-                  ? 'rounded-full py-3 pl-5 pr-4 sm:pl-6 sm:pr-5 max-w-3xl'
-                  : 'rounded-xl p-3 sm:p-4 shadow-lg'
+                  ? 'rounded-2xl py-3 pl-5 pr-4 sm:pl-6 sm:pr-5 max-w-4xl'
+                  : 'rounded-2xl p-3 sm:p-4'
               }`}
             >
               <div
@@ -154,16 +154,16 @@ export default function EnhancedPropertyFilters({
                   heroStacked ? 'left-5 sm:left-6' : 'left-0 pl-4 sm:pl-6'
                 }`}
               >
-                <Search color="#3AB861" strokeWidth={2} size={heroStacked ? 22 : 20} aria-hidden="true" />
+                <Search color="#007a38" strokeWidth={2} size={heroStacked ? 22 : 20} aria-hidden="true" />
               </div>
               <input
                 type="text"
                 placeholder={searchPlaceholder}
                 value={searchQuery}
                 onChange={handleSearchChange}
-                className={`w-full border-0 bg-transparent placeholder-gray-400 focus:outline-none focus:ring-0 transition-colors text-sm sm:text-base ${
+                className={`w-full border-0 bg-transparent font-semibold text-[#071109] placeholder-[#6f8173] focus:outline-none focus:ring-0 transition-colors text-sm sm:text-base ${
                   heroStacked
-                    ? 'pl-11 sm:pl-12 pr-10 py-1 rounded-full leading-6'
+                    ? 'pl-11 sm:pl-12 pr-10 py-1.5 rounded-2xl leading-6'
                     : 'pl-10 pr-10 py-2.5 rounded-md leading-5 placeholder-gray-500 focus:placeholder-gray-400'
                 }`}
               />
@@ -184,17 +184,17 @@ export default function EnhancedPropertyFilters({
           {/* Filter Buttons */}
           <div className="flex justify-center">
             <div
-              className={`w-full bg-white shadow-lg ${
+              className={`w-full bg-white shadow-[0_18px_45px_rgba(7,17,9,0.07)] ring-1 ring-[#d5e7d1] ${
                 heroStacked
-                  ? 'rounded-2xl px-3 py-3 sm:px-4 sm:py-3.5 max-w-[42rem]'
-                  : 'rounded-xl p-3 sm:p-4 shadow-lg max-w-5xl'
+                  ? 'rounded-2xl px-3 py-3 sm:px-4 sm:py-3.5 max-w-5xl'
+                  : 'rounded-2xl p-3 sm:p-4 max-w-5xl'
               }`}
             >
               <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-2.5">
             {/* Price Filter Button */}
             <button
               onClick={() => openModal('price')}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl transition-all whitespace-nowrap ${
+              className={`flex min-h-10 items-center gap-2 rounded-xl px-3.5 py-2 transition-all whitespace-nowrap ${
                 filters.minPrice || filters.maxPrice
                   ? pillActive
                   : heroStacked
@@ -203,7 +203,7 @@ export default function EnhancedPropertyFilters({
               }`}
             >
               <DollarSign
-                className={`h-4 w-4 shrink-0 ${filters.minPrice || filters.maxPrice ? 'text-white' : 'text-[#3AB861]'}`}
+                className={`h-4 w-4 shrink-0 ${filters.minPrice || filters.maxPrice ? 'text-white' : 'text-[#007a38]'}`}
               />
               <span className="text-sm font-medium">{getFilterButtonText('price')}</span>
             </button>
@@ -211,7 +211,7 @@ export default function EnhancedPropertyFilters({
             {/* Property Type Filter Button */}
             <button
               onClick={() => openModal('propertyType')}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl transition-all whitespace-nowrap ${
+              className={`flex min-h-10 items-center gap-2 rounded-xl px-3.5 py-2 transition-all whitespace-nowrap ${
                 filters.propertyType
                   ? pillActive
                   : heroStacked
@@ -220,7 +220,7 @@ export default function EnhancedPropertyFilters({
               }`}
             >
               <Home
-                className={`h-4 w-4 shrink-0 ${filters.propertyType ? 'text-white' : 'text-[#3AB861]'}`}
+                className={`h-4 w-4 shrink-0 ${filters.propertyType ? 'text-white' : 'text-[#007a38]'}`}
               />
               <span className="text-sm font-medium">{getFilterButtonText('propertyType')}</span>
             </button>
@@ -228,7 +228,7 @@ export default function EnhancedPropertyFilters({
             {/* Beds Filter Button */}
             <button
               onClick={() => openModal('beds')}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl transition-all whitespace-nowrap ${
+              className={`flex min-h-10 items-center gap-2 rounded-xl px-3.5 py-2 transition-all whitespace-nowrap ${
                 filters.beds
                   ? pillActive
                   : heroStacked
@@ -236,14 +236,14 @@ export default function EnhancedPropertyFilters({
                     : 'bg-gray-50 text-gray-700 border border-gray-200 hover:border-gray-300 hover:bg-gray-100'
               }`}
             >
-              <Bed className={`h-4 w-4 shrink-0 ${filters.beds ? 'text-white' : 'text-[#3AB861]'}`} />
+              <Bed className={`h-4 w-4 shrink-0 ${filters.beds ? 'text-white' : 'text-[#007a38]'}`} />
               <span className="text-sm font-medium">{getFilterButtonText('beds')}</span>
             </button>
 
             {/* Baths Filter Button */}
             <button
               onClick={() => openModal('baths')}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl transition-all whitespace-nowrap ${
+              className={`flex min-h-10 items-center gap-2 rounded-xl px-3.5 py-2 transition-all whitespace-nowrap ${
                 filters.baths
                   ? pillActive
                   : heroStacked
@@ -251,7 +251,7 @@ export default function EnhancedPropertyFilters({
                     : 'bg-gray-50 text-gray-700 border border-gray-200 hover:border-gray-300 hover:bg-gray-100'
               }`}
             >
-              <Bath className={`h-4 w-4 shrink-0 ${filters.baths ? 'text-white' : 'text-[#3AB861]'}`} />
+              <Bath className={`h-4 w-4 shrink-0 ${filters.baths ? 'text-white' : 'text-[#007a38]'}`} />
               <span className="text-sm font-medium">{getFilterButtonText('baths')}</span>
             </button>
 
@@ -259,7 +259,7 @@ export default function EnhancedPropertyFilters({
             {!hideLocationPill && (
               <button
                 onClick={() => openModal('location')}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl transition-all whitespace-nowrap ${
+                className={`flex min-h-10 items-center gap-2 rounded-xl px-3.5 py-2 transition-all whitespace-nowrap ${
                   filters.city
                     ? pillActive
                     : heroStacked
@@ -267,7 +267,7 @@ export default function EnhancedPropertyFilters({
                       : 'bg-gray-50 text-gray-700 border border-gray-200 hover:border-gray-300 hover:bg-gray-100'
                 }`}
               >
-                <MapPin className={`h-4 w-4 shrink-0 ${filters.city ? 'text-white' : 'text-[#3AB861]'}`} />
+                <MapPin className={`h-4 w-4 shrink-0 ${filters.city ? 'text-white' : 'text-[#007a38]'}`} />
                 <span className="text-sm font-medium">{getFilterButtonText('location')}</span>
               </button>
             )}
@@ -275,11 +275,11 @@ export default function EnhancedPropertyFilters({
             {/* More Filters Button */}
             <button
               onClick={() => openModal('more')}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl transition-all whitespace-nowrap ${
-                heroStacked ? pillInactive : 'border border-gray-200 bg-gray-50 text-gray-700 hover:border-gray-300 hover:bg-gray-100'
+              className={`flex min-h-10 items-center gap-2 rounded-xl px-3.5 py-2 transition-all whitespace-nowrap ${
+                heroStacked ? pillInactive : 'border border-[#cfe2cb] bg-[#f7fff4] text-[#294232] hover:border-[#007a38] hover:bg-white'
               }`}
             >
-              <SlidersHorizontal className="h-4 w-4 shrink-0 text-[#3AB861]" />
+              <SlidersHorizontal className="h-4 w-4 shrink-0 text-[#007a38]" />
               <span className="text-sm font-medium">More</span>
             </button>
 
@@ -287,7 +287,7 @@ export default function EnhancedPropertyFilters({
             {activeFiltersCount > 0 && (
               <button
                 onClick={clearFilters}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-lg border bg-red-50 text-red-600 border-red-200 hover:bg-red-100 transition-all whitespace-nowrap"
+                className="flex min-h-10 items-center gap-1.5 rounded-xl border border-[#f1c8c8] bg-[#fff7f7] px-4 py-2 text-red-600 transition-all hover:bg-white whitespace-nowrap"
               >
                 <X className="h-4 w-4" />
                 <span className="text-sm font-medium">Clear All</span>
@@ -297,7 +297,7 @@ export default function EnhancedPropertyFilters({
               
               {/* Active Filters Count Badge */}
               {activeFiltersCount > 0 && (
-                <div className="mt-3 text-sm text-gray-600 text-center">
+                <div className="mt-3 text-center text-xs font-black uppercase tracking-[0.16em] text-[#6c8172]">
                   {activeFiltersCount} filter{activeFiltersCount > 1 ? 's' : ''} active
                 </div>
               )}
