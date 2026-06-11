@@ -380,12 +380,22 @@ export default function AgentDashboard() {
   
   // Add fetchAgentProperties function
   const fetchAgentProperties = async () => {
+    // Only fetch for a real logged-in agent — never query with the hardcoded fallback id.
+    const agentId = user?.id;
+    if (!agentId) {
+      setAssignments([]);
+      setStats(prevStats => ({ ...prevStats, assignedProperties: 0 }));
+      setStatsLoading(false);
+      return;
+    }
     try {
       setAssignmentsLoading(true);
       setAssignmentsError(null);
-      const backendBase = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || '';
 
-      const response = await fetch(`${backendBase}/agent/${currentUserId}/properties`, {
+      // Use the relative Next.js proxy route (it forwards to the backend's
+      // /api/agent/:id/properties endpoint). The previous absolute URL omitted
+      // /api and 404'd, which silently showed zero properties.
+      const response = await fetch(`/api/agent/${agentId}/properties`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json'
@@ -439,8 +449,8 @@ export default function AgentDashboard() {
       }
     } catch (error) {
       console.error('Error fetching agent properties:', error);
-      // Don't show technical errors to users
-      setAssignmentsError(null);
+      // Surface a meaningful error instead of silently swallowing it.
+      setAssignmentsError('Failed to load assigned properties. Please try again.');
       setAssignments([]);
       setStats(prevStats => ({ ...prevStats, assignedProperties: 0 }));
       setStatsLoading(false);

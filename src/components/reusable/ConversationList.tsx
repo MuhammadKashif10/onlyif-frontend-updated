@@ -44,8 +44,10 @@ const ConversationList: React.FC<ConversationListProps> = ({
     }
   };
 
-  const truncateMessage = (message: string, maxLength: number = 50) => {
-    return message.length > maxLength ? `${message.substring(0, maxLength)}...` : message;
+  const truncateMessage = (message?: string | null, maxLength: number = 50) => {
+    const safeMessage = typeof message === 'string' ? message : '';
+    if (!safeMessage) return 'No message yet';
+    return safeMessage.length > maxLength ? `${safeMessage.substring(0, maxLength)}...` : safeMessage;
   };
 
   if (loading) {
@@ -144,7 +146,11 @@ const ConversationList: React.FC<ConversationListProps> = ({
                     conversation.unreadCount > 0 ? 'font-medium text-gray-900' : 'text-gray-600'
                   }`}>
                     {conversation.lastMessage.senderId === currentUserId ? 'You: ' : ''}
-                    {truncateMessage(conversation.lastMessage.messageText)}
+                    {truncateMessage(
+                      conversation.lastMessage?.messageText ??
+                      (conversation.lastMessage as any)?.text ??
+                      (conversation.lastMessage as any)?.message
+                    )}
                   </p>
                 )}
               </div>

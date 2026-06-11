@@ -4,15 +4,13 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Property, Agent } from '@/types/api';
 import { propertiesApi } from '@/api/properties';
-import { agentsApi } from '@/api/agents';
 import { PropertyGridSkeleton } from '@/components/ui/LoadingSkeleton';
 import { LoadingError } from '@/components/ui/ErrorMessage';
-import ContactAgentModal from '@/components/ui/ContactAgentModal';
+import AgentChatModal from '@/components/ui/AgentChatModal';
 import Image from 'next/image';
 import { getSafeImageUrl } from '@/utils/imageUtils';
+import { getNonDuplicateAddress } from '@/utils/addressUtils';
 import { formatCurrencyCompact } from '@/utils/currency';
-import ChatDemo from '@/components/ui/ContactAgentModal';
-import OneToOneChat from '@/components/ui/ContactAgentModal';
 import { Bed, Bath, Car } from 'lucide-react';
 
 export default function PropertyDetailsPage() {
@@ -23,7 +21,6 @@ export default function PropertyDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
-  const [agentLoading, setAgentLoading] = useState(false);
 
   const propertyId = params.id as string;
 
@@ -66,30 +63,14 @@ export default function PropertyDetailsPage() {
     fetchProperty();
   }, [propertyId]);
 
-  const handleContactAgent = async () => {
-    if (!property?.agent && !agent) {
-      // Try to fetch agent info if not available
-      if (property?.agentId) {
-        setAgentLoading(true);
-        try {
-          const agentResponse = await agentsApi.getAgentById(property.agentId);
-          if (agentResponse && agentResponse.success && agentResponse.data) {
-            setAgent(agentResponse.data);
-          }
-        } catch (err) {
-          console.error('Error fetching agent:', err);
-        } finally {
-          setAgentLoading(false);
-        }
-      }
-    }
+  const handleContactAgent = () => {
     setIsContactModalOpen(true);
   };
 
   const handleViewAgentProfile = () => {
     const agentData = property?.agent || agent;
     if (agentData?.id) {
-      router.push(`/agent/${agentData.id}`);
+      router.push(`/agents/${agentData.id}`);
     }
   };
 
@@ -143,8 +124,12 @@ export default function PropertyDetailsPage() {
   };
 
   const getMainImage = () => {
-    if (property.mainImage?.url) return property.mainImage.url;
-    if (property.finalImageUrl?.url) return property.finalImageUrl.url;
+    // mainImage is a flat string in the current API; tolerate a legacy { url } object too.
+    const mainImage = property.mainImage as unknown;
+    if (typeof mainImage === 'string' && mainImage.trim()) return mainImage;
+    if (mainImage && typeof mainImage === 'object' && (mainImage as { url?: string }).url) {
+      return (mainImage as { url: string }).url;
+    }
     if (property.images && property.images.length > 0) {
       const firstImage = property.images.find(img => img && img.url);
       if (firstImage) return firstImage.url;
@@ -152,9 +137,19 @@ export default function PropertyDetailsPage() {
     return '/images/01.jpg';
   };
 
+  // Avoid showing the same street/locality text in both the title and the
+  // address line. The title is always rendered; the address line only shows
+  // information the title doesn't already include.
+  const displayAddress = getNonDuplicateAddress(property.title, formatAddress(property.address));
+
+  // Backend now returns a reliable `agent` + `agentAssigned`. Prefer those;
+  // keep local `agent` state only as a harmless fallback.
+  const resolvedAgent = property.agent || agent;
+  const hasAgent = !!(property.agentAssigned && resolvedAgent);
+
   return (
     <div className="w-full px-4 py-8">
-      <button 
+      <button
         onClick={() => router.back()}
         className="mb-6 text-blue-600 hover:text-blue-800 flex items-center gap-2"
       >
@@ -178,7 +173,9 @@ export default function PropertyDetailsPage() {
           <div className="flex justify-between items-start mb-4">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">{property.title}</h1>
-              <p className="text-gray-600 text-lg">{formatAddress(property.address)}</p>
+              {displayAddress && (
+                <p className="text-gray-600 text-lg">{displayAddress}</p>
+              )}
             </div>
             <div className="text-right">
               <p className="text-3xl font-bold text-blue-600">
@@ -228,84 +225,62 @@ export default function PropertyDetailsPage() {
             </div>
           )}
 
-          {/* Contact Agent Section */}
+          {/* Assigned Agent Section (single, consolidated) */}
           <div className="border-t pt-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Interested in this property?</h2>
-            
-            {property.agent || agent ? (
-              <div className="flex flex-col sm:flex-row gap-4">
-                <button
-                  onClick={handleContactAgent}
-                  className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center justify-center gap-2"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  </svg>
-                  Contact Agent
-                </button>
-                
-                <button
-                  onClick={handleViewAgentProfile}
-                  className="flex-1 border border-blue-600 text-blue-600 px-6 py-3 rounded-lg hover:bg-blue-50 transition-colors font-medium flex items-center justify-center gap-2"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                  View Agent Profile
-                </button>
+            <h2 className="text-xl font-bold text-gray-900 mb-4">Assigned Agent</h2>
+
+            {hasAgent && resolvedAgent ? (
+              <div>
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center">
+                    <span className="text-xl font-bold text-gray-600">
+                      {(resolvedAgent.name || 'A').charAt(0)}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="font-bold text-gray-900">{resolvedAgent.name}</p>
+                    <p className="text-gray-600">{resolvedAgent.title || 'Real Estate Agent'}</p>
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <button
+                    onClick={handleContactAgent}
+                    className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center justify-center gap-2"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    Contact Agent
+                  </button>
+
+                  <button
+                    onClick={handleViewAgentProfile}
+                    className="flex-1 border border-blue-600 text-blue-600 px-6 py-3 rounded-lg hover:bg-blue-50 transition-colors font-medium flex items-center justify-center gap-2"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    View Agent Profile
+                  </button>
+                </div>
               </div>
-            ) :
-             (
-              <div className="text-center py-4">
-                <button
-                  disabled
-                  className="bg-gray-300 text-gray-500 px-6 py-3 rounded-lg cursor-not-allowed font-medium"
-                >
-                  No agent assigned
-                </button>
-                <p className="text-gray-500 text-sm mt-2">
-                  This property doesn't have an assigned agent yet.
-                </p>
-              </div>
+            ) : (
+              <p className="text-gray-500">No agent assigned yet.</p>
             )}
           </div>
-
-          {/* Agent Information Display (if available) */}
-          {(property.agent || agent) && (
-            <div className="border-t pt-6 mt-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-3">Contact Agent</h2>
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center">
-                  <span className="text-xl font-bold text-gray-600">
-                    {(property.agent?.name || agent?.name || 'A').charAt(0)}
-                  </span>
-                </div>
-                <div>
-                  <p className="font-bold text-gray-900">{property.agent?.name || agent?.name}</p>
-                  <p className="text-gray-600">{property.agent?.title || agent?.title || 'Real Estate Agent'}</p>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </div>
-{isContactModalOpen && (
-  <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-    <div className="bg-white rounded-xl w-full max-w-2xl">
-      <div className="flex items-center justify-between p-4 border-b">
-        <h2 className="text-xl font-semibold">Chat with Agent</h2>
-        <button onClick={() => setIsContactModalOpen(false)}>✕</button>
-      </div>
-      <div className="p-4">
-        <OneToOneChat
-          agent={property.agent}
+
+      {/* Contact Agent Modal */}
+      {hasAgent && resolvedAgent && (
+        <AgentChatModal
+          isOpen={isContactModalOpen}
+          onClose={() => setIsContactModalOpen(false)}
+          agent={resolvedAgent}
           propertyTitle={property.title}
         />
-      </div>
-    </div>
-  </div>
-)}
-
+      )}
 
     </div>
   );

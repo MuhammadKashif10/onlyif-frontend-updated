@@ -27,6 +27,7 @@ export interface Property {
   };
   contactPhone: string | null; // Flat contact phone field
   agent?: Agent | null;
+  agentAssigned?: boolean; // Backend flag: whether an active agent is assigned
   featured: boolean;
   dateListed: string;
   daysOnMarket: number;

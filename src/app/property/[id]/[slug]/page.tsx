@@ -4,15 +4,13 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Property, Agent } from '@/types/api';
 import { propertiesApi } from '@/api/properties';
-import { agentsApi } from '@/api/agents';
 import { PropertyGridSkeleton } from '@/components/ui/LoadingSkeleton';
 import { LoadingError } from '@/components/ui/ErrorMessage';
-import ContactAgentModal from '@/components/ui/ContactAgentModal';
+import AgentChatModal from '@/components/ui/AgentChatModal';
 import Image from 'next/image';
 import { getSafeImageUrl } from '@/utils/imageUtils';
+import { getNonDuplicateAddress } from '@/utils/addressUtils';
 import { Bed, Bath, Car } from 'lucide-react';
-import ChatDemo from '@/components/ui/ContactAgentModal';
-import OneToOneChat from '@/components/ui/ContactAgentModal';
 import { useAuth } from '@/context/AuthContext';
 
 export default function PropertyDetailsPage() {
@@ -24,7 +22,6 @@ export default function PropertyDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
-  const [agentLoading, setAgentLoading] = useState(false);
 
   const propertyId = params.id as string;
   const slug = params.slug as string;
@@ -69,27 +66,6 @@ export default function PropertyDetailsPage() {
     fetchProperty();
   }, [propertyId]);
 
-  // Fetch agent details if property has an agent ID but no agent data
-  useEffect(() => {
-    const fetchAgent = async () => {
-      if (property && property.agentId && !agent) {
-        try {
-          setAgentLoading(true);
-          const agentResponse = await agentsApi.getAgentById(property.agentId);
-          if (agentResponse && agentResponse.success && agentResponse.data) {
-            setAgent(agentResponse.data);
-          }
-        } catch (error) {
-          console.error('Error fetching agent:', error);
-        } finally {
-          setAgentLoading(false);
-        }
-      }
-    };
-
-    fetchAgent();
-  }, [property, agent]);
-
   const handleContactAgent = () => {
     setIsContactModalOpen(true);
   };
@@ -106,21 +82,17 @@ export default function PropertyDetailsPage() {
   };
 
   const getMainImage = () => {
-    // images can be strings or objects with `url`
+    // Priority: mainImage (string) -> mainImage.url (legacy object) -> first valid images[].url -> placeholder
+    const mainImage = property?.mainImage as unknown;
+    if (typeof mainImage === 'string' && mainImage.trim()) return mainImage;
+    if (mainImage && typeof mainImage === 'object' && (mainImage as { url?: string }).url) {
+      return (mainImage as { url: string }).url;
+    }
     if (property?.images && property.images.length > 0) {
-      const first = (property.images as any[])[0];
-      return typeof first === 'string' ? first : first?.url;
-    }
-    if (property?.mainImage) {
-      const mi = (property as any).mainImage;
-      return typeof mi === 'string' ? mi : mi?.url;
-    }
-    if ((property as any)?.finalImageUrl) {
-      const fi = (property as any).finalImageUrl;
-      return typeof fi === 'string' ? fi : fi?.url;
-    }
-    if ((property as any)?.primaryImage) {
-      return (property as any).primaryImage;
+      const firstImage = (property.images as Array<string | { url?: string }>).find(
+        (img) => img && (typeof img === 'string' ? img : img.url)
+      );
+      if (firstImage) return typeof firstImage === 'string' ? firstImage : firstImage.url;
     }
     return '/images/01.jpg';
   };
@@ -161,9 +133,19 @@ export default function PropertyDetailsPage() {
     );
   }
 
+  // Avoid showing the same street/locality text in both the title and the
+  // address line. The title is always rendered; the address line only shows
+  // information the title doesn't already include.
+  const displayAddress = getNonDuplicateAddress(property.title, formatAddress(property.address));
+
+  // Backend now returns a reliable `agent` + `agentAssigned`. Prefer those;
+  // keep local `agent` state only as a harmless fallback.
+  const resolvedAgent = property.agent || agent;
+  const hasAgent = !!(property.agentAssigned && resolvedAgent);
+
   return (
     <div className="container mx-auto px-4 py-8">
-      <button 
+      <button
         onClick={() => router.back()}
         className="mb-6 text-blue-600 hover:text-blue-800 flex items-center gap-2"
       >
@@ -187,7 +169,9 @@ export default function PropertyDetailsPage() {
           <div className="flex justify-between items-start mb-4">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">{property.title}</h1>
-              <p className="text-gray-600 text-lg">{formatAddress(property.address)}</p>
+              {displayAddress && (
+                <p className="text-gray-600 text-lg">{displayAddress}</p>
+              )}
             </div>
             <div className="text-right">
               <p className="text-3xl font-bold text-blue-600">
@@ -248,17 +232,18 @@ export default function PropertyDetailsPage() {
             </div>
           )}
 
-          {/* Agent Information */}
-          {agent && (
-            <div className="border-t pt-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Contact Agent</h2>
+          {/* Assigned Agent */}
+          <div className="border-t pt-6">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Assigned Agent</h2>
+            {hasAgent && resolvedAgent ? (
               <div className="flex items-center justify-between bg-gray-50 p-4 rounded-lg">
                 <div className="flex items-center">
                   <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
-                    {agent.name?.charAt(0) || 'A'}
+                    {resolvedAgent.name?.charAt(0) || 'A'}
                   </div>
                   <div className="ml-4">
-                    <h3 className="font-semibold text-gray-900">{agent.name}</h3>
+                    <h3 className="font-semibold text-gray-900">{resolvedAgent.name}</h3>
+                    <p className="text-sm text-gray-600">{resolvedAgent.title || 'Real Estate Agent'}</p>
                   </div>
                 </div>
                 <button
@@ -268,18 +253,20 @@ export default function PropertyDetailsPage() {
                   Contact Agent
                 </button>
               </div>
-            </div>
-          )}
+            ) : (
+              <p className="text-gray-500">No agent assigned yet.</p>
+            )}
+          </div>
         </div>
       </div>
 
       {/* Contact Agent Modal */}
-      {isContactModalOpen && agent && (
-        <ContactAgentModal
-          agent={agent}
-          property={property}
+      {hasAgent && resolvedAgent && (
+        <AgentChatModal
           isOpen={isContactModalOpen}
           onClose={() => setIsContactModalOpen(false)}
+          agent={resolvedAgent}
+          propertyTitle={property.title}
         />
       )}
     </div>

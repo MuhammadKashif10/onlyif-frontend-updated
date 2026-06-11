@@ -77,8 +77,14 @@ export default function PropertyCard({
     }
 
     try {
-      const backendBase = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || '';
-      const res = await fetch(`${backendBase}/payment/checkout/${id}`, {
+      // Backend mounts payment routes at /api/payment (see server.js). The base
+      // env var has no /api suffix, so it must be added here.
+      const backendBase = (
+        process.env.NEXT_PUBLIC_BACKEND_URL ||
+        process.env.NEXT_PUBLIC_API_URL?.replace(/\/api\/?$/, '') ||
+        ''
+      ).replace(/\/$/, '');
+      const res = await fetch(`${backendBase}/api/payment/checkout/${id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -86,7 +92,14 @@ export default function PropertyCard({
         },
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        // Surface the real backend error instead of a generic message.
+        console.error('Checkout session failed:', res.status, data);
+        alert(data?.message || data?.error || `Checkout failed (${res.status}). Please try again.`);
+        return;
+      }
 
       if (data.alreadyPaid) {
         // Already purchased → go directly to SEO-friendly details page
@@ -96,7 +109,8 @@ export default function PropertyCard({
         // Redirect to Stripe Checkout
         window.location.href = data.url;
       } else {
-        alert('Something went wrong creating checkout session.');
+        console.error('Checkout response missing url:', data);
+        alert(data?.message || 'Something went wrong creating checkout session.');
       }
     } catch (err) {
       console.error('Stripe checkout error:', err);

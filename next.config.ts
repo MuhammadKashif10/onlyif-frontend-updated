@@ -15,6 +15,7 @@ const nextConfig: NextConfig = {
       'images.unsplash.com',
       'plus.unsplash.com',
       'images.pexels.com',
+      'res.cloudinary.com', // Cloudinary-hosted property/agent images
       ...(backendHost ? [backendHost.hostname] : []),
       'onlyif-backend-updated-production-b4e3.up.railway.app', // ❗hostname only
     ],
@@ -22,6 +23,7 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: 'images.unsplash.com' },
       { protocol: 'https', hostname: 'plus.unsplash.com' },
       { protocol: 'https', hostname: 'images.pexels.com' },
+      { protocol: 'https', hostname: 'res.cloudinary.com' },
       { protocol: 'https', hostname: 'onlyif-backend-updated-production-b4e3.up.railway.app' },
       ...(backendHost
         ? [{
