@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Navbar } from '@/components';
 import Sidebar from '@/components/main/Sidebar';
 import { AgentProvider, useAgentContext } from '@/context/AgentContext';
@@ -43,6 +44,8 @@ import {
 import { Button } from '@/components/reusable/Button';
 import InputField from '@/components/reusable/InputField';
 import InspectionManager from '@/components/agent/InspectionManager';
+import SecureMessageBoard from '@/components/communication/SecureMessageBoard';
+import BuyerChatPanel from '@/components/agent/BuyerChatPanel';
 import { NotificationPanel, Modal } from '@/components/reusable';
 import { MessagesInterface } from '@/components/reusable';
 import OneToOneChat from '@/components/ui/ContactAgentModal';
@@ -287,8 +290,11 @@ export default function AgentDashboard() {
   console.log("🆔 Using agent ID:", currentUserId);
   
   // Fix: Use dynamic user name instead of hardcoded value
+  const router = useRouter();
   const [agentName, setAgentName] = useState(user?.name || 'Agent');
   const [activeTab, setActiveTab] = useState('overview');
+  // Property whose buyers are shown in the "Manage Buyers" tab (set from a card).
+  const [manageBuyersPropertyId, setManageBuyersPropertyId] = useState<string | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [ assignments, setAssignments] = useState<PropertyAssignment[]>([]);
   console.log("🚀 ~ AgentDashboard ~ assignments:", assignments)
@@ -1610,12 +1616,14 @@ export default function AgentDashboard() {
                 {[
                   { id: 'overview', label: 'Overview', icon: LayoutDashboard },
                   { id: 'properties', label: 'Assigned Properties', icon: Building2 },
+                  { id: 'messages', label: 'Messages', icon: MessageSquare },
+                  { id: 'manage-buyers', label: 'Manage Buyers', icon: Users },
                   { id: 'inspections', label: 'Manage Inspections', icon: Calendar },
                   { id: 'notes', label: 'Notes & Updates', icon: MessageSquare }
                 ].map((item) => (
-                  <button 
+                  <button
                     key={item.id}
-                    onClick={() => { setActiveTab(item.id); setIsMobileMenuOpen(false); }} 
+                    onClick={() => { setActiveTab(item.id); setIsMobileMenuOpen(false); }}
                     className={`w-full flex items-center justify-between rounded-2xl px-4 py-4 transition-all duration-200 ${
                       activeTab === item.id 
                         ? 'bg-[#eaf1ff] text-gray-950 font-bold shadow-sm' 
@@ -1663,6 +1671,8 @@ export default function AgentDashboard() {
               {[
                 { id: 'overview', label: 'Overview', icon: LayoutDashboard },
                 { id: 'properties', label: 'Assigned Properties', icon: Building2 },
+                { id: 'messages', label: 'Messages', icon: MessageSquare },
+                { id: 'manage-buyers', label: 'Manage Buyers', icon: Users },
                 { id: 'inspections', label: 'Manage Inspections', icon: Calendar },
                 { id: 'notes', label: 'Notes & Updates', icon: MessageSquare }
               ].map((item) => (
@@ -1725,6 +1735,8 @@ export default function AgentDashboard() {
             <p className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-500">
               {activeTab === 'overview' && 'Overview'}
               {activeTab === 'properties' && 'Assigned Properties'}
+              {activeTab === 'messages' && 'Messages'}
+              {activeTab === 'manage-buyers' && 'Manage Buyers'}
               {activeTab === 'inspections' && 'Manage Inspections'}
               {activeTab === 'notes' && 'Notes & Updates'}
             </p>
@@ -2022,20 +2034,19 @@ export default function AgentDashboard() {
                         <div className="mt-auto grid grid-cols-3 gap-2">
                           <button
                             type="button"
-                            onClick={() => handleMessageSeller(assignment)}
-                            disabled={!hasSeller}
-                            className="group flex cursor-pointer flex-col items-center gap-1.5 rounded-2xl bg-[#eef3ff] py-3 transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#dde7ff] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0"
+                            onClick={() => setActiveTab('messages')}
+                            className="group flex cursor-pointer flex-col items-center gap-1.5 rounded-2xl bg-[#eef3ff] py-3 transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#dde7ff]"
                           >
                             <MessageSquare className="h-5 w-5 text-gray-600 transition-colors duration-200 group-hover:text-black" />
-                            <span className="text-[10px] font-black uppercase tracking-[0.18em] text-gray-500 group-hover:text-black">Chat</span>
+                            <span className="text-[10px] font-black uppercase tracking-[0.18em] text-gray-500 group-hover:text-black">Messages</span>
                           </button>
                           <button
                             type="button"
-                            onClick={() => handleSelectProperty(assignment)}
+                            onClick={() => { setManageBuyersPropertyId(assignment._id || assignment.id); setActiveTab('manage-buyers'); }}
                             className="group flex cursor-pointer flex-col items-center gap-1.5 rounded-2xl bg-[#eef3ff] py-3 transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#dde7ff]"
                           >
                             <Settings className="h-5 w-5 text-gray-600 transition-colors duration-200 group-hover:text-black" />
-                            <span className="text-[10px] font-black uppercase tracking-[0.18em] text-gray-500 group-hover:text-black">Manage</span>
+                            <span className="text-[10px] font-black uppercase tracking-[0.18em] text-gray-500 group-hover:text-black">Manage Buyers</span>
                           </button>
                           <button
                             type="button"
@@ -2294,18 +2305,17 @@ export default function AgentDashboard() {
                                 <div className="mt-auto flex flex-wrap items-center justify-end gap-2">
                                   <button
                                     type="button"
-                                    onClick={() => handleMessageSeller(assignment)}
-                                    disabled={!hasSeller}
-                                    className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-bold text-gray-700 transition-all duration-200 hover:-translate-y-0.5 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+                                    onClick={() => setActiveTab('messages')}
+                                    className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-bold text-gray-700 transition-all duration-200 hover:-translate-y-0.5 hover:bg-gray-50"
                                   >
-                                    <MessageSquare className="h-4 w-4" /> Chat
+                                    <MessageSquare className="h-4 w-4" /> Messages
                                   </button>
                                   <button
                                     type="button"
-                                    onClick={() => handleSelectProperty(assignment)}
+                                    onClick={() => { setManageBuyersPropertyId(assignment._id || assignment.id); setActiveTab('manage-buyers'); }}
                                     className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-bold text-gray-700 transition-all duration-200 hover:-translate-y-0.5 hover:bg-gray-50"
                                   >
-                                    <Settings className="h-4 w-4" /> Manage
+                                    <Settings className="h-4 w-4" /> Manage Buyers
                                   </button>
                                   <button
                                     type="button"
@@ -2857,6 +2867,44 @@ export default function AgentDashboard() {
                   </div>
                 );
               })()}
+
+              {activeTab === 'messages' && (
+                <div className="bg-white rounded-[2rem] border border-gray-100 shadow-sm overflow-hidden h-[calc(100vh-260px)] min-h-[480px]">
+                  <SecureMessageBoard className="h-full" restrictedMode={false} />
+                </div>
+              )}
+
+              {activeTab === 'manage-buyers' && (
+                <div className="bg-white rounded-[2rem] border border-gray-100 shadow-sm p-6 min-h-[480px]">
+                  {manageBuyersPropertyId ? (
+                    <BuyerChatPanel
+                      propertyId={manageBuyersPropertyId}
+                      propertyTitle={assignments.find((p) => (p._id || p.id) === manageBuyersPropertyId)?.title}
+                    />
+                  ) : (
+                    <div>
+                      <p className="mb-4 text-sm font-semibold text-gray-500">Select a property to view its buyers.</p>
+                      {assignments.length === 0 ? (
+                        <p className="text-gray-400 font-medium">No assigned properties yet.</p>
+                      ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          {assignments.map((p) => (
+                            <button
+                              key={p._id || p.id}
+                              type="button"
+                              onClick={() => setManageBuyersPropertyId(p._id || p.id)}
+                              className="text-left p-4 border-2 border-gray-50 rounded-2xl hover:border-emerald-500 hover:bg-emerald-50/50 transition-all"
+                            >
+                              <p className="font-bold text-gray-900 truncate">{p.title}</p>
+                              <p className="text-xs text-gray-400 font-medium">View buyers</p>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
             </div>
           </main>

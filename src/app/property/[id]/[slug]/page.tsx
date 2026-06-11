@@ -7,6 +7,7 @@ import { propertiesApi } from '@/api/properties';
 import { PropertyGridSkeleton } from '@/components/ui/LoadingSkeleton';
 import { LoadingError } from '@/components/ui/ErrorMessage';
 import AgentChatModal from '@/components/ui/AgentChatModal';
+import { Navbar } from '@/components';
 import Image from 'next/image';
 import { getSafeImageUrl } from '@/utils/imageUtils';
 import { getNonDuplicateAddress } from '@/utils/addressUtils';
@@ -22,6 +23,7 @@ export default function PropertyDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   const propertyId = params.id as string;
   const slug = params.slug as string;
@@ -143,8 +145,25 @@ export default function PropertyDetailsPage() {
   const resolvedAgent = property.agent || agent;
   const hasAgent = !!(property.agentAssigned && resolvedAgent);
 
+  // Build the full gallery from ALL uploaded images (Cloudinary URLs preserved
+  // as-is via getSafeImageUrl — no transformation/downscaling). Falls back to
+  // the single main image when no images[] are present.
+  const galleryImages: string[] = (() => {
+    const urls = Array.isArray(property.images)
+      ? property.images
+          .map((img: any) => (typeof img === 'string' ? img : img?.url))
+          .filter(Boolean)
+          .map((u: string) => getSafeImageUrl(u))
+      : [];
+    return urls.length > 0 ? urls : [getSafeImageUrl(getMainImage())];
+  })();
+  const safeIndex = Math.min(Math.max(selectedImageIndex, 0), galleryImages.length - 1);
+  const mainImageUrl = galleryImages[safeIndex] || galleryImages[0];
+
   return (
-    <div className="container mx-auto px-4 py-8">
+    <>
+      <Navbar />
+      <div className="container mx-auto px-4 py-8">
       <button
         onClick={() => router.back()}
         className="mb-6 text-blue-600 hover:text-blue-800 flex items-center gap-2"
@@ -153,15 +172,48 @@ export default function PropertyDetailsPage() {
       </button>
 
       <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-        {/* Property Image */}
-        <div className="relative h-96 w-full">
-          <Image
-            src={getSafeImageUrl(getMainImage())}
-            alt={property.title}
-            fill
-            className="object-cover"
-            priority
-          />
+        {/* Property Image Gallery — main image (70%) + thumbnails (30% desktop / horizontal mobile) */}
+        <div className="flex flex-col lg:flex-row gap-3 p-3">
+          {/* Main image */}
+          <div className="relative w-full lg:w-[70%] h-72 sm:h-96 lg:h-[520px] rounded-xl overflow-hidden bg-gray-100">
+            <Image
+              src={mainImageUrl}
+              alt={property.title}
+              fill
+              sizes="(max-width: 1024px) 100vw, 70vw"
+              quality={90}
+              className="object-cover"
+              priority
+            />
+          </div>
+
+          {/* Thumbnail gallery */}
+          {galleryImages.length > 1 && (
+            <div className="flex gap-3 overflow-x-auto pb-1 lg:w-[30%] lg:flex-col lg:overflow-x-visible lg:overflow-y-auto lg:max-h-[520px] lg:pb-0 lg:pr-1">
+              {galleryImages.map((url, idx) => (
+                <button
+                  key={`${url}-${idx}`}
+                  type="button"
+                  onClick={() => setSelectedImageIndex(idx)}
+                  aria-label={`View image ${idx + 1}`}
+                  aria-current={idx === safeIndex}
+                  className={`relative shrink-0 h-20 w-28 overflow-hidden rounded-lg border-2 transition-all lg:h-28 lg:w-full ${
+                    idx === safeIndex
+                      ? 'border-blue-600 ring-2 ring-blue-200'
+                      : 'border-transparent hover:border-gray-300'
+                  }`}
+                >
+                  <Image
+                    src={url}
+                    alt={`${property.title} - image ${idx + 1}`}
+                    fill
+                    sizes="(max-width: 1024px) 30vw, 20vw"
+                    className="object-cover"
+                  />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Property Details */}
@@ -269,6 +321,7 @@ export default function PropertyDetailsPage() {
           propertyTitle={property.title}
         />
       )}
-    </div>
+      </div>
+    </>
   );
 }
