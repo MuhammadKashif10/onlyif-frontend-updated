@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { LayoutDashboard, Home, Store, BarChart3, Settings } from 'lucide-react';
+import { LayoutDashboard, Home, Store, BarChart3, Settings, MessageSquare } from 'lucide-react';
 import { Navbar } from '@/components';
 import { useAuth } from '@/hooks/useAuth';
 import { sellerApi, AnalyticsData } from '@/api/seller';
@@ -87,6 +87,10 @@ export default function SellerAnalytics() {
                   <Home className={sidebarIconClass(false)} />
                   <span>Listings</span>
                 </button>
+                <button onClick={() => router.push('/dashboards/seller/messages')} className={sidebarButtonClass(false)}>
+                  <MessageSquare className={sidebarIconClass(false)} />
+                  <span>Messages</span>
+                </button>
                 <button onClick={() => router.push('/dashboards/seller/marketplace')} className={sidebarButtonClass(false)}>
                   <Store className={sidebarIconClass(false)} />
                   <span>Marketplace</span>
@@ -129,6 +133,10 @@ export default function SellerAnalytics() {
                   <Home className={sidebarIconClass(false)} />
                   <span>Listings</span>
                 </button>
+                <button onClick={() => router.push('/dashboards/seller/messages')} className={sidebarButtonClass(false)}>
+                  <MessageSquare className={sidebarIconClass(false)} />
+                  <span>Messages</span>
+                </button>
                 <button onClick={() => router.push('/dashboards/seller/marketplace')} className={sidebarButtonClass(false)}>
                   <Store className={sidebarIconClass(false)} />
                   <span>Marketplace</span>
@@ -169,6 +177,10 @@ export default function SellerAnalytics() {
                 <Home className={sidebarIconClass(false)} />
                 <span>Listings</span>
               </button>
+              <button onClick={() => router.push('/dashboards/seller/messages')} className={sidebarButtonClass(false)}>
+                <MessageSquare className={sidebarIconClass(false)} />
+                <span>Messages</span>
+              </button>
               <button onClick={() => router.push('/dashboards/seller/marketplace')} className={sidebarButtonClass(false)}>
                 <Store className={sidebarIconClass(false)} />
                 <span>Marketplace</span>
@@ -206,6 +218,7 @@ export default function SellerAnalytics() {
           <div className="mb-6 grid grid-cols-2 gap-3 lg:hidden">
             <button onClick={() => router.push('/dashboards/seller')} className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-700 shadow-sm">Dashboard</button>
             <button onClick={() => router.push('/dashboards/seller/listings')} className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-700 shadow-sm">Listings</button>
+            <button onClick={() => router.push('/dashboards/seller/messages')} className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-700 shadow-sm">Messages</button>
             <button onClick={() => router.push('/dashboards/seller/marketplace')} className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-700 shadow-sm">Marketplace</button>
             <button className="rounded-xl bg-black px-4 py-3 text-sm font-bold text-white shadow-sm">Analytics</button>
             <button onClick={() => router.push('/dashboards/seller/account')} className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-700 shadow-sm">Settings</button>

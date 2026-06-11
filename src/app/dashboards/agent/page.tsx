@@ -687,7 +687,7 @@ export default function AgentDashboard() {
       const datetime = new Date(`${inspectionForm.date}T${inspectionForm.time}`);
       
       const inspectionData = {
-        propertyId: selectedProperty.id,
+        propertyId: selectedProperty._id || selectedProperty.id,
         datetime: datetime.toISOString(),
         inspector: {
           name: inspectionForm.inspector,
@@ -697,7 +697,16 @@ export default function AgentDashboard() {
         notes: inspectionForm.notes
       };
 
-      const response = await fetch('/api/inspections', {
+      // Inspections live on the backend at /api/inspections. The relative
+      // '/api/inspections' hit the Next.js origin (no such route) and returned
+      // an HTML 404 page, causing "Unexpected token '<'". Call the backend directly.
+      const backendBase = (
+        process.env.NEXT_PUBLIC_BACKEND_URL ||
+        process.env.NEXT_PUBLIC_API_URL?.replace(/\/api\/?$/, '') ||
+        ''
+      ).replace(/\/$/, '');
+
+      const response = await fetch(`${backendBase}/api/inspections`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -706,12 +715,15 @@ export default function AgentDashboard() {
         body: JSON.stringify(inspectionData)
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to schedule inspection');
-      }
+      // Parse defensively — a non-JSON (HTML) response must not throw
+      // "Unexpected token '<'"; surface a meaningful error instead.
+      const raw = await response.text();
+      let result: any = {};
+      try { result = raw ? JSON.parse(raw) : {}; } catch { result = {}; }
 
-      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result?.message || `Failed to schedule inspection (${response.status})`);
+      }
       
       // Add to local state for immediate UI update
       const newInspection: Inspection = {
@@ -2907,6 +2919,24 @@ export default function AgentDashboard() {
               </button>
             </div>
             <div className="space-y-5">
+              <div>
+                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Property</label>
+                <select
+                  value={selectedProperty?._id || selectedProperty?.id || ''}
+                  onChange={(e) => {
+                    const prop = assignments.find((p) => (p._id || p.id) === e.target.value) || null;
+                    setSelectedProperty(prop);
+                  }}
+                  className="w-full px-4 py-3 border-2 border-gray-50 rounded-2xl focus:outline-none focus:border-emerald-500 bg-gray-50/50 transition-colors"
+                >
+                  <option value="">Select a property…</option>
+                  {assignments.map((p) => (
+                    <option key={p._id || p.id} value={p._id || p.id}>
+                      {p.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
               <InputField
                 label="Date"
                 type="date"

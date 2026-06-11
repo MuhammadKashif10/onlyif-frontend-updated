@@ -95,6 +95,18 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
         if (prev.some(m => String(m.id) === msgId)) return prev;
         const senderId = String(rawSender || '');
         const receiverId = String(rawReceiver || (senderId === currentUserId ? otherId : currentUserId));
+
+        // Reconcile our own echo with the optimistic "pending" message instead
+        // of appending a duplicate; flip it to "sent" and adopt the real id.
+        if (senderId === currentUserId) {
+          const idx = prev.findIndex(m => m.status === 'pending' && m.senderId === currentUserId && m.messageText === msgText);
+          if (idx !== -1) {
+            const copy = [...prev];
+            copy[idx] = { ...copy[idx], id: msgId, status: 'sent' };
+            return copy;
+          }
+        }
+
         const sender = conversation.participants.find(p => p.userId === senderId);
         const receiver = conversation.participants.find(p => p.userId === receiverId);
         const normalized: Message = {
@@ -147,56 +159,80 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     if (!newMessage.trim() || !otherParticipant) return;
 
     setSending(true);
-    try {
-      if (mockMode) {
-        const temp: Message = {
-          id: String(Date.now()),
-          conversationId: conversation.id,
-          senderId: currentUserId,
-          receiverId: otherParticipant.userId,
-          senderRole: currentUserRole,
-          receiverRole: otherParticipant.role as any,
-          messageText: newMessage.trim(),
-          timestamp: new Date().toISOString(),
-          status: 'sent',
-          isRead: true,
-        };
-        setMessages(prev => [...prev, temp]);
-        setNewMessage('');
-        // Optional tiny simulated reply
-        setTimeout(() => {
-          const reply: Message = {
-            id: String(Date.now() + 1),
-            conversationId: conversation.id,
-            senderId: otherParticipant.userId,
-            receiverId: currentUserId,
-            senderRole: otherParticipant.role as any,
-            receiverRole: currentUserRole,
-            messageText: 'Thanks for reaching out! I\'ll get back to you shortly.',
-            timestamp: new Date().toISOString(),
-            status: 'delivered',
-            isRead: false,
-          };
-          setMessages(prev => [...prev, reply]);
-        }, 800);
-        return;
-      }
 
+    if (mockMode) {
+      const temp: Message = {
+        id: String(Date.now()),
+        conversationId: conversation.id,
+        senderId: currentUserId,
+        receiverId: otherParticipant.userId,
+        senderRole: currentUserRole,
+        receiverRole: otherParticipant.role as any,
+        messageText: newMessage.trim(),
+        timestamp: new Date().toISOString(),
+        status: 'sent',
+        isRead: true,
+      };
+      setMessages(prev => [...prev, temp]);
+      setNewMessage('');
+      // Optional tiny simulated reply
+      setTimeout(() => {
+        const reply: Message = {
+          id: String(Date.now() + 1),
+          conversationId: conversation.id,
+          senderId: otherParticipant.userId,
+          receiverId: currentUserId,
+          senderRole: otherParticipant.role as any,
+          receiverRole: currentUserRole,
+          messageText: 'Thanks for reaching out! I\'ll get back to you shortly.',
+          timestamp: new Date().toISOString(),
+          status: 'delivered',
+          isRead: false,
+        };
+        setMessages(prev => [...prev, reply]);
+      }, 800);
+      setSending(false);
+      return;
+    }
+
+    // Optimistic outgoing message: show it immediately as "pending", then flip
+    // to "sent" on API success or "failed" on error. A temp id lets us reconcile
+    // with the socket echo (see receive-message handler) to avoid duplicates.
+    const clientId = `temp-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
+    const text = newMessage.trim();
+    const optimistic: Message = {
+      id: clientId,
+      conversationId: conversation.id,
+      senderId: currentUserId,
+      receiverId: otherParticipant.userId,
+      senderRole: currentUserRole,
+      receiverRole: otherParticipant.role as any,
+      messageText: text,
+      timestamp: new Date().toISOString(),
+      status: 'pending',
+      isRead: true,
+    };
+    setMessages(prev => [...prev, optimistic]);
+    setNewMessage('');
+
+    try {
       const result = await sendMessage({
         conversationId: conversation.id,
         receiverId: otherParticipant.userId,
-        messageText: newMessage.trim(),
+        messageText: text,
       });
 
-      if (result.success) {
-        // Don't add to messages here - let the socket event handle it
-        // The server will emit to both users via socket after saving
-        // This prevents duplication
-        
-        setNewMessage('');
+      if (result?.success) {
+        const realId = String((result.message as any)?.id || (result.message as any)?._id || clientId);
+        // Mark the optimistic message as sent (and adopt the real id so the
+        // socket echo dedupes against it instead of duplicating).
+        setMessages(prev => prev.map(m => (m.id === clientId ? { ...m, id: realId, status: 'sent' } : m)));
         onMessageSent?.(result.message);
+      } else {
+        setMessages(prev => prev.map(m => (m.id === clientId ? { ...m, status: 'failed' } : m)));
       }
     } catch (error) {
+      setMessages(prev => prev.map(m => (m.id === clientId ? { ...m, status: 'failed' } : m)));
       addNotification({
         type: 'error',
         message: 'Failed to send message. Please try again.',
@@ -246,9 +282,9 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   }
 
   return (
-    <div className={`flex flex-col h-full ${className}`}>
+    <div className={`flex flex-col h-full min-h-0 ${className}`}>
       {/* Chat Header */}
-      <div className="bg-white border-b border-gray-200 p-4">
+      <div className="bg-white border-b border-gray-200 p-4 flex-shrink-0">
         <div className="flex items-center space-x-3">
           <div className="relative">
             <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
@@ -276,7 +312,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+      <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4 bg-gray-50">
         {messages.length === 0 ? (
           <div className="text-center py-8">
             <div className="text-gray-400 mb-2">
@@ -319,8 +355,12 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                     }`}>
                       {formatTimestamp(message.timestamp)}
                       {isCurrentUser && (
-                        <span className="ml-2">
-                          {message.status === 'read' ? '✓✓' : message.status === 'delivered' ? '✓' : '○'}
+                        <span className="ml-2" aria-label={`Message ${message.status}`}>
+                          {message.status === 'pending'
+                            ? '⏳'
+                            : message.status === 'failed'
+                            ? '⚠ Failed'
+                            : '✓✓'}
                         </span>
                       )}
                     </div>
@@ -334,7 +374,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       </div>
 
       {/* Message Input */}
-      <div className="bg-white border-t border-gray-200 p-4">
+      <div className="bg-white border-t border-gray-200 p-4 flex-shrink-0">
         <form onSubmit={handleSendMessage} className="flex space-x-2">
           <div className="flex-1">
             <InputField

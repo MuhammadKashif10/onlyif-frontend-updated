@@ -2,11 +2,11 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import { LayoutDashboard, Home, Store, BarChart3, Settings } from 'lucide-react';
+import { LayoutDashboard, Home, Store, BarChart3, Settings, MessageSquare } from 'lucide-react';
 import { Navbar } from '@/components';
 import { useAuth } from '@/context/AuthContext';
 import SecureMessageBoard from '@/components/communication/SecureMessageBoard';
-import { Card, Alert } from '@/components/reusable';
+import { Card } from '@/components/reusable';
 
 const SellerMessagesPage: React.FC = () => {
   const router = useRouter();
@@ -50,6 +50,10 @@ const SellerMessagesPage: React.FC = () => {
                 <Home className={sidebarIconClass(false)} />
                 <span>Listings</span>
               </button>
+              <button className={sidebarButtonClass(true)}>
+                <MessageSquare className={sidebarIconClass(true)} />
+                <span>Messages</span>
+              </button>
               <button onClick={() => router.push('/dashboards/seller/marketplace')} className={sidebarButtonClass(false)}>
                 <Store className={sidebarIconClass(false)} />
                 <span>Marketplace</span>
@@ -88,6 +92,7 @@ const SellerMessagesPage: React.FC = () => {
           <div className="mb-6 grid grid-cols-2 gap-3 lg:hidden">
             <button onClick={() => router.push('/dashboards/seller')} className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-700 shadow-sm">Dashboard</button>
             <button onClick={() => router.push('/dashboards/seller/listings')} className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-700 shadow-sm">Listings</button>
+            <button className="rounded-xl bg-black px-4 py-3 text-sm font-bold text-white shadow-sm">Messages</button>
             <button onClick={() => router.push('/dashboards/seller/marketplace')} className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-700 shadow-sm">Marketplace</button>
             <button onClick={() => router.push('/dashboards/seller/analytics')} className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-700 shadow-sm">Analytics</button>
             <button onClick={() => router.push('/dashboards/seller/account')} className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-700 shadow-sm">Settings</button>
@@ -101,15 +106,8 @@ const SellerMessagesPage: React.FC = () => {
           </p>
         </div>
 
-        {/* Business Rules Notice */}
-        <Alert 
-          type="info" 
-          message="For security and transparency, all communication goes through our licensed agents. Agents will contact you when there is buyer interest in your properties."
-          className="mb-6"
-        />
-
         {/* Messaging Interface */}
-        <div className="bg-white rounded-lg shadow-md h-[calc(100vh-280px)]">
+        <div className="bg-white rounded-lg shadow-md h-[calc(100vh-280px)] overflow-hidden">
           <SecureMessageBoard 
             className="h-full"
             restrictedMode={true}

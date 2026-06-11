@@ -6,7 +6,7 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import Badge from '@/components/reusable/Badge';
 import { Navbar } from '@/components';
 import Link from 'next/link';
-import { UserPlus, Eye, Edit, Trash2, LayoutDashboard, Home, Store, BarChart3, Settings, Plus, Building2 } from 'lucide-react';
+import { UserPlus, Eye, Edit, Trash2, LayoutDashboard, Home, Store, BarChart3, Settings, Plus, Building2, MessageSquare } from 'lucide-react';
 import { Agent } from '@/types/api';
 import AgentAssignmentModal from '@/components/seller/AgentAssignmentModal';
 import AssignedAgentCard from '@/components/seller/AssignedAgentCard';
@@ -199,6 +199,10 @@ export default function SellerListingsPage() {
                 <Home className={sidebarIconClass(true)} />
                 <span>Listings</span>
               </button>
+              <button onClick={() => router.push('/dashboards/seller/messages')} className={sidebarButtonClass(false)}>
+                <MessageSquare className={sidebarIconClass(false)} />
+                <span>Messages</span>
+              </button>
               <button onClick={() => router.push('/dashboards/seller/marketplace')} className={sidebarButtonClass(false)}>
                 <Store className={sidebarIconClass(false)} />
                 <span>Marketplace</span>
@@ -237,6 +241,7 @@ export default function SellerListingsPage() {
           <div className="mb-6 grid grid-cols-2 gap-3 lg:hidden">
             <button onClick={() => router.push('/dashboards/seller')} className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-700 shadow-sm">Dashboard</button>
             <button className="rounded-xl bg-black px-4 py-3 text-sm font-bold text-white shadow-sm">Listings</button>
+            <button onClick={() => router.push('/dashboards/seller/messages')} className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-700 shadow-sm">Messages</button>
             <button onClick={() => router.push('/dashboards/seller/marketplace')} className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-700 shadow-sm">Marketplace</button>
             <button onClick={() => router.push('/dashboards/seller/analytics')} className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-700 shadow-sm">Analytics</button>
             <button onClick={() => router.push('/dashboards/seller/account')} className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-700 shadow-sm">Settings</button>
@@ -351,23 +356,6 @@ export default function SellerListingsPage() {
                         <span>{property.buyerActivity.saved} saved</span>
                       </div>
                     </div>
-                  )}
-
-                  {/* Assigned Agent */}
-                  {property.assignedAgent ? (
-                    <AssignedAgentCard
-                      agent={property.assignedAgent}
-                      assignedAt={property.assignedDate || property.dateListed || new Date().toISOString()}
-                      propertyId={property._id || property.id}
-                    />
-                  ) : (
-                    <button
-                      onClick={() => handleAssignAgent(property._id || property.id)}
-                      className="inline-flex w-full items-center justify-center rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm font-bold text-gray-800 transition hover:border-gray-950"
-                    >
-                      <UserPlus className="mr-2 h-4 w-4" />
-                      No agent assign
-                    </button>
                   )}
                   </div>
 

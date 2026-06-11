@@ -17,6 +17,7 @@ import {
   Store,
   BarChart3,
   Video,
+  MessageSquare,
 } from 'lucide-react';
 import { Navbar } from '@/components';
 import { useAuth } from '@/hooks/useAuth';
@@ -95,6 +96,10 @@ export default function SellerMarketplacePage() {
                 <Home className={sidebarIconClass(false)} />
                 <span>Listings</span>
               </button>
+              <button onClick={() => router.push('/dashboards/seller/messages')} className={sidebarButtonClass(false)}>
+                <MessageSquare className={sidebarIconClass(false)} />
+                <span>Messages</span>
+              </button>
               <button className={sidebarButtonClass(true)}>
                 <Store className={sidebarIconClass(true)} />
                 <span>Marketplace</span>
@@ -138,6 +143,9 @@ export default function SellerMarketplacePage() {
             </button>
             <button onClick={() => router.push('/dashboards/seller/listings')} className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-700 shadow-sm">
               Listings
+            </button>
+            <button onClick={() => router.push('/dashboards/seller/messages')} className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-700 shadow-sm">
+              Messages
             </button>
             <button className="rounded-xl bg-black px-4 py-3 text-sm font-bold text-white shadow-sm">
               Marketplace

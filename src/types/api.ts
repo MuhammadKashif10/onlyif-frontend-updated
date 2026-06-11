@@ -202,7 +202,8 @@ export interface Message {
   receiverRole: 'buyer' | 'seller' | 'agent';
   messageText: string;
   timestamp: string;
-  status: 'sent' | 'delivered' | 'read';
+  // 'pending'/'failed' are client-side only (optimistic send UX); not persisted.
+  status: 'pending' | 'sent' | 'delivered' | 'read' | 'failed';
   isRead: boolean;
   attachments?: MessageAttachment[];
 }

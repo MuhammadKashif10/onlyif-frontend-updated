@@ -16,14 +16,32 @@ interface Agent {
 
 interface Message {
   _id?: string;
+  clientId?: string; // client-side temp id for optimistic messages
   text: string;
   sender: string; // backend returns senderId
   receiver: string; // backend returns receiverId
   createdAt: string;
+  status?: 'pending' | 'sent' | 'failed'; // client-side only (optimistic UX)
 }
 
 const timeShort = (iso: string) =>
   new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+// Merge an incoming socket message without duplicating the sender's own
+// optimistic message: dedupe by _id, and reconcile a pending message (matched
+// by sender + text) into "sent" instead of appending a copy.
+const reconcileIncoming = (prev: Message[], msg: Message, myId?: string): Message[] => {
+  if (msg._id && prev.some((m) => m._id && m._id === msg._id)) return prev;
+  if (myId && msg.sender === myId) {
+    const idx = prev.findIndex((m) => m.status === 'pending' && m.sender === myId && m.text === msg.text);
+    if (idx !== -1) {
+      const copy = [...prev];
+      copy[idx] = { ...copy[idx], ...msg, status: 'sent' };
+      return copy;
+    }
+  }
+  return [...prev, msg];
+};
 
 export default function OneToOneChat({
   agent,
@@ -77,7 +95,7 @@ const socket = io(backendBase, {
 
   // 3. Listen for real-time messages
   socket.on("message", (msg: Message) => {
-    setMessages((prev) => [...prev, msg]);
+    setMessages((prev) => reconcileIncoming(prev, msg, user.id));
   });
 
   // Cleanup
@@ -99,7 +117,7 @@ const socket = io(backendBase, {
         (msg.sender === user.id && msg.receiver === agent.id) ||
         (msg.sender === agent.id && msg.receiver === user.id)
       ) {
-        setMessages((prev) => [...prev, msg]);
+        setMessages((prev) => reconcileIncoming(prev, msg, user.id));
       }
     });
 
@@ -119,6 +137,21 @@ const socket = io(backendBase, {
     setSending(true);
     const text = input.trim();
 
+    // Optimistic message: show as "pending" immediately, then flip to
+    // "sent" on success or "failed" on error. clientId lets the socket echo
+    // reconcile instead of duplicating (see reconcileIncoming).
+    const clientId = `temp-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
+    const optimistic: Message = {
+      clientId,
+      text,
+      sender: user.id,
+      receiver: agent.id,
+      createdAt: new Date().toISOString(),
+      status: 'pending',
+    };
+    setMessages((prev) => [...prev, optimistic]);
+    setInput('');
+
     try {
       const res = await fetch(`${apiUrl}/api/chatting`, {
         method: 'POST',
@@ -128,17 +161,21 @@ const socket = io(backendBase, {
         },
         body: JSON.stringify({ receiverId: agent.id, text }),
       });
+      if (!res.ok) throw new Error(`Request failed with status ${res.status}`);
       const newMsg = await res.json();
       console.log("🚀 ~ handleSend ~ newMsg:", newMsg)
-      setMessages((prev) => [...prev, newMsg]);
+
+      // Flip the optimistic message to "sent" and adopt the server fields/id.
+      setMessages((prev) =>
+        prev.map((m) => (m.clientId === clientId ? { ...m, ...newMsg, clientId, status: 'sent' } : m))
+      );
 
       // Send via socket
       const socket = getSocket();
       socket?.emit('send-message', newMsg);
-
-      setInput('');
     } catch (err) {
       console.error('Send error:', err);
+      setMessages((prev) => prev.map((m) => (m.clientId === clientId ? { ...m, status: 'failed' } : m)));
     } finally {
       setSending(false);
     }
@@ -190,7 +227,7 @@ const socket = io(backendBase, {
               const mine = m.sender === meId;
               return (
                 <li
-                  key={m._id || Math.random()}
+                  key={m._id || m.clientId || `${m.sender}-${m.createdAt}`}
                   className={`flex ${mine ? 'justify-end' : 'justify-start'}`}
                 >
                   <div
@@ -208,6 +245,15 @@ const socket = io(backendBase, {
                     >
                       {mine ? 'You' : agent?.name || 'Agent'} •{' '}
                       {timeShort(m.createdAt)}
+                      {mine && (
+                        <span className="ml-2" aria-label={`Message ${m.status || 'sent'}`}>
+                          {m.status === 'pending'
+                            ? '⏳'
+                            : m.status === 'failed'
+                            ? '⚠ Failed'
+                            : '✓✓'}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </li>

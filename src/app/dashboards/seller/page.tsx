@@ -23,7 +23,8 @@ import {
   X,
   ArrowRight,
   Store,
-  BarChart3
+  BarChart3,
+  MessageSquare
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/reusable';
 
@@ -563,6 +564,13 @@ function SellerDashboard() {
               >
                 <Home className={sidebarIconClass(activeTab === 'listings')} />
                 <span>Listings</span>
+              </button>
+              <button
+                onClick={() => router.push('/dashboards/seller/messages')}
+                className={sidebarButtonClass(false)}
+              >
+                <MessageSquare className={sidebarIconClass(false)} />
+                <span>Messages</span>
               </button>
               <button
                 onClick={() => router.push('/dashboards/seller/marketplace')}

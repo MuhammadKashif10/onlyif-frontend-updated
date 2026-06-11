@@ -640,6 +640,13 @@ const SellerAccount = () => {
                 <span>Listings</span>
               </button>
               <button
+                onClick={() => router.push('/dashboards/seller/messages')}
+                className={sidebarButtonClass(false)}
+              >
+                <MessageSquare className={sidebarIconClass(false)} />
+                <span>Messages</span>
+              </button>
+              <button
                 onClick={() => router.push('/dashboards/seller/marketplace')}
                 className={sidebarButtonClass(false)}
               >
@@ -685,6 +692,7 @@ const SellerAccount = () => {
           <div className="mb-6 grid grid-cols-2 gap-3 lg:hidden">
             <button onClick={() => router.push('/dashboards/seller')} className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-700 shadow-sm">Dashboard</button>
             <button onClick={() => router.push('/dashboards/seller/listings')} className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-700 shadow-sm">Listings</button>
+            <button onClick={() => router.push('/dashboards/seller/messages')} className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-700 shadow-sm">Messages</button>
             <button onClick={() => router.push('/dashboards/seller/marketplace')} className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-700 shadow-sm">Marketplace</button>
             <button onClick={() => router.push('/dashboards/seller/analytics')} className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-700 shadow-sm">Analytics</button>
             <button className="rounded-xl bg-black px-4 py-3 text-sm font-bold text-white shadow-sm">Settings</button>

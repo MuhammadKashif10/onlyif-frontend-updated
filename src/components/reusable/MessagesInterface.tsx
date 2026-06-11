@@ -98,7 +98,7 @@ const MessagesInterface: React.FC<MessagesInterfaceProps> = ({
     return (
       <div className={`h-full ${className}`}>
         {!selectedConversation ? (
-          <div className="h-full flex flex-col">
+          <div className="h-full flex flex-col min-h-0">
             <div className="bg-white border-b border-gray-200 p-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-gray-900">Messages</h2>
@@ -109,7 +109,7 @@ const MessagesInterface: React.FC<MessagesInterfaceProps> = ({
                 )}
               </div>
             </div>
-            <div className="flex-1 overflow-y-auto p-4">
+            <div className="flex-1 overflow-y-auto p-4 min-h-0">
               <ConversationList
                 conversations={conversations}
                 selectedConversationId={selectedConversation?.id}
@@ -120,7 +120,7 @@ const MessagesInterface: React.FC<MessagesInterfaceProps> = ({
             </div>
           </div>
         ) : (
-          <div className="h-full flex flex-col">
+          <div className="h-full flex flex-col min-h-0">
             <div className="bg-white border-b border-gray-200 p-4">
               <div className="flex items-center space-x-3">
                 <Button
@@ -137,7 +137,7 @@ const MessagesInterface: React.FC<MessagesInterfaceProps> = ({
                 <h2 className="text-lg font-semibold text-gray-900">Messages</h2>
               </div>
             </div>
-            <div className="flex-1">
+            <div className="flex-1 min-h-0">
               <ChatInterface
                 conversation={selectedConversation}
                 currentUserId={currentUserId}
@@ -153,9 +153,9 @@ const MessagesInterface: React.FC<MessagesInterfaceProps> = ({
 
   // Desktop view: show both conversation list and chat side by side
   return (
-    <div className={`h-full flex ${className}`}>
+    <div className={`h-full flex min-h-0 ${className}`}>
       {/* Conversation List */}
-      <div className="w-1/3 border-r border-gray-200 flex flex-col">
+      <div className="w-1/3 border-r border-gray-200 flex flex-col min-h-0">
         <div className="bg-white border-b border-gray-200 p-4">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900">Messages</h2>
@@ -166,7 +166,7 @@ const MessagesInterface: React.FC<MessagesInterfaceProps> = ({
             )}
           </div>
         </div>
-        <div className="flex-1 overflow-y-auto p-4">
+        <div className="flex-1 overflow-y-auto p-4 min-h-0">
           <ConversationList
             conversations={conversations}
             selectedConversationId={selectedConversation?.id}
@@ -178,7 +178,7 @@ const MessagesInterface: React.FC<MessagesInterfaceProps> = ({
       </div>
 
       {/* Chat Interface */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-h-0">
         {selectedConversation ? (
           <ChatInterface
             conversation={selectedConversation}

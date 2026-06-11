@@ -21,8 +21,10 @@ const ConversationList: React.FC<ConversationListProps> = ({
   loading = false,
   className = '',
 }) => {
-  const formatTimestamp = (timestamp: string) => {
+  const formatTimestamp = (timestamp?: string | null) => {
+    if (!timestamp) return '';
     const date = new Date(timestamp);
+    if (isNaN(date.getTime())) return ''; // guard against "Invalid Date"
     const now = new Date();
     const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
 
@@ -33,6 +35,35 @@ const ConversationList: React.FC<ConversationListProps> = ({
     } else {
       return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
     }
+  };
+
+  // Normalize a conversation's preview text from the various shapes the API may return.
+  const getPreviewText = (conversation: any): string => {
+    const lm = conversation?.lastMessage;
+    return (
+      lm?.content ??           // backend list shape: lastMessage.content
+      lm?.text ??
+      lm?.message ??
+      lm?.messageText ??
+      conversation?.lastMessageText ??
+      conversation?.message ??
+      conversation?.text ??
+      ''
+    );
+  };
+
+  // Normalize a conversation's preview date with safe fallbacks.
+  const getPreviewDate = (conversation: any): string | null => {
+    const lm = conversation?.lastMessage;
+    return (
+      conversation?.lastMessageAt ??
+      lm?.sentAt ??             // backend list shape: lastMessage.sentAt
+      lm?.createdAt ??
+      lm?.timestamp ??
+      conversation?.updatedAt ??
+      conversation?.createdAt ??
+      null
+    );
   };
 
   const getRoleBadge = (role: string) => {
@@ -83,9 +114,24 @@ const ConversationList: React.FC<ConversationListProps> = ({
   return (
     <div className={`space-y-2 ${className}`}>
       {conversations.map((conversation) => {
-        const otherParticipant = conversation.participants.find(p => p.userId !== currentUserId);
+        const otherParticipant = (conversation.participants || []).find(p => p.userId !== currentUserId);
         const isSelected = conversation.id === selectedConversationId;
-        
+
+        // Normalized preview fields (resilient to different API shapes).
+        const participantName = otherParticipant?.name || 'Unknown';
+        const participantRole = otherParticipant?.role || '';
+        // Secondary line: show the related property name instead of the role label.
+        const conv = conversation as any;
+        const propertyLabel =
+          conv.propertyTitle ||
+          conv.property?.title ||
+          conv.property?.name ||
+          conv.propertyName ||
+          'Property not linked';
+        const previewText = getPreviewText(conversation);
+        const previewDateLabel = formatTimestamp(getPreviewDate(conversation));
+        const sentByMe = (conversation.lastMessage as any)?.senderId === currentUserId;
+
         return (
           <button
             key={conversation.id}
@@ -95,7 +141,7 @@ const ConversationList: React.FC<ConversationListProps> = ({
                 ? 'bg-blue-50 border-blue-200'
                 : 'bg-white border-gray-200 hover:bg-gray-50'
             }`}
-            aria-label={`Conversation with ${otherParticipant?.name}`}
+            aria-label={`Conversation with ${participantName}`}
           >
             <div className="flex items-center space-x-3">
               <div className="relative flex-shrink-0">
@@ -118,7 +164,7 @@ const ConversationList: React.FC<ConversationListProps> = ({
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">
                   <h3 className="font-medium text-gray-900 truncate">
-                    {otherParticipant?.name}
+                    {participantName}
                   </h3>
                   <div className="flex items-center space-x-2">
                     {conversation.unreadCount > 0 && (
@@ -126,33 +172,27 @@ const ConversationList: React.FC<ConversationListProps> = ({
                         {conversation.unreadCount > 9 ? '9+' : conversation.unreadCount}
                       </span>
                     )}
-                    {conversation.lastMessage && (
+                    {previewDateLabel && (
                       <span className="text-xs text-gray-500">
-                        {formatTimestamp(conversation.lastMessage.timestamp)}
+                        {previewDateLabel}
                       </span>
                     )}
                   </div>
                 </div>
-                
+
                 <div className="flex items-center space-x-1 mt-1">
-                  <span className="text-xs">{getRoleBadge(otherParticipant?.role || '')}</span>
-                  <span className="text-xs text-gray-500 capitalize">
-                    {otherParticipant?.role}
+                  <span className="text-xs">{getRoleBadge(participantRole)}</span>
+                  <span className="text-xs text-gray-500 truncate">
+                    {propertyLabel}
                   </span>
                 </div>
-                
-                {conversation.lastMessage && (
-                  <p className={`text-sm mt-1 truncate ${
-                    conversation.unreadCount > 0 ? 'font-medium text-gray-900' : 'text-gray-600'
-                  }`}>
-                    {conversation.lastMessage.senderId === currentUserId ? 'You: ' : ''}
-                    {truncateMessage(
-                      conversation.lastMessage?.messageText ??
-                      (conversation.lastMessage as any)?.text ??
-                      (conversation.lastMessage as any)?.message
-                    )}
-                  </p>
-                )}
+
+                <p className={`text-sm mt-1 truncate ${
+                  conversation.unreadCount > 0 ? 'font-medium text-gray-900' : 'text-gray-600'
+                }`}>
+                  {sentByMe ? 'You: ' : ''}
+                  {truncateMessage(previewText)}
+                </p>
               </div>
             </div>
           </button>

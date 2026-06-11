@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { LayoutDashboard, Settings, Home, Store, BarChart3 } from 'lucide-react';
+import { LayoutDashboard, Settings, Home, Store, BarChart3, MessageSquare } from 'lucide-react';
 import { Navbar } from '@/components';
 import { Button } from '@/components/reusable/Button';
 import InputField from '@/components/reusable/InputField';
@@ -377,6 +377,13 @@ export default function AddProperty() {
                 <span>Listings</span>
               </button>
               <button
+                onClick={() => router.push('/dashboards/seller/messages')}
+                className={sidebarButtonClass(false)}
+              >
+                <MessageSquare className={sidebarIconClass(false)} />
+                <span>Messages</span>
+              </button>
+              <button
                 onClick={() => router.push('/dashboards/seller/marketplace')}
                 className={sidebarButtonClass(false)}
               >
@@ -423,6 +430,7 @@ export default function AddProperty() {
           <div className="mb-6 grid grid-cols-2 gap-3 lg:hidden">
             <button onClick={() => router.push('/dashboards/seller')} className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-700 shadow-sm">Dashboard</button>
             <button onClick={() => router.push('/dashboards/seller/listings')} className="rounded-xl bg-black px-4 py-3 text-sm font-bold text-white shadow-sm">Listings</button>
+            <button onClick={() => router.push('/dashboards/seller/messages')} className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-700 shadow-sm">Messages</button>
             <button onClick={() => router.push('/dashboards/seller/marketplace')} className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-700 shadow-sm">Marketplace</button>
             <button onClick={() => router.push('/dashboards/seller/analytics')} className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-700 shadow-sm">Analytics</button>
             <button onClick={() => router.push('/dashboards/seller/account')} className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-700 shadow-sm">Settings</button>

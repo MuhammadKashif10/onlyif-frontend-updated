@@ -180,7 +180,7 @@ const SecureMessageBoard: React.FC<SecureMessageBoardProps> = ({
       </div>
 
       {/* Messages Interface */}
-      <div className="flex-1">
+      <div className="flex-1 min-h-0">
         <MessagesInterface
           currentUserId={user.id}
           currentUserRole={currentRole as 'buyer' | 'seller' | 'agent'}
