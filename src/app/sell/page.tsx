@@ -222,7 +222,7 @@ export default function SellPage() {
               </p>
               <div className="mt-3 flex items-end justify-center gap-2">
                 <span className="pb-2 text-sm font-black text-[#007a38]">AUD</span>
-                <span className="text-5xl font-black tracking-tight text-[#007a38]">2.2%</span>
+                <span className="text-5xl font-black tracking-tight text-[#007a38]">1.1%</span>
               </div>
               <p className="mt-3 text-xs font-medium text-[#395342]">
                 Paid only upon successful settlement
