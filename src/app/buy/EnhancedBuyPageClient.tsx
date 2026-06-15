@@ -8,6 +8,7 @@ import { PropertySearchParams } from '@/types/api';
 import EnhancedPropertyFilters from '@/components/sections/EnhancedPropertyFilters';
 import EnhancedPropertyGrid from '@/components/sections/EnhancedPropertyGrid';
 import { useDebounce } from '@/hooks/useDebounce';
+import { UNLOCK_FEE_LABEL } from '@/utils/constants';
 import {
   ArrowRight,
   BadgeCheck,
@@ -139,7 +140,7 @@ export default function EnhancedBuyPageClient() {
           <div className="mx-auto grid max-w-7xl gap-8 overflow-hidden rounded-[28px] bg-[#008d3f] p-6 text-white shadow-[0_24px_70px_rgba(0,122,56,0.18)] sm:p-8 lg:grid-cols-[1.05fr_0.95fr] lg:p-12">
             <div className="flex flex-col justify-center">
               <h2 className="text-3xl font-black tracking-tight text-white sm:text-4xl">
-                The $49 Unlock Benefit
+                The {UNLOCK_FEE_LABEL} Unlock Benefit
               </h2>
               <p className="mt-5 max-w-2xl text-base font-semibold leading-8 text-white/82">
                 Public real estate sites only show you what&apos;s already for sale. We show you what&apos;s potentially for sale. Our unique model protects seller privacy while giving serious buyers a massive edge.
@@ -166,7 +167,7 @@ export default function EnhancedBuyPageClient() {
                 </span>
               </div>
               <div className="mt-8 flex flex-wrap items-end gap-x-2 gap-y-1">
-                <span className="text-4xl font-black tracking-tight text-white sm:text-5xl">AUD $49</span>
+                <span className="text-4xl font-black tracking-tight text-white sm:text-5xl">AUD {UNLOCK_FEE_LABEL}</span>
                 <span className="pb-2 text-sm font-bold text-white/70">/ per property</span>
               </div>
               <p className="mt-6 text-sm font-semibold leading-7 text-white/78">

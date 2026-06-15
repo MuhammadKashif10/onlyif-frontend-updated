@@ -8,6 +8,7 @@ import { Navbar } from '@/components';
 import { sellerApi } from '@/api/seller';
 import { propertiesApi } from '@/api/properties';
 import { Property } from '@/types/api';
+import { UNLOCK_FEE_LABEL } from '@/utils/constants';
 import { 
   LayoutDashboard, 
   Building2, 
@@ -1039,7 +1040,7 @@ function SellerDashboard() {
                 onChange={(e) => setBuyerChecks((p) => ({ ...p, unlockFee: e.target.checked }))}
               />
               <span>
-                I understand the $49 unlock fee is non-refundable and grants access to full listing details.
+                I understand the {UNLOCK_FEE_LABEL} unlock fee is non-refundable and grants access to full listing details.
               </span>
             </label>
             <label className="flex items-start gap-3 text-sm text-gray-700">

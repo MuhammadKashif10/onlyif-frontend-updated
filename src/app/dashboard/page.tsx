@@ -6,6 +6,7 @@ import { Navbar } from '@/components';
 import { Button, Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/reusable';
 import { useAuth } from '@/context/AuthContext';
 import { BriefcaseBusiness, Heart, Home, Search } from 'lucide-react';
+import { UNLOCK_FEE_LABEL } from '@/utils/constants';
 
 type ModalType = 'buyer' | 'seller' | 'agent' | null;
 
@@ -287,7 +288,7 @@ export default function DashboardPage() {
                 onChange={(e) => setBuyerChecks((p) => ({ ...p, unlockFee: e.target.checked }))}
               />
               <span>
-                I understand the $49 unlock fee is non-refundable and grants access to full listing details.
+                I understand the {UNLOCK_FEE_LABEL} unlock fee is non-refundable and grants access to full listing details.
               </span>
             </label>
             <label className="flex items-start gap-3 text-sm text-gray-700">

@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Modal from './Modal';
 import Checkbox from './Checkbox';
 import Button from './Button';
+import { UNLOCK_FEE_LABEL } from '@/utils/constants';
 
 interface TermsAndConditionsModalProps {
   isOpen: boolean;
@@ -74,7 +75,7 @@ By proceeding with your buyer account registration, you acknowledge and agree to
 • You will provide accurate information about your buying requirements and financial capacity
 
 **2. PROPERTY ACCESS FEES**
-• The $49 unlock fee for premium property details is non-refundable
+• The ${UNLOCK_FEE_LABEL} unlock fee for premium property details is non-refundable
 • This fee is charged once per property and provides access to detailed information
 • Fees are clearly disclosed before payment and contribute to maintaining high-quality property information
 • No refunds will be provided regardless of your decision to proceed with the property
@@ -215,7 +216,7 @@ export default function TermsAndConditionsModal({
           {userRole === 'buyer' && (
             <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
               <p className="text-sm text-blue-800">
-                <strong>Key Points:</strong> The $49 unlock fee is non-refundable and you agree 
+                <strong>Key Points:</strong> The {UNLOCK_FEE_LABEL} unlock fee is non-refundable and you agree
                 to communicate with sellers only through our platform.
               </p>
             </div>

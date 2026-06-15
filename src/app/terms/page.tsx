@@ -3,6 +3,7 @@
 import React from 'react';
 import { Button } from '@/components/reusable';
 import Link from 'next/link';
+import { UNLOCK_FEE_LABEL } from '@/utils/constants';
 
 export default function TermsPage() {
   return (
@@ -106,7 +107,7 @@ export default function TermsPage() {
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">3.1 Property Unlock</h3>
                 <p className="text-gray-700 leading-relaxed">
-                  Buyers may browse publicly visible listings with limited information. To access full property details, a $49 (AUD) non-refundable payment is required per property.
+                  Buyers may browse publicly visible listings with limited information. To access full property details, a {UNLOCK_FEE_LABEL} (AUD) non-refundable payment is required per property.
                 </p>
               </div>
               

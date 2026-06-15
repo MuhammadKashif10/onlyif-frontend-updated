@@ -5,6 +5,7 @@ import { useBuyerContext } from '@/context/BuyerContext';
 import { Button } from '@/components/reusable/Button';
 import InputField from '@/components/reusable/InputField';
 import { formatCurrency, dollarsToCents } from '@/utils/currency';
+import { PRICING } from '@/utils/constants';
 
 interface PaymentFormData {
   cardNumber: string;
@@ -184,7 +185,7 @@ export default function PaymentPhase() {
     <div className="max-w-2xl mx-auto">
       <div className="text-center mb-8">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Unlock Property Details</h2>
-        <p className="text-gray-600">Pay {formatCurrency(49)} to access full property information and contact details</p>
+        <p className="text-gray-600">Pay {formatCurrency(PRICING.UNLOCK_FEE)} to access full property information and contact details</p>
       </div>
 
       {/* Selected Property Summary */}
@@ -203,7 +204,7 @@ export default function PaymentPhase() {
       <div className="bg-white border border-gray-200 rounded-lg p-6">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-semibold text-gray-900">Payment Information</h3>
-          <div className="text-2xl font-bold text-green-600">{formatCurrency(49)}</div>
+          <div className="text-2xl font-bold text-green-600">{formatCurrency(PRICING.UNLOCK_FEE)}</div>
         </div>
 
         {errors.payment && (
@@ -323,7 +324,7 @@ export default function PaymentPhase() {
             loading={isProcessing}
             size="full"
           >
-            Pay {formatCurrency(49)}
+            Pay {formatCurrency(PRICING.UNLOCK_FEE)}
           </Button>
         </div>
       </div>

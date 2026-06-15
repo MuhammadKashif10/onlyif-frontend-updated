@@ -3,6 +3,7 @@
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { UNLOCK_FEE_LABEL } from '@/utils/constants';
 
 const buttonClassName =
   'w-full inline-flex items-center justify-center rounded-lg bg-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-md hover:bg-emerald-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed';
@@ -79,7 +80,7 @@ export function HowItWorksUnlockButton() {
 
   return (
     <button type="button" onClick={handleClick} disabled={loading} className={buttonClassName}>
-      {loading ? 'Redirecting…' : 'Unlock $49'}
+      {loading ? 'Redirecting…' : `Unlock ${UNLOCK_FEE_LABEL}`}
     </button>
   );
 }

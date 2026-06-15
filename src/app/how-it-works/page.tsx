@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Navbar } from '@/components';
+import { UNLOCK_FEE_LABEL } from '@/utils/constants';
 import {
   BadgeCheck,
   Check,
@@ -48,7 +49,7 @@ const buyerCards = [
     title: 'Unlock Full Details',
     body: 'Reveal address, private photos, and direct seller requirements to see if it fits.',
     Icon: KeyRound,
-    badge: '$49 unlock fee applies',
+    badge: `${UNLOCK_FEE_LABEL} unlock fee applies`,
   },
   {
     n: 3,

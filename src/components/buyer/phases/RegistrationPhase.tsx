@@ -8,6 +8,7 @@ import InputField from '../../reusable/InputField';
 import PasswordField from '../../reusable/PasswordField';
 import { Button } from '../../reusable/Button';
 import { validatePassword, validatePasswordConfirmation } from '../../../utils/passwordValidation';
+import { UNLOCK_FEE_LABEL } from '../../../utils/constants';
 
 const RegistrationPhase: React.FC = () => {
   const { buyerData, updateBuyerData } = useBuyerContext();
@@ -179,7 +180,7 @@ const RegistrationPhase: React.FC = () => {
               className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
             />
             <label htmlFor="unlockFeeAcknowledgment" className="text-sm text-gray-700">
-              I understand the $49 unlock fee is non-refundable and grants access to full listing details.
+              I understand the {UNLOCK_FEE_LABEL} unlock fee is non-refundable and grants access to full listing details.
             </label>
           </div>
           {errors.unlockFeeAcknowledgment && (

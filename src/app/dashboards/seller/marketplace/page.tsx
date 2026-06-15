@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   ArrowUpRight,
@@ -24,6 +25,7 @@ import { useAuth } from '@/hooks/useAuth';
 
 const services = [
   {
+    id: 'full-media-package',
     title: 'Full Media Package',
     price: '$999',
     badge: 'Most Popular',
@@ -39,6 +41,7 @@ const services = [
     featured: true,
   },
   {
+    id: 'virtual-staging',
     title: 'Virtual Staging',
     price: '$499',
     image:
@@ -52,6 +55,7 @@ const services = [
     ],
   },
   {
+    id: 'lidar-spatial-map',
     title: 'LiDAR Spatial Map',
     price: '$199',
     image:
@@ -69,6 +73,55 @@ const services = [
 export default function SellerMarketplacePage() {
   const router = useRouter();
   const { user } = useAuth();
+  const [bookingId, setBookingId] = useState<string | null>(null);
+
+  const handleBook = async (service: { id: string }) => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    if (!token) {
+      router.push('/signin');
+      return;
+    }
+
+    const backendBase =
+      process.env.NEXT_PUBLIC_BACKEND_URL ||
+      process.env.NEXT_PUBLIC_API_URL?.replace(/\/api\/?$/, '') ||
+      '';
+
+    if (!backendBase) {
+      alert('Payment service is not configured.');
+      return;
+    }
+
+    setBookingId(service.id);
+    try {
+      const res = await fetch(`${backendBase.replace(/\/$/, '')}/api/service-orders/checkout`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ serviceId: service.id }),
+      });
+
+      let data: { url?: string; message?: string } = {};
+      try {
+        data = await res.json();
+      } catch {
+        /* non-JSON */
+      }
+
+      if (data.url) {
+        window.location.href = data.url;
+        return;
+      }
+
+      alert(data.message || 'Unable to start checkout. Please try again.');
+    } catch {
+      alert('Unable to start checkout. Please try again.');
+    } finally {
+      setBookingId(null);
+    }
+  };
 
   const sidebarButtonClass = (isActive: boolean) =>
     `w-full flex cursor-pointer items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-200 ease-out hover:shadow-sm ${
@@ -169,6 +222,13 @@ export default function SellerMarketplacePage() {
               <p className="mt-4 max-w-2xl text-base leading-7 text-gray-600 sm:text-lg">
                 Premium production services to elevate your property&apos;s digital presence.
               </p>
+              <Link
+                href="/dashboards/seller/marketplace/orders"
+                className="mt-4 inline-flex items-center gap-1.5 text-sm font-bold text-gray-950 underline-offset-4 hover:underline"
+              >
+                View My Orders
+                <ArrowUpRight className="h-4 w-4" />
+              </Link>
             </div>
 
             <div className="rounded-[20px] border border-gray-300/80 bg-white/80 p-6 shadow-[0_24px_80px_rgba(15,23,42,0.06)] backdrop-blur">
@@ -230,14 +290,15 @@ export default function SellerMarketplacePage() {
                   </ul>
 
                   <button
-                    onClick={() => router.push('/contact')}
-                    className={`mt-auto inline-flex w-full items-center justify-center rounded-xl px-6 py-4 text-sm font-bold transition ${
+                    onClick={() => handleBook(service)}
+                    disabled={bookingId === service.id}
+                    className={`mt-auto inline-flex w-full items-center justify-center rounded-xl px-6 py-4 text-sm font-bold transition disabled:cursor-not-allowed disabled:opacity-70 ${
                       service.featured
                         ? 'bg-black text-white shadow-lg shadow-black/10 hover:bg-gray-900'
                         : 'border border-gray-950 bg-transparent text-gray-950 hover:bg-black hover:text-white'
                     }`}
                   >
-                    Book Production
+                    {bookingId === service.id ? 'Redirecting…' : 'Book Now'}
                   </button>
                 </div>
               </article>

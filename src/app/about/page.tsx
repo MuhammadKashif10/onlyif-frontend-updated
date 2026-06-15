@@ -1,88 +1,132 @@
 import { Metadata } from 'next';
+import Link from 'next/link';
 import { Navbar } from '@/components';
+import {
+  Check,
+  Quote,
+  Users,
+  Handshake,
+  Search,
+  BarChart3,
+  CheckSquare,
+} from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'About OnlyIf - Revolutionizing Real Estate',
-  description: 'Learn about OnlyIf\'s mission to make buying and selling homes simple, transparent, and stress-free. Discover our story, values, and commitment to transforming the real estate industry.',
-  keywords: 'about OnlyIf, real estate company, home buying, home selling, company mission, values',
+  description:
+    "Learn about OnlyIf's mission to make buying and selling homes simple, transparent, and stress-free. Discover our story, values, and commitment to transforming the real estate industry.",
+  keywords:
+    'about OnlyIf, real estate company, home buying, home selling, company mission, values',
   openGraph: {
     title: 'About OnlyIf - Revolutionizing Real Estate',
-    description: 'Learn about OnlyIf\'s mission to make buying and selling homes simple, transparent, and stress-free.',
+    description:
+      "Learn about OnlyIf's mission to make buying and selling homes simple, transparent, and stress-free.",
     type: 'website',
     locale: 'en_US',
   },
 };
 
-const teamMembers = [
+const audiences = [
   {
-    name: 'Sarah Johnson',
-    role: 'CEO & Founder',
-    bio: 'Former real estate agent with 15+ years of experience. Passionate about making real estate accessible to everyone.',
-    image: '/images/team-sarah.jpg',
-    linkedin: 'https://linkedin.com/in/sarah-johnson',
+    title: 'For Owners',
+    body: 'Test the market privately, set your price and stay in control. No obligation to sell.',
   },
   {
-    name: 'Michael Chen',
-    role: 'CTO',
-    bio: 'Tech veteran with expertise in building scalable platforms. Led engineering teams at multiple successful startups.',
-    image: '/images/team-michael.jpg',
-    linkedin: 'https://linkedin.com/in/michael-chen',
+    title: 'For Buyers',
+    body: 'Access genuine off-market opportunities before they hit the open market.',
   },
   {
-    name: 'Emily Rodriguez',
-    role: 'Head of Operations',
-    bio: 'Operations expert with a background in customer success and process optimization.',
-    image: '/images/team-emily.jpg',
-    linkedin: 'https://linkedin.com/in/emily-rodriguez',
-  },
-  {
-    name: 'David Kim',
-    role: 'Head of Sales',
-    bio: 'Sales leader with deep understanding of the real estate market and customer needs.',
-    image: '/images/team-david.jpg',
-    linkedin: 'https://linkedin.com/in/david-kim',
+    title: 'For Agents',
+    body: 'Qualified buyer enquiries, more listing opportunities and paid on success.',
   },
 ];
 
-const testimonials = [
+const agentFeatures = [
   {
-    id: '1',
-    name: 'Jennifer Martinez',
-    role: 'Home Seller',
-    content: 'OnlyIf transformed my selling experience. The team was professional, transparent, and made everything so easy.',
-    rating: 5,
-    avatar: '/images/testimonial-jennifer.jpg',
+    Icon: Users,
+    title: 'We partner with trusted local agents',
+    body: 'Only licensed agents manage the process, inspections and negotiations.',
   },
   {
-    id: '2',
-    name: 'Robert Wilson',
-    role: 'Home Buyer',
-    content: 'As a first-time buyer, I was nervous about the process. OnlyIf guided me every step of the way with patience and expertise.',
-    rating: 5,
-    avatar: '/images/testimonial-robert.jpg',
+    Icon: Handshake,
+    title: 'Agents earn a transparent share of success',
+    body: "You're paid fairly when a sale happens. No upfront fees, no risk.",
   },
   {
-    id: '3',
-    name: 'Lisa Thompson',
-    role: 'Real Estate Investor',
-    content: 'OnlyIf\'s platform is revolutionary. The transparency and efficiency have changed how I think about real estate transactions.',
-    rating: 5,
-    avatar: '/images/testimonial-lisa.jpg',
+    Icon: Search,
+    title: 'Access to serious, pre-qualified buyers',
+    body: 'We filter out tyre-kickers so you spend time on enquiries that are real.',
+  },
+  {
+    Icon: BarChart3,
+    title: 'Professional advice, without the big campaign',
+    body: 'Get the benefit of experience and negotiation — without the big-ticket marketing spend.',
   },
 ];
 
-const stats = [
-  { number: '10,000+', label: 'Homes Sold' },
-  { number: '50,000+', label: 'Happy Customers' },
-  { number: '4.9/5', label: 'Customer Rating' },
-  { number: '24hr', label: 'Cash Offers' },
+const visionPoints = [
+  'More control',
+  'Without pressure',
+  'More transparency',
+  'Without committing to an "all or nothing" sale',
+  'More choice',
 ];
+
+function CheckBadge({ size = 'md' }: { size?: 'sm' | 'md' }) {
+  const dim = size === 'sm' ? 'h-6 w-6' : 'h-7 w-7';
+  const icon = size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4';
+  return (
+    <span
+      className={`${dim} shrink-0 inline-flex items-center justify-center rounded-full bg-[#2FA553]`}
+    >
+      <Check
+        className={`${icon} text-white`}
+        color="#ffffff"
+        strokeWidth={3.5}
+        aria-hidden="true"
+      />
+    </span>
+  );
+}
+
+function SectionHeading({
+  children,
+  align = 'left',
+}: {
+  children: React.ReactNode;
+  align?: 'left' | 'center';
+}) {
+  return (
+    <div className={align === 'center' ? 'text-center' : ''}>
+      <h2 className="text-3xl font-extrabold tracking-tight text-[#111827] sm:text-4xl">
+        {children}
+      </h2>
+      <span
+        className={`mt-4 block h-1 w-12 rounded-full bg-[#2FA553] ${
+          align === 'center' ? 'mx-auto w-14' : ''
+        }`}
+      />
+    </div>
+  );
+}
+
+function PremiumImage({ src, alt }: { src: string; alt: string }) {
+  return (
+    <div className="group overflow-hidden rounded-[20px] shadow-lg">
+      <img
+        src={src}
+        alt={alt}
+        className="h-72 w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105 sm:h-96 lg:h-[460px]"
+      />
+    </div>
+  );
+}
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-white">
-      {/* Navigation */}
-<Navbar
+    <div className="min-h-screen bg-white text-[#111827]">
+      {/* Navigation (header unchanged) */}
+      <Navbar
         logo="/images/logo.PNG"
         logoText=""
         navigationItems={[
@@ -95,135 +139,206 @@ export default function AboutPage() {
         ctaHref="/signin"
       />
 
-      {/* Hero Section */}
-      <section className="bg-gray-50 py-16">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900">
-            About Only If
-          </h1>
-          <p className="mt-4 text-lg sm:text-xl text-gray-600">
-            Only If is a new kind of real estate platform built in Australia for owners who are open to selling – but only if the price is right.
-          </p>
+      {/* Hero */}
+      <section className="bg-white">
+        <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
+          <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2 lg:gap-14">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#2FA553]">
+                About Only If
+              </p>
+              <h1 className="mt-5 text-4xl font-extrabold leading-[1.08] tracking-tight text-[#111827] sm:text-5xl lg:text-6xl">
+                I&apos;d sell…
+                <br />
+                but only if I got
+                <br />
+                <span className="text-[#2FA553]">my price.</span>
+              </h1>
+              <p className="mt-7 text-lg font-semibold text-[#1f2937]">
+                That&apos;s exactly why we built Only If.
+              </p>
+              <p className="mt-3 max-w-md text-base leading-7 text-gray-600">
+                We help Australian property owners privately test the market on
+                their terms — and connect with serious buyers who are ready to
+                talk.
+              </p>
+            </div>
+
+            <div className="relative">
+              <PremiumImage
+                src="/images/05.jpg"
+                alt="A modern Australian home at dusk"
+              />
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Main Content Sections */}
-      <main className="bg-white">
-        {/* Why Only If Exists */}
-        <section className="py-12 sm:py-16">
-          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
-              Why Only If Exists
-            </h2>
-            <div className="mt-4 sm:mt-6 text-gray-600 space-y-4">
-              <p>About ‘’Only If’’</p>
-              <p>
-                Only If is a new kind of real estate platform built in Australia for owners who are open to selling – but only if the price is right.
-              </p>
-              <p>
-                Instead of committing to a full campaign, paying big marketing fees, and putting your life on display, Only If lets you quietly list your home at the price you’d actually be happy to sell for. Serious buyers can then discover your property, request more information and, when the time is right, move forward with inspections and negotiations.
-              </p>
-              <p>
-                We exist for the owners who say, “I’d sell… but only if I got X.”
-              </p>
-              <p>
-                Traditional real estate is built around the idea that you’re either “on the market” or you’re not. In reality, there’s a huge group of people who are thinking about selling, but don’t want the stress, cost and pressure of a full public campaign on the major portals.
-              </p>
-              <p>
-                At the same time, there are motivated buyers who are tired of missing out, watching homes sell off-market, or never even knowing a property could have been available if they’d just known who to talk to.
-              </p>
-              <p>Only If connects these two groups.</p>
-              <p>
-                We give owners a simple way to raise their hand and say, “if someone pays my price, I’ll talk.” And we give serious buyers a way to find those opportunities before they hit the open market.
-              </p>
-            </div>
-          </div>
-        </section>
+      {/* Our Story */}
+      <section className="bg-[#F3F8F4]">
+        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+          <div className="grid grid-cols-1 gap-10 lg:grid-cols-2 lg:gap-16">
+            {/* Left: narrative */}
+            <div>
+              <SectionHeading>Our Story</SectionHeading>
 
-        {/* How Only If Works */}
-        <section className="py-12 sm:py-16 bg-gray-50">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
-              How Only If Works
-            </h2>
-            <div className="mt-4 sm:mt-6 text-gray-600">
-              <p>How Only If works</p>
-            </div>
-
-            <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
-              <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-6 flex flex-col">
-                <span className="text-sm font-medium text-blue-600 mb-1">Step 1</span>
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Owners set their “Only If” price
-                </h3>
-                <p className="mt-3 text-gray-600 flex-1">
-                  You decide the price you’d be comfortable selling for and create your listing. You stay in control – there’s no obligation to sell unless the right offer appears.
+              <div className="mt-7 space-y-5 text-base leading-7 text-gray-600">
+                <p>
+                  After decades working in Australian real estate, we noticed
+                  the same conversation happening over and over again.
                 </p>
-              </div>
+                <p>Owners weren&apos;t saying &ldquo;I want to sell.&rdquo;</p>
+                <p>They were saying:</p>
 
-              <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-6 flex flex-col">
-                <span className="text-sm font-medium text-blue-600 mb-1">Step 2</span>
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Buyers pay to unlock full details
-                </h3>
-                <p className="mt-3 text-gray-600 flex-1">
-                  Interested buyers pay a small fee to unlock the full property details, including address, photos and owner/agent contact details. This filters out the tyre-kickers and keeps enquiries serious.
+                <blockquote className="rounded-r-xl border-l-4 border-[#2FA553] bg-[#EAF6EE] px-5 py-4">
+                  <Quote
+                    className="mb-1 h-5 w-5 text-[#2FA553]"
+                    aria-hidden="true"
+                  />
+                  <p className="text-lg font-semibold text-[#111827]">
+                    <span className="text-[#2FA553]">I&apos;d sell…</span> but
+                    only if I got the right price.
+                  </p>
+                </blockquote>
+
+                <p>
+                  The problem was there was nowhere for those owners to quietly
+                  test the market without committing to a full sales campaign.
                 </p>
-              </div>
-
-              <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-6 flex flex-col">
-                <span className="text-sm font-medium text-blue-600 mb-1">Step 3</span>
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Simple, transparent fees
-                </h3>
-                <p className="mt-3 text-gray-600 flex-1">
-                  There are no upfront marketing costs or expensive campaigns. If an Only If buyer goes on to purchase your property and the sale goes unconditional, you pay a simple 1.1% (inc GST) success fee. Only If then shares this fee with a trusted, licensed local agent who handles inspections, negotiations and the contract process with you.
+                <p className="font-semibold text-[#1f2937]">
+                  That&apos;s why Only If was created.
                 </p>
               </div>
             </div>
-          </div>
-        </section>
 
-        {/* Built With Agents — Not Against Them */}
-        <section className="py-12 sm:py-16">
-          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
-              Built With Agents — Not Against Them
-            </h2>
-            <div className="mt-4 sm:mt-6 text-gray-600 space-y-4">
-              <p>Built with agents, not against them!</p>
-              <p>Only If is not trying to replace real estate agents.</p>
-              <p>
-                We believe great agents are essential in achieving the best outcome for both sellers and buyers. That’s why we partner with selected agents who are paid a transparent share of the success fee when a sale occurs through the platform.
-              </p>
-              <p>
-                Agents gain access to serious, pre-qualified buyers and genuine off-market opportunities, while owners benefit from professional advice and negotiation without the traditional big-ticket marketing spend.
-              </p>
+            {/* Right: audience card */}
+            <div className="rounded-[20px] bg-white p-8 shadow-[0_8px_30px_rgba(17,24,39,0.06)] transition-shadow duration-300 hover:shadow-[0_18px_50px_rgba(17,24,39,0.10)] sm:p-10">
+              <ul className="space-y-8">
+                {audiences.map(({ title, body }) => (
+                  <li key={title} className="flex gap-4">
+                    <CheckBadge />
+                    <div>
+                      <h3 className="text-lg font-bold text-[#111827]">
+                        {title}
+                      </h3>
+                      <p className="mt-1.5 text-base leading-7 text-gray-600">
+                        {body}
+                      </p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* Our Vision */}
-        <section className="py-12 sm:py-16 bg-gray-50">
-          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
-              Our Vision
-            </h2>
-            <div className="mt-4 sm:mt-6 text-gray-600 space-y-4">
-              <p>Our vision is simple:</p>
-              <p>
-                To give Australian property owners more control, more transparency and more options – without forcing them into an “all or nothing” sale campaign.
+      {/* Built With Agents */}
+      <section className="bg-white">
+        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+          <SectionHeading align="center">
+            Built With Agents. Not Against Them.
+          </SectionHeading>
+
+          <div className="mt-14 grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
+            {agentFeatures.map(({ Icon, title, body }) => (
+              <div key={title} className="group text-center">
+                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#EAF6EE] text-[#2FA553] transition-colors duration-300 group-hover:bg-[#2FA553] group-hover:text-white">
+                  <Icon className="h-7 w-7" strokeWidth={1.8} aria-hidden="true" />
+                </div>
+                <h3 className="mt-5 text-base font-bold text-[#111827]">
+                  {title}
+                </h3>
+                <p className="mt-2.5 text-sm leading-6 text-gray-600">{body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Our Vision */}
+      <section className="bg-[#F3F8F4]">
+        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+          <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2 lg:gap-16">
+            {/* Left: image */}
+            <div className="order-2 lg:order-1">
+              <PremiumImage
+                src="/images/03.jpg"
+                alt="A bright, modern home interior"
+              />
+            </div>
+
+            {/* Right: vision */}
+            <div className="order-1 lg:order-2">
+              <SectionHeading>Our Vision</SectionHeading>
+
+              <p className="mt-7 text-base leading-7 text-gray-600">
+                We believe homeowners deserve more options.
               </p>
-              <p>
-                If you’ve ever said, “I’d sell… but only if the price was right,” Only If was built for you.
-              </p>
+
+              <ul className="mt-6 grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2">
+                {visionPoints.map((point) => (
+                  <li key={point} className="flex items-start gap-3">
+                    <CheckBadge size="sm" />
+                    <span className="text-base leading-6 text-[#1f2937]">
+                      {point}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+
+              <div className="mt-8 space-y-2">
+                <p className="text-base text-gray-600">
+                  Sometimes you just want to know:
+                </p>
+                <p className="text-lg font-bold text-[#111827]">
+                  &ldquo;If someone offered me my price, would I move?&rdquo;
+                </p>
+                <p className="text-base text-gray-600">
+                  Only If gives you a way to find out.
+                </p>
+              </div>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-      </main>
+      {/* CTA Banner */}
+      <section className="bg-white">
+        <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+          <div className="rounded-[20px] bg-[#1B5E3A] px-6 py-8 shadow-[0_18px_50px_rgba(20,83,45,0.25)] sm:px-10 sm:py-10">
+            <div className="flex flex-col items-center gap-6 text-center md:flex-row md:justify-between md:gap-8 md:text-left">
+              <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:gap-5 sm:text-left">
+                <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-white/15 text-white ring-1 ring-white/30">
+                  <CheckSquare className="h-8 w-8" strokeWidth={2} aria-hidden="true" />
+                </span>
+                <div>
+                  <h2 className="text-2xl font-extrabold text-white sm:text-3xl">
+                    Real estate, on your terms.
+                  </h2>
+                  <p className="mt-1 text-base text-emerald-50/90">
+                    I&apos;d sell… but only if I got my price.
+                  </p>
+                </div>
+              </div>
 
-      {/* Footer removed - now global */}
+              <div className="flex flex-col items-center gap-2 md:items-end">
+                <Link
+                  href="/signin"
+                  className="inline-flex items-center justify-center rounded-xl bg-white px-7 py-3.5 text-base font-bold text-[#1B5E3A] shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-emerald-50 hover:shadow-md"
+                >
+                  Get Started Today
+                </Link>
+                <p className="text-sm text-emerald-50/80">
+                  It&apos;s free to list. No obligation to sell.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer is global (unchanged) */}
     </div>
   );
 }

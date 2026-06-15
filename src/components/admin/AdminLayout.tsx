@@ -3,16 +3,17 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { 
-  LayoutDashboard, 
-  Home, 
-  User, 
-  Users, 
-  CreditCard, 
-  Settings, 
+  LayoutDashboard,
+  Home,
+  User,
+  Users,
+  CreditCard,
+  Settings,
   LogOut,
   ChevronRight,
   Menu,
-  X
+  X,
+  ShoppingBag
 } from 'lucide-react';
 
 interface AdminLayoutProps {
@@ -31,6 +32,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     { name: 'Agents', href: '/admin/agents', icon: User },
     { name: 'Users', href: '/admin/users', icon: Users },
     { name: 'Payments', href: '/admin/payments', icon: CreditCard },
+    { name: 'Service Orders', href: '/admin/service-orders', icon: ShoppingBag },
     { name: 'Settings', href: '/admin/settings', icon: Settings },
   ];
 

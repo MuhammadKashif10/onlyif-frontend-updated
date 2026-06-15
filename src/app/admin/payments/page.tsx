@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { adminApi } from '@/api/admin';
 import { formatCurrency } from '@/utils/currency';
+import { Trash2 } from 'lucide-react';
 
 interface Payment {
   id: string;
@@ -32,6 +33,7 @@ export default function PaymentsPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loading && (!user || user.role !== 'admin')) {
@@ -144,6 +146,29 @@ export default function PaymentsPage() {
       window.URL.revokeObjectURL(a.href);
     } catch (e) {
       console.error('Invoice download error:', e);
+    }
+  };
+
+  const deletePayment = async (payment: Payment) => {
+    if (!window.confirm(`Hard delete payment ${payment.transactionId}? This cannot be undone.`)) return;
+    const backendBase = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || '';
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    try {
+      setDeletingId(payment.id);
+      const res = await fetch(`${backendBase}/api/admin/payments/${payment.id}`, {
+        method: 'DELETE',
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+      const data = await res.json();
+      if (data?.success) {
+        setPayments((prev) => prev.filter((p) => p.id !== payment.id));
+      } else {
+        alert(data?.message || 'Failed to delete payment');
+      }
+    } catch {
+      alert('Failed to delete payment');
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -296,18 +321,21 @@ export default function PaymentsPage() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Invoice Download
                   </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {isLoading ? (
                   <tr>
-                    <td colSpan={8} className="px-6 py-4 text-center">
+                    <td colSpan={9} className="px-6 py-4 text-center">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
                     </td>
                   </tr>
                 ) : filteredPayments.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="px-6 py-4 text-center text-gray-500">
+                    <td colSpan={9} className="px-6 py-4 text-center text-gray-500">
                       No payments found
                     </td>
                   </tr>
@@ -349,6 +377,17 @@ export default function PaymentsPage() {
                           className="px-3 py-1.5 bg-blue-600 text-white text-xs rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500"
                         >
                           Download
+                        </button>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <button
+                          onClick={() => deletePayment(payment)}
+                          disabled={deletingId === payment.id}
+                          title="Hard delete payment"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-600 text-xs font-semibold rounded-md hover:bg-red-100 disabled:opacity-60 disabled:cursor-not-allowed"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                          {deletingId === payment.id ? 'Deleting…' : 'Delete'}
                         </button>
                       </td>
                     </tr>

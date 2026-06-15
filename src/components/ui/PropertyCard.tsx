@@ -8,6 +8,7 @@ import { getSafeImageUrl } from '@/utils/imageUtils';
 import { StatusBadge } from '@/components/reusable';
 import { formatCurrencyCompact } from '@/utils/currency';
 import { generatePropertyUrl } from '@/utils/slugify';
+import { UNLOCK_FEE_LABEL } from '@/utils/constants';
 
 type PropertyStatus = 'pending' | 'private' | 'public' | 'sold' | 'withdrawn';
 
@@ -194,7 +195,7 @@ export default function PropertyCard({
             </div>
             <span className="mt-5 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-md border border-[#b9d5c0] bg-[#e3f3e8] px-4 text-sm font-bold text-[#087735] group-hover:border-[#087735] group-hover:bg-[#d7efdf]">
               <Eye className="h-4 w-4" aria-hidden="true" />
-              Unlock for $49
+              Unlock for {UNLOCK_FEE_LABEL}
             </span>
           </div>
         </button>
@@ -275,7 +276,7 @@ export default function PropertyCard({
             </div>
 
             <span className="mt-5 inline-flex min-h-12 w-full items-center justify-center rounded-lg border-2 border-[#007a38] bg-white px-5 text-sm font-black text-[#007a38] transition group-hover:bg-[#007a38] group-hover:text-white">
-              Unlock Details ($49)
+              Unlock Details ({UNLOCK_FEE_LABEL})
             </span>
           </div>
         </button>
@@ -368,7 +369,7 @@ export default function PropertyCard({
             </div>
             <div className="mt-1">
               <span className="inline-flex w-full items-center justify-center px-3 py-2 rounded-sm text-sm font-semibold bg-emerald-500 hover:bg-emerald-600 text-white shadow-sm">
-                Unlock for $49
+                Unlock for {UNLOCK_FEE_LABEL}
               </span>
             </div>
           </div>

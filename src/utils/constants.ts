@@ -245,6 +245,18 @@ export const PAYMENT_TYPES = {
   FEATURED_PROPERTY: 'featured_property',
 } as const;
 
+// Pricing — single source of truth for buyer-facing fees.
+// Keep in sync with the backend (backend/config/pricing.js).
+export const PRICING = {
+  // Buyer property unlock fee
+  UNLOCK_FEE: 19, // AUD dollars
+  UNLOCK_FEE_CENTS: 1900, // cents, for payment processing
+  CURRENCY: 'AUD',
+} as const;
+
+// Pre-formatted unlock fee label, e.g. "$19"
+export const UNLOCK_FEE_LABEL = `$${PRICING.UNLOCK_FEE}`;
+
 // Routes
 export const ROUTES = {
   HOME: '/',
