@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import EnhancedNotificationPanel from '@/components/reusable/EnhancedNotificationPanel';
+import Logo from '@/components/layout/Logo';
 import { Menu, X, ArrowRight, LayoutDashboard } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -21,7 +22,6 @@ interface NavbarProps {
 }
 
 export default function Navbar({
-  logo = '/images/logo.PNG',
   logoText = '',
   navigationItems = [
     { label: 'Buy', href: '/buy' },
@@ -76,11 +76,7 @@ export default function Navbar({
           <Link href="/" className="flex items-center space-x-2 group">
             <div className="flex flex-col leading-tight">
               <div className="flex items-center space-x-2">
-                <img 
-                  src={logo} 
-                  alt="OnlyIf logo" 
-                  className="w-36 sm:w-40 lg:w-44 h-auto transition-transform duration-200 group-hover:scale-105"
-                />
+                <Logo className="w-40 sm:w-44 lg:w-48 h-auto" />
                 {logoText && (
                   <span className="text-base font-bold text-gray-900 group-hover:text-blue-600">{logoText}</span>
                 )}

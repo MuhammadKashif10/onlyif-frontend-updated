@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { 
+import Logo from '@/components/layout/Logo';
+import {
   LayoutDashboard,
   Home,
   User,
@@ -53,8 +54,8 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           >
             {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
-          <Link href="/admin/dashboard" className="flex-shrink-0">
-            <img src="/images/logo.PNG" alt="Only If Logo" className="h-8 sm:h-10 w-auto" />
+          <Link href="/admin/dashboard" className="group flex-shrink-0">
+            <Logo className="h-10 sm:h-12 w-auto" />
           </Link>
         </div>
 
@@ -88,8 +89,8 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         <div className="flex flex-col h-full">
           {/* Logo Area */}
           <div className="h-24 flex items-center px-6 border-b border-gray-100">
-            <Link href="/admin/dashboard">
-              <img src="/images/logo.PNG" alt="Only If Logo" className="h-14 w-auto object-contain" />
+            <Link href="/admin/dashboard" className="group">
+              <Logo className="h-16 w-auto" />
             </Link>
           </div>
 
