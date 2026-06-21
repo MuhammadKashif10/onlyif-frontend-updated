@@ -76,7 +76,7 @@ export default function Navbar({
           <Link href="/" className="flex items-center space-x-2 group">
             <div className="flex flex-col leading-tight">
               <div className="flex items-center space-x-2">
-                <Logo className="w-40 sm:w-44 lg:w-48 h-auto" />
+                <Logo className="w-44 sm:w-48 lg:w-52 h-auto" />
                 {logoText && (
                   <span className="text-base font-bold text-gray-900 group-hover:text-blue-600">{logoText}</span>
                 )}
