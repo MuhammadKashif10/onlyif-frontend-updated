@@ -84,7 +84,9 @@ export default function PropertyCard({
         process.env.NEXT_PUBLIC_BACKEND_URL ||
         process.env.NEXT_PUBLIC_API_URL?.replace(/\/api\/?$/, '') ||
         ''
-      ).replace(/\/$/, '');
+      )
+        .replace(/\/$/, '')
+        .replace(/\/api$/, '');
       const res = await fetch(`${backendBase}/api/payment/checkout/${id}`, {
         method: 'POST',
         headers: {

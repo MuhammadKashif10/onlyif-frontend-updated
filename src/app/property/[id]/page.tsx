@@ -10,8 +10,9 @@ import AgentChatModal from '@/components/ui/AgentChatModal';
 import Image from 'next/image';
 import { getSafeImageUrl } from '@/utils/imageUtils';
 import { getNonDuplicateAddress } from '@/utils/addressUtils';
-import { formatCurrencyCompact } from '@/utils/currency';
-import { Bed, Bath, Car } from 'lucide-react';
+import { formatCurrencyCompact, formatCurrency } from '@/utils/currency';
+import { PRICING } from '@/utils/constants';
+import { Bed, Bath, Car, Lock } from 'lucide-react';
 
 export default function PropertyDetailsPage() {
   const params = useParams();
@@ -21,6 +22,8 @@ export default function PropertyDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+  const [isUnlocking, setIsUnlocking] = useState(false);
+  const [unlockError, setUnlockError] = useState<string | null>(null);
 
   const propertyId = params.id as string;
 
@@ -65,6 +68,56 @@ export default function PropertyDetailsPage() {
 
   const handleContactAgent = () => {
     setIsContactModalOpen(true);
+  };
+
+  const handleUnlock = async () => {
+    setIsUnlocking(true);
+    setUnlockError(null);
+
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    if (!token) {
+      router.push('/signin');
+      return;
+    }
+
+    // Same normalized backend base as the other checkout entry points
+    // (drops a trailing slash and a trailing "/api" to avoid "/api/api").
+    const backendBase = (
+      process.env.NEXT_PUBLIC_BACKEND_URL ||
+      process.env.NEXT_PUBLIC_API_URL?.replace(/\/api\/?$/, '') ||
+      ''
+    )
+      .replace(/\/$/, '')
+      .replace(/\/api$/, '');
+
+    // Use the real Mongo id from the loaded property (the URL param may be a slug).
+    const targetId = (property as any)?._id || (property as any)?.id || propertyId;
+
+    try {
+      const res = await fetch(`${backendBase}/api/payment/checkout/${targetId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await res.json().catch(() => ({} as any));
+
+      if (data.alreadyPaid) {
+        // Already unlocked — reload to fetch the full (unlocked) details.
+        window.location.reload();
+        return;
+      }
+      if (data.url) {
+        window.location.href = data.url;
+        return;
+      }
+      setUnlockError(data?.message || 'Unable to start checkout. Please try again.');
+      setIsUnlocking(false);
+    } catch {
+      setUnlockError('Unable to start checkout. Please try again.');
+      setIsUnlocking(false);
+    }
   };
 
   if (loading) {
@@ -139,6 +192,96 @@ export default function PropertyDetailsPage() {
   // keep local `agent` state only as a harmless fallback.
   const resolvedAgent = property.agent || agent;
   const hasAgent = !!(property.agentAssigned && resolvedAgent);
+
+  // Paid-content gate. The backend omits the full details and sets isUnlocked:false
+  // for viewers who haven't paid. Treat an explicit `false` as locked.
+  const isUnlocked = (property as any).isUnlocked !== false;
+
+  if (!isUnlocked) {
+    return (
+      <div className="w-full px-4 py-8">
+        <button
+          onClick={() => router.push('/buy')}
+          className="mb-6 text-blue-600 hover:text-blue-800 flex items-center gap-2"
+        >
+          ← Back to Browse
+        </button>
+
+        <div className="bg-white rounded-lg shadow-lg overflow-hidden w-full max-w-3xl mx-auto">
+          {/* Blurred preview image with lock overlay */}
+          <div className="relative h-96 w-full">
+            <Image
+              src={getSafeImageUrl(getMainImage())}
+              alt={property.title}
+              fill
+              className="object-cover blur-sm"
+              priority
+            />
+            <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center">
+              <div className="w-16 h-16 rounded-full bg-white/90 flex items-center justify-center mb-3">
+                <Lock className="h-7 w-7 text-gray-700" />
+              </div>
+              <p className="text-white font-semibold text-lg">Locked listing</p>
+            </div>
+          </div>
+
+          <div className="p-6">
+            <div className="flex justify-between items-start mb-4">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">{property.title}</h1>
+                {displayAddress && (
+                  <p className="text-gray-600 text-lg">{displayAddress}</p>
+                )}
+              </div>
+              <div className="text-right">
+                <p className="text-3xl font-bold text-blue-600">
+                  {formatCurrencyCompact(property.price || 0)}
+                </p>
+                <p className="text-gray-500">{property.status}</p>
+              </div>
+            </div>
+
+            {/* Preview stats (non-sensitive) */}
+            <div className="grid grid-cols-3 gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
+              <div className="text-center flex flex-col items-center">
+                <Bed className="h-6 w-6 text-blue-600 mb-1" />
+                <p className="text-2xl font-bold text-gray-900">{property.beds || 'N/A'}</p>
+              </div>
+              <div className="text-center flex flex-col items-center">
+                <Bath className="h-6 w-6 text-blue-600 mb-1" />
+                <p className="text-2xl font-bold text-gray-900">{property.baths || 'N/A'}</p>
+              </div>
+              <div className="text-center flex flex-col items-center">
+                <Car className="h-6 w-6 text-blue-600 mb-1" />
+                <p className="text-2xl font-bold text-gray-900">{property.carSpaces || 'N/A'}</p>
+              </div>
+            </div>
+
+            <div className="border-t pt-6 text-center">
+              <h2 className="text-xl font-bold text-gray-900 mb-2">Unlock full property details</h2>
+              <p className="text-gray-600 mb-4">
+                Pay {formatCurrency(PRICING.UNLOCK_FEE)} to view the full address, description, photos and agent contact.
+              </p>
+
+              {unlockError && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-600 text-sm">
+                  {unlockError}
+                </div>
+              )}
+
+              <button
+                onClick={handleUnlock}
+                disabled={isUnlocking}
+                className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {isUnlocking ? 'Redirecting…' : `Unlock for ${formatCurrency(PRICING.UNLOCK_FEE)}`}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full px-4 py-8">
