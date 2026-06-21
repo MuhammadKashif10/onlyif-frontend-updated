@@ -27,10 +27,17 @@ export default function HomePage() {
           <div className="mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-[0.92fr_1fr] lg:gap-16">
             <div className="max-w-xl">
               <h1 className="text-4xl font-bold leading-[1.05] tracking-normal text-[#071109] sm:text-5xl lg:text-[4.25rem]">
-                The Real Estate Market You&apos;ve Been Missing.
+                I&apos;d sell…
+                <br />
+                but only if I got
+                <br />
+                <span className="text-[#087735]">my price.</span>
               </h1>
-              <p className="mt-6 max-w-lg text-base leading-7 text-[#4b5b4e] sm:text-lg">
-                Only If connects local owners and serious buyers quietly, transparently and in complete control, giving you a smarter way to buy and sell without the pressure or the noise.
+              <p className="mt-6 text-lg font-semibold text-[#071109]">
+                That&apos;s exactly why we built Only If.
+              </p>
+              <p className="mt-3 max-w-lg text-base leading-7 text-[#4b5b4e] sm:text-lg">
+                We help Australian property owners privately test the market on their terms — and connect with serious buyers who are ready to talk.
               </p>
               <div className="mt-9 flex flex-col gap-3 sm:flex-row">
                 <Link
