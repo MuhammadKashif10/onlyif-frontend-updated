@@ -6,6 +6,7 @@ import { Button } from '@/components/reusable/Button';
 import InputField from '@/components/reusable/InputField';
 import TextArea from '@/components/reusable/TextArea';
 import { propertiesApi } from '@/api/properties';
+import { useAuth } from '@/hooks/useAuth';
 
 interface EditPropertyModalProps {
   isOpen: boolean;
@@ -39,9 +40,13 @@ export default function EditPropertyModal({
     lotSize: '',
   });
   const [isSaving, setIsSaving] = useState(false);
+  const { user } = useAuth();
 
   useEffect(() => {
     if (!property) return;
+    // Contact details fall back to the seller's account so they are pre-filled
+    // (editable) rather than empty when the property has no saved contactInfo.
+    const accountPhone = (user as { phone?: string } | null)?.phone;
     setFormData({
       title: property.title || '',
       price: String(property.price ?? ''),
@@ -54,13 +59,13 @@ export default function EditPropertyModal({
       squareMeters: String(property.squareMeters ?? property.size ?? ''),
       propertyType: (property.propertyType ?? '').toString(),
       description: property.description ?? '',
-      contactName: property.contactInfo?.name ?? '',
-      contactEmail: property.contactInfo?.email ?? '',
-      contactPhone: property.contactInfo?.phone ?? '',
+      contactName: property.contactInfo?.name ?? property.contactName ?? user?.name ?? '',
+      contactEmail: property.contactInfo?.email ?? property.contactEmail ?? user?.email ?? '',
+      contactPhone: property.contactInfo?.phone ?? property.contactPhone ?? accountPhone ?? '',
       yearBuilt: property.yearBuilt ? String(property.yearBuilt) : '',
       lotSize: property.lotSize ? String(property.lotSize) : '',
     });
-  }, [property, isOpen]);
+  }, [property, isOpen, user]);
 
   const onChange = (field: keyof typeof formData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
