@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { FileText, Download, Trash2, UploadCloud, X, Loader2 } from 'lucide-react';
 import { propertiesApi } from '@/api/properties';
 import { formatDate } from '@/utils/formatDate';
+import { getCloudinaryDownloadUrl } from '@/utils/cloudinary';
 
 export type DocType = 'SOI' | 'Contract' | 'Other';
 
@@ -151,11 +152,11 @@ export default function PropertyDocuments({
                   </div>
                 </div>
                 <a
-                  href={doc.fileUrl}
+                  href={getCloudinaryDownloadUrl(doc.fileUrl, doc.fileName)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex h-9 w-9 items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 hover:text-gray-900"
-                  aria-label={`View or download ${doc.fileName}`}
+                  aria-label={`Download ${doc.fileName}`}
                 >
                   <Download className="h-4 w-4" />
                 </a>

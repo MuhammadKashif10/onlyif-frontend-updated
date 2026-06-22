@@ -7,6 +7,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { adminApi } from "@/api/admin";
 import { formatCurrencyCompact } from "@/utils/currency";
+import { getCloudinaryDownloadUrl } from "@/utils/cloudinary";
 
 type Address =
   | string
@@ -670,11 +671,11 @@ const PropertiesPage = () => {
                             {property.propertyDocuments.map((doc, index) => (
                               <a
                                 key={doc._id || doc.fileUrl || index}
-                                href={doc.fileUrl}
+                                href={getCloudinaryDownloadUrl(doc.fileUrl, doc.fileName)}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="flex items-center gap-1.5 text-blue-600 hover:text-blue-900"
-                                title={`${doc.fileName} (${doc.type || "Other"})`}
+                                title={`Download ${doc.fileName} (${doc.type || "Other"})`}
                               >
                                 <span className="inline-flex items-center rounded-full bg-gray-100 px-1.5 py-0.5 text-[10px] font-semibold text-gray-600">
                                   {doc.type || "Other"}
