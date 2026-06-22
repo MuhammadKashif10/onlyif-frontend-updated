@@ -63,6 +63,7 @@ export default function PropertyDocuments({
   const [docs, setDocs] = useState<PropertyDocument[]>(documents ?? []);
   const [staged, setStaged] = useState<StagedFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [isLoadingDocs, setIsLoadingDocs] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -77,13 +78,17 @@ export default function PropertyDocuments({
   useEffect(() => {
     if (deferred || !canManage || !propertyId) return;
     let active = true;
+    setIsLoadingDocs(true);
     propertiesApi
       .getPropertyDocuments(propertyId)
       .then((list) => {
         if (active) setDocs(list ?? []);
       })
-      .catch(() => {
-        /* keep prop-provided docs on failure */
+      .catch((err) => {
+        if (active) setError(err?.message || 'Could not load documents.');
+      })
+      .finally(() => {
+        if (active) setIsLoadingDocs(false);
       });
     return () => {
       active = false;
@@ -150,7 +155,11 @@ export default function PropertyDocuments({
   return (
     <div className="space-y-4">
       {/* Existing documents list / empty state (hidden during create/deferred) */}
-      {deferred ? null : docs.length === 0 ? (
+      {deferred ? null : isLoadingDocs && docs.length === 0 ? (
+        <p className="flex items-center gap-2 text-sm text-gray-500">
+          <Loader2 className="h-4 w-4 animate-spin" /> Loading documents…
+        </p>
+      ) : docs.length === 0 ? (
         <p className="text-sm text-gray-500">No documents uploaded yet</p>
       ) : (
         <ul className="space-y-2">
