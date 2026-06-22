@@ -156,6 +156,15 @@ export const propertiesApi = {
   },
 
   // ── Per-property document management ──
+  // Fetch the current documents straight from the backend (always accurate,
+  // independent of how the parent loaded the property).
+  async getPropertyDocuments(id: string): Promise<Property['propertyDocuments']> {
+    const response = await apiClient.get<BackendResponse<Property['propertyDocuments']>>(
+      `/properties/${id}/documents`
+    );
+    return response.data;
+  },
+
   // Uploads one or more documents (PDF/PNG/JPG). Sent as multipart directly to
   // the backend (same pattern as createPropertyWithFiles) to avoid proxy limits.
   // Returns the updated propertyDocuments array.

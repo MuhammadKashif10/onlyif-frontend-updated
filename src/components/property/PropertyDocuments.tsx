@@ -71,6 +71,25 @@ export default function PropertyDocuments({
     setDocs(documents ?? []);
   }, [documents]);
 
+  // In manage mode (edit), fetch the authoritative document list straight from
+  // the backend so it never depends on whatever list the parent happened to
+  // load. This guarantees existing documents always show in the edit modal.
+  useEffect(() => {
+    if (deferred || !canManage || !propertyId) return;
+    let active = true;
+    propertiesApi
+      .getPropertyDocuments(propertyId)
+      .then((list) => {
+        if (active) setDocs(list ?? []);
+      })
+      .catch(() => {
+        /* keep prop-provided docs on failure */
+      });
+    return () => {
+      active = false;
+    };
+  }, [propertyId, canManage, deferred]);
+
   // In deferred (create) mode, bubble staged files up to the parent form.
   useEffect(() => {
     if (deferred && onStagedChange) onStagedChange(staged);
