@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/reusable';
 import EditPropertyModal from '@/components/seller/EditPropertyModal';
+import OccupancyBadge from '@/components/property/OccupancyBadge';
 
 // Loading spinner component
 const LoadingSpinner = () => (
@@ -965,7 +966,8 @@ function SellerDashboard() {
                           <div className="space-y-2 sm:space-y-0">
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
                               <h4 className="truncate text-xl font-black tracking-tight text-gray-950 sm:text-2xl">{property.title}</h4>
-                              <div className="self-start sm:self-auto">
+                              <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+                                <OccupancyBadge property={property} />
                                 {renderStatusBadge(property.status)}
                               </div>
                             </div>

@@ -7,6 +7,16 @@ import InputField from '@/components/reusable/InputField';
 import TextArea from '@/components/reusable/TextArea';
 import { propertiesApi } from '@/api/properties';
 import { useAuth } from '@/hooks/useAuth';
+import InvestmentAvailabilityFields from '@/components/property/InvestmentAvailabilityFields';
+import PropertyDocuments from '@/components/property/PropertyDocuments';
+
+// Convert an ISO/date value to yyyy-mm-dd for native <input type="date">; '' if missing/invalid.
+const toDateInput = (value?: string | Date | null): string => {
+  if (!value) return '';
+  const d = value instanceof Date ? value : new Date(value);
+  if (isNaN(d.getTime())) return '';
+  return d.toISOString().slice(0, 10);
+};
 
 interface EditPropertyModalProps {
   isOpen: boolean;
@@ -38,6 +48,14 @@ export default function EditPropertyModal({
     contactPhone: '',
     yearBuilt: '',
     lotSize: '',
+    // ── Investment / availability (all optional; safe defaults) ──
+    isInvestmentProperty: false,
+    occupancyStatus: 'vacant',
+    tenantDetails: '',
+    monthlyRent: '',
+    leaseEndDate: '',
+    availableFromDate: '',
+    settlementAfterDate: '',
   });
   const [isSaving, setIsSaving] = useState(false);
   const { user } = useAuth();
@@ -64,6 +82,14 @@ export default function EditPropertyModal({
       contactPhone: property.contactInfo?.phone ?? property.contactPhone ?? accountPhone ?? '',
       yearBuilt: property.yearBuilt ? String(property.yearBuilt) : '',
       lotSize: property.lotSize ? String(property.lotSize) : '',
+      // Pre-fill investment/availability from existing data; defaults keep old listings safe.
+      isInvestmentProperty: Boolean(property.isInvestmentProperty),
+      occupancyStatus: property.occupancyStatus ?? 'vacant',
+      tenantDetails: property.tenantDetails ?? '',
+      monthlyRent: property.monthlyRent != null ? String(property.monthlyRent) : '',
+      leaseEndDate: toDateInput(property.leaseEndDate),
+      availableFromDate: toDateInput(property.availableFromDate),
+      settlementAfterDate: toDateInput(property.settlementAfterDate),
     });
   }, [property, isOpen, user]);
 
@@ -106,6 +132,15 @@ export default function EditPropertyModal({
 
     if (formData.yearBuilt) updates.yearBuilt = Number(formData.yearBuilt);
     if (formData.lotSize) updates.lotSize = Number(formData.lotSize);
+
+    // ── Investment / availability (optional; only send meaningful values) ──
+    updates.isInvestmentProperty = formData.isInvestmentProperty;
+    updates.occupancyStatus = formData.occupancyStatus || 'vacant';
+    if (formData.tenantDetails) updates.tenantDetails = formData.tenantDetails;
+    if (formData.monthlyRent) updates.monthlyRent = Number(formData.monthlyRent);
+    if (formData.leaseEndDate) updates.leaseEndDate = formData.leaseEndDate;
+    if (formData.availableFromDate) updates.availableFromDate = formData.availableFromDate;
+    if (formData.settlementAfterDate) updates.settlementAfterDate = formData.settlementAfterDate;
 
     try {
       setIsSaving(true);
@@ -236,6 +271,31 @@ export default function EditPropertyModal({
             onChange={(e) => onChange('contactPhone', e.target.value)}
           />
         </div>
+
+        {/* Investment / Availability / Documents — optional, reusable sections */}
+        <InvestmentAvailabilityFields
+          values={{
+            isInvestmentProperty: formData.isInvestmentProperty,
+            occupancyStatus: formData.occupancyStatus,
+            tenantDetails: formData.tenantDetails,
+            monthlyRent: formData.monthlyRent,
+            leaseEndDate: formData.leaseEndDate,
+            availableFromDate: formData.availableFromDate,
+            settlementAfterDate: formData.settlementAfterDate,
+          }}
+          onFieldChange={(field, value) =>
+            setFormData(prev => ({ ...prev, [field]: value }))
+          }
+          documentsContent={
+            (property?._id || property?.id) ? (
+              <PropertyDocuments
+                propertyId={String(property._id || property.id)}
+                documents={property.propertyDocuments}
+                canManage
+              />
+            ) : undefined
+          }
+        />
 
         <div className="flex justify-end space-x-2">
           <Button variant="outline" onClick={onClose} type="button">

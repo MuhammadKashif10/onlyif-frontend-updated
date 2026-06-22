@@ -11,6 +11,7 @@ import { useAuth } from '@/context/AuthContext';
 import { toast } from 'react-hot-toast';
 import { propertiesApi } from '@/api/properties';
 import AutoDescriptionButton from '@/components/seller/AutoDescriptionButton';
+import InvestmentAvailabilityFields from '@/components/property/InvestmentAvailabilityFields';
 
 interface PropertyFormData {
   title: string;
@@ -31,6 +32,14 @@ interface PropertyFormData {
   contactEmail: string;
   contactPhone: string;
   carSpaces?: string;
+  // ── Investment / availability (all optional; backward-compatible) ──
+  isInvestmentProperty?: boolean;
+  occupancyStatus?: string;
+  tenantDetails?: string;
+  monthlyRent?: string;
+  leaseEndDate?: string;
+  availableFromDate?: string;
+  settlementAfterDate?: string;
 }
 
 interface AustralianLocation {
@@ -118,7 +127,15 @@ export default function AddProperty() {
     // Add missing contact fields
     contactName: '',
     contactEmail: '',
-    contactPhone: ''
+    contactPhone: '',
+    // Investment / availability (optional; safe defaults)
+    isInvestmentProperty: false,
+    occupancyStatus: 'vacant',
+    tenantDetails: '',
+    monthlyRent: '',
+    leaseEndDate: '',
+    availableFromDate: '',
+    settlementAfterDate: ''
   });
 
   const [propertyImages, setPropertyImages] = useState<File[]>([]);
@@ -288,7 +305,16 @@ export default function AddProperty() {
       
       if (normalizedFormData.yearBuilt) formDataToSend.append('yearBuilt', normalizedFormData.yearBuilt);
       if (normalizedFormData.lotSize) formDataToSend.append('lotSize', normalizedFormData.lotSize);
-      
+
+      // ── Investment / availability (optional; only append meaningful values) ──
+      formDataToSend.append('isInvestmentProperty', String(Boolean(normalizedFormData.isInvestmentProperty)));
+      formDataToSend.append('occupancyStatus', normalizedFormData.occupancyStatus || 'vacant');
+      if (normalizedFormData.tenantDetails) formDataToSend.append('tenantDetails', normalizedFormData.tenantDetails);
+      if (normalizedFormData.monthlyRent) formDataToSend.append('monthlyRent', normalizedFormData.monthlyRent);
+      if (normalizedFormData.leaseEndDate) formDataToSend.append('leaseEndDate', normalizedFormData.leaseEndDate);
+      if (normalizedFormData.availableFromDate) formDataToSend.append('availableFromDate', normalizedFormData.availableFromDate);
+      if (normalizedFormData.settlementAfterDate) formDataToSend.append('settlementAfterDate', normalizedFormData.settlementAfterDate);
+
       // Append image files
       propertyImages.forEach((file, index) => {
         formDataToSend.append('images', file);
@@ -759,6 +785,29 @@ export default function AddProperty() {
                         </div>
                       )}
                     </div>
+                  </section>
+
+                  {/* Investment & Availability (optional) */}
+                  <section className="space-y-6">
+                    <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight flex items-center gap-3">
+                      <span className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-sm">6</span>
+                      Investment &amp; Availability
+                      <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Optional</span>
+                    </h2>
+                    <InvestmentAvailabilityFields
+                      values={{
+                        isInvestmentProperty: Boolean(formData.isInvestmentProperty),
+                        occupancyStatus: formData.occupancyStatus || 'vacant',
+                        tenantDetails: formData.tenantDetails || '',
+                        monthlyRent: formData.monthlyRent || '',
+                        leaseEndDate: formData.leaseEndDate || '',
+                        availableFromDate: formData.availableFromDate || '',
+                        settlementAfterDate: formData.settlementAfterDate || '',
+                      }}
+                      onFieldChange={(field, value) =>
+                        setFormData(prev => ({ ...prev, [field]: value }))
+                      }
+                    />
                   </section>
 
                   {/* Submit Button */}

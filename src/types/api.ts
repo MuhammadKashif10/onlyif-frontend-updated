@@ -31,6 +31,21 @@ export interface Property {
   featured: boolean;
   dateListed: string;
   daysOnMarket: number;
+  // ── Investment / occupancy info (all OPTIONAL — backward-compatible) ──
+  isInvestmentProperty?: boolean;
+  occupancyStatus?: 'vacant' | 'tenanted' | 'investment';
+  tenantDetails?: string;
+  monthlyRent?: number;
+  leaseEndDate?: string;
+  availableFromDate?: string;
+  settlementAfterDate?: string;
+  propertyDocuments?: Array<{
+    _id?: string;
+    fileUrl: string;
+    fileName: string;
+    type?: 'SOI' | 'Contract' | 'Other';
+    uploadedAt?: string;
+  }>;
 }
 export interface Agent {
   id: string;

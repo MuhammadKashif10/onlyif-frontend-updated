@@ -155,6 +155,56 @@ export const propertiesApi = {
     }
   },
 
+  // ── Per-property document management ──
+  // Uploads one or more documents (PDF/PNG/JPG). Sent as multipart directly to
+  // the backend (same pattern as createPropertyWithFiles) to avoid proxy limits.
+  // Returns the updated propertyDocuments array.
+  async uploadDocuments(
+    id: string,
+    files: File[],
+    types: Array<'SOI' | 'Contract' | 'Other'>
+  ): Promise<Property['propertyDocuments']> {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    const headers: Record<string, string> = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const formData = new FormData();
+    files.forEach((file) => formData.append('documents', file));
+    formData.append('types', JSON.stringify(types));
+
+    const baseApi = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '');
+    const uploadTargets = [
+      baseApi ? `${baseApi}/properties/${id}/documents` : '',
+      `/api/properties/${id}/documents`, // proxy fallback
+    ].filter(Boolean) as string[];
+
+    let lastErrorMessage = 'Failed to upload documents';
+    for (const url of uploadTargets) {
+      const response = await fetch(url, { method: 'POST', headers, body: formData });
+      if (response.ok) {
+        const result = await response.json();
+        return result.data;
+      }
+      try {
+        const payload = await response.json();
+        lastErrorMessage = payload?.message || payload?.error || lastErrorMessage;
+      } catch {
+        /* non-JSON error */
+      }
+      if (response.status === 413) {
+        lastErrorMessage = 'Upload too large (HTTP 413). Please upload smaller files.';
+      }
+    }
+    throw new Error(lastErrorMessage);
+  },
+
+  async deleteDocument(id: string, docId: string): Promise<Property['propertyDocuments']> {
+    const response = await apiClient.delete<BackendResponse<Property['propertyDocuments']>>(
+      `/properties/${id}/documents/${docId}`
+    );
+    return response.data;
+  },
+
   async deleteProperty(id: string): Promise<void> {
     console.log('🔄 API: Deleting property from database', { id });
     

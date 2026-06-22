@@ -13,6 +13,9 @@ import { getNonDuplicateAddress } from '@/utils/addressUtils';
 import { formatCurrencyCompact, formatCurrency } from '@/utils/currency';
 import { PRICING } from '@/utils/constants';
 import { Bed, Bath, Car, Lock } from 'lucide-react';
+import OccupancyBadge from '@/components/property/OccupancyBadge';
+import InvestmentDetails from '@/components/property/InvestmentDetails';
+import PropertyDocuments from '@/components/property/PropertyDocuments';
 
 export default function PropertyDetailsPage() {
   const params = useParams();
@@ -312,6 +315,7 @@ export default function PropertyDetailsPage() {
               {displayAddress && (
                 <p className="text-gray-600 text-lg">{displayAddress}</p>
               )}
+              <OccupancyBadge property={property} className="mt-2" />
             </div>
             <div className="text-right">
               <p className="text-3xl font-bold text-blue-600">
@@ -358,6 +362,21 @@ export default function PropertyDetailsPage() {
                   </div>
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* Investment Details (read-only; self-hides when no data) */}
+          <InvestmentDetails property={property} />
+
+          {/* Documents (read-only view/download; only shows when documents exist) */}
+          {property.propertyDocuments && property.propertyDocuments.length > 0 && (
+            <div className="mb-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-3">Documents</h2>
+              <PropertyDocuments
+                propertyId={property._id || property.id}
+                documents={property.propertyDocuments}
+                canManage={false}
+              />
             </div>
           )}
 

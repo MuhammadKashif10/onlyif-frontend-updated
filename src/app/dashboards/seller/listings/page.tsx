@@ -19,6 +19,7 @@ import { formatCurrencyCompact } from '@/utils/currency';
 // import section
 import EditPropertyModal from '@/components/seller/EditPropertyModal';
 import ViewPropertyModal from '@/components/seller/ViewPropertyModal';
+import OccupancyBadge from '@/components/property/OccupancyBadge';
 
 export default function SellerListingsPage() {
   const { user, isLoading } = useAuth();
@@ -325,6 +326,7 @@ export default function SellerListingsPage() {
                     <div className="min-w-0">
                       <h2 className="truncate text-2xl font-black tracking-tight text-gray-950">{property.title}</h2>
                       <p className="mt-2 text-sm font-medium text-gray-500">{getAddressText(property)}</p>
+                      <OccupancyBadge property={property} className="mt-2" />
 
                       <div className="mt-5 flex flex-wrap gap-3">
                         <span className="rounded-lg border border-blue-100 bg-blue-50 px-4 py-2 text-sm font-semibold text-gray-800">{property.beds || 0} Beds</span>
