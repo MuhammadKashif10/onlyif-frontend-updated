@@ -19,12 +19,16 @@ export function getCloudinaryDownloadUrl(url?: string | null, fileName?: string)
   // Don't double-inject if a transformation is already present.
   if (url.includes('fl_attachment')) return url;
 
+  // Raw-stored assets (older PDFs) have no format extension on their URL, so
+  // Cloudinary won't append one — keep the full original filename (with its
+  // extension) as the download name. Image-type assets already carry the
+  // extension in the URL, so use the base name to avoid doubling it.
+  const isRaw = url.includes('/raw/upload/');
+
   let flag = 'fl_attachment';
   if (fileName) {
-    // Use the original name (without extension) as the download filename;
-    // Cloudinary appends the correct extension for the stored format.
-    const base = fileName.replace(/\.[^/.]+$/, '').trim();
-    const safe = encodeURIComponent(base).replace(/%20/g, '_');
+    const name = isRaw ? fileName.trim() : fileName.replace(/\.[^/.]+$/, '').trim();
+    const safe = encodeURIComponent(name).replace(/%20/g, '_');
     if (safe) flag = `fl_attachment:${safe}`;
   }
 
