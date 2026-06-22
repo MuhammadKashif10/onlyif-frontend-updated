@@ -12,6 +12,7 @@ import { toast } from 'react-hot-toast';
 import { propertiesApi } from '@/api/properties';
 import AutoDescriptionButton from '@/components/seller/AutoDescriptionButton';
 import InvestmentAvailabilityFields from '@/components/property/InvestmentAvailabilityFields';
+import PropertyDocuments, { StagedDocument } from '@/components/property/PropertyDocuments';
 
 interface PropertyFormData {
   title: string;
@@ -141,6 +142,8 @@ export default function AddProperty() {
   const [propertyImages, setPropertyImages] = useState<File[]>([]);
   const [floorPlans, setFloorPlans] = useState<File[]>([]);
   const [videoTours, setVideoTours] = useState<File[]>([]);
+  // Documents are staged here and uploaded after the property is created.
+  const [stagedDocuments, setStagedDocuments] = useState<StagedDocument[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [contactAutoFilled, setContactAutoFilled] = useState(false);
   const [isLocationDropdownOpen, setIsLocationDropdownOpen] = useState(false);
@@ -332,8 +335,24 @@ export default function AddProperty() {
       const response = await propertiesApi.createPropertyWithFiles(formDataToSend);
       
       if (response.success) {
+        // Upload any staged documents to the freshly created property.
+        const newPropertyId = (response.data as any)?._id || (response.data as any)?.id;
+        if (newPropertyId && stagedDocuments.length > 0) {
+          try {
+            await propertiesApi.uploadDocuments(
+              String(newPropertyId),
+              stagedDocuments.map((s) => s.file),
+              stagedDocuments.map((s) => s.type)
+            );
+          } catch (docErr: any) {
+            // Property creation already succeeded — surface a soft warning only.
+            console.error('Document upload after create failed:', docErr);
+            toast.error('Property created, but some documents failed to upload. You can add them from Edit.');
+          }
+        }
+
         toast.success('Your property has been submitted and is awaiting admin approval.');
-        
+
         // Reset form
         setFormData({
           title: '',
@@ -356,7 +375,8 @@ export default function AddProperty() {
         setPropertyImages([]);
         setFloorPlans([]);
         setVideoTours([]);
-        
+        setStagedDocuments([]);
+
         // Redirect to seller dashboard
         router.push('/dashboards/seller');
       } else {
@@ -806,6 +826,13 @@ export default function AddProperty() {
                       }}
                       onFieldChange={(field, value) =>
                         setFormData(prev => ({ ...prev, [field]: value }))
+                      }
+                      documentsContent={
+                        <PropertyDocuments
+                          canManage
+                          deferred
+                          onStagedChange={setStagedDocuments}
+                        />
                       }
                     />
                   </section>

@@ -15,13 +15,24 @@ export interface PropertyDocument {
   uploadedAt?: string;
 }
 
+export interface StagedDocument {
+  file: File;
+  type: DocType;
+}
+
 interface Props {
-  propertyId: string;
+  // Required only for immediate (non-deferred) uploads.
+  propertyId?: string;
   documents?: PropertyDocument[] | null;
   // Only owner/admin (or assigned agent) should see upload + delete controls.
   canManage?: boolean;
   // Bubble updated list up so parents (e.g. the modal) can refresh their state.
   onChange?: (docs: PropertyDocument[]) => void;
+  // Deferred mode: used during property CREATE, where no id exists yet.
+  // Files are only staged (not uploaded); the parent uploads them after the
+  // property is created and receives the staged list via onStagedChange.
+  deferred?: boolean;
+  onStagedChange?: (staged: StagedDocument[]) => void;
 }
 
 const DOC_TYPES: DocType[] = ['SOI', 'Contract', 'Other'];
@@ -37,7 +48,14 @@ interface StagedFile {
   type: DocType;
 }
 
-export default function PropertyDocuments({ propertyId, documents, canManage = false, onChange }: Props) {
+export default function PropertyDocuments({
+  propertyId,
+  documents,
+  canManage = false,
+  onChange,
+  deferred = false,
+  onStagedChange,
+}: Props) {
   const [docs, setDocs] = useState<PropertyDocument[]>(documents ?? []);
   const [staged, setStaged] = useState<StagedFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -48,6 +66,12 @@ export default function PropertyDocuments({ propertyId, documents, canManage = f
   useEffect(() => {
     setDocs(documents ?? []);
   }, [documents]);
+
+  // In deferred (create) mode, bubble staged files up to the parent form.
+  useEffect(() => {
+    if (deferred && onStagedChange) onStagedChange(staged);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [staged, deferred]);
 
   const handleFilesSelected = (fileList: FileList | null) => {
     if (!fileList || fileList.length === 0) return;
@@ -102,8 +126,8 @@ export default function PropertyDocuments({ propertyId, documents, canManage = f
 
   return (
     <div className="space-y-4">
-      {/* Existing documents list / empty state */}
-      {docs.length === 0 ? (
+      {/* Existing documents list / empty state (hidden during create/deferred) */}
+      {deferred ? null : docs.length === 0 ? (
         <p className="text-sm text-gray-500">No documents uploaded yet</p>
       ) : (
         <ul className="space-y-2">
@@ -200,22 +224,28 @@ export default function PropertyDocuments({ propertyId, documents, canManage = f
                 </div>
               ))}
 
-              <button
-                type="button"
-                onClick={handleUpload}
-                disabled={isUploading}
-                className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60"
-              >
-                {isUploading ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" /> Uploading…
-                  </>
-                ) : (
-                  <>
-                    <UploadCloud className="h-4 w-4" /> Upload {staged.length} file{staged.length > 1 ? 's' : ''}
-                  </>
-                )}
-              </button>
+              {deferred ? (
+                <p className="text-xs text-gray-500">
+                  These files will be uploaded automatically once the property is created.
+                </p>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleUpload}
+                  disabled={isUploading}
+                  className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60"
+                >
+                  {isUploading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" /> Uploading…
+                    </>
+                  ) : (
+                    <>
+                      <UploadCloud className="h-4 w-4" /> Upload {staged.length} file{staged.length > 1 ? 's' : ''}
+                    </>
+                  )}
+                </button>
+              )}
             </div>
           )}
         </div>
