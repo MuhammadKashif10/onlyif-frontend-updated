@@ -60,6 +60,13 @@ interface Property {
   };
   createdAt: string;
   address: Address;
+  propertyDocuments?: Array<{
+    _id?: string;
+    fileUrl: string;
+    fileName: string;
+    type?: "SOI" | "Contract" | "Other";
+    uploadedAt?: string;
+  }>;
 }
 
 interface Agent {
@@ -545,6 +552,9 @@ const PropertiesPage = () => {
                       Seller
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Documents
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
@@ -652,6 +662,29 @@ const PropertiesPage = () => {
                           >
                             View
                           </button>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 align-top text-sm text-gray-900">
+                        {property.propertyDocuments && property.propertyDocuments.length > 0 ? (
+                          <div className="space-y-1">
+                            {property.propertyDocuments.map((doc, index) => (
+                              <a
+                                key={doc._id || doc.fileUrl || index}
+                                href={doc.fileUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-1.5 text-blue-600 hover:text-blue-900"
+                                title={`${doc.fileName} (${doc.type || "Other"})`}
+                              >
+                                <span className="inline-flex items-center rounded-full bg-gray-100 px-1.5 py-0.5 text-[10px] font-semibold text-gray-600">
+                                  {doc.type || "Other"}
+                                </span>
+                                <span className="max-w-[160px] truncate">{doc.fileName}</span>
+                              </a>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-gray-400">No documents</span>
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
