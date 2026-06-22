@@ -10,6 +10,9 @@ export type DocType = 'SOI' | 'Contract' | 'Other';
 
 export interface PropertyDocument {
   _id?: string;
+  // apiClient transforms backend `_id` → `id`, so documents loaded via the API
+  // expose `id` instead of `_id`. Both are accepted everywhere below.
+  id?: string;
   fileUrl: string;
   fileName: string;
   type?: DocType;
@@ -134,9 +137,11 @@ export default function PropertyDocuments({
         <ul className="space-y-2">
           {docs.map((doc) => {
             const docType = (doc.type as DocType) || 'Other';
+            // Backend `_id` may have been transformed to `id` by the API client.
+            const docId = doc._id || doc.id;
             return (
               <li
-                key={doc._id || doc.fileUrl}
+                key={docId || doc.fileUrl}
                 className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white px-3 py-2.5"
               >
                 <FileText className="h-5 w-5 flex-shrink-0 text-gray-400" />
@@ -163,12 +168,12 @@ export default function PropertyDocuments({
                 {canManage && (
                   <button
                     type="button"
-                    onClick={() => handleDelete(doc._id)}
-                    disabled={deletingId === doc._id}
+                    onClick={() => handleDelete(docId)}
+                    disabled={deletingId === docId}
                     className="inline-flex h-9 w-9 items-center justify-center rounded-full text-red-500 hover:bg-red-50 disabled:opacity-50"
                     aria-label={`Delete ${doc.fileName}`}
                   >
-                    {deletingId === doc._id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                    {deletingId === docId ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
                   </button>
                 )}
               </li>
