@@ -124,7 +124,9 @@ const PropertiesPage = () => {
       }),
     enabled: !!user && (user.role === "admin" || user.role === "super_admin"),
     retry: 1,
-    refetchOnWindowFocus: false,
+    // Refetch when the admin returns to the tab so seller edits (incl. documents)
+    // are reflected without a manual page reload.
+    refetchOnWindowFocus: true,
   });
 
   // Fetch agents for assignment
