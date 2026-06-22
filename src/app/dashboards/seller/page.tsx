@@ -28,6 +28,7 @@ import {
   MessageSquare
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/reusable';
+import EditPropertyModal from '@/components/seller/EditPropertyModal';
 
 // Loading spinner component
 const LoadingSpinner = () => (
@@ -83,7 +84,11 @@ function SellerDashboard() {
   const [statsError, setStatsError] = useState<string | null>(null);
   const [listingsError, setListingsError] = useState<string | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  
+
+  // Edit property modal state
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingProperty, setEditingProperty] = useState<EnhancedProperty | null>(null);
+
   // Role switch modal state
   const [isBuyerModalOpen, setBuyerModalOpen] = useState(false);
   const [buyerChecks, setBuyerChecks] = useState({
@@ -236,9 +241,21 @@ function SellerDashboard() {
     return null; // Will redirect in useEffect
   }
 
-  // Handle edit listing
-  const handleEditListing = (propertyId: string) => {
-    router.push(`/dashboards/seller/listings/${propertyId}/edit`);
+  // Handle edit listing — open the in-page modal (no navigation, no 404)
+  const handleEditOpen = (property: EnhancedProperty) => {
+    setEditingProperty(property);
+    setIsEditModalOpen(true);
+  };
+
+  const handleEditClose = () => {
+    setIsEditModalOpen(false);
+    setEditingProperty(null);
+  };
+
+  // After a successful save: close the modal and refresh listings in place
+  const handlePropertyUpdated = () => {
+    handleEditClose();
+    fetchListings();
   };
 
   // Handle adding new listing
@@ -979,8 +996,8 @@ function SellerDashboard() {
                             </div>
                           </div>
                           <div className="flex items-center space-x-2 sm:space-x-3 w-full md:w-auto">
-                            <button 
-                              onClick={() => handleEditListing(property.id)}
+                            <button
+                              onClick={() => handleEditOpen(property)}
                               className="flex-1 rounded-xl bg-black px-5 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-gray-900 sm:text-sm md:flex-none"
                             >
                               Edit
@@ -1082,6 +1099,16 @@ function SellerDashboard() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Edit Property Modal — unified in-page edit flow (shared with listings page) */}
+      {isEditModalOpen && (
+        <EditPropertyModal
+          isOpen={isEditModalOpen}
+          onClose={handleEditClose}
+          property={editingProperty}
+          onUpdated={handlePropertyUpdated}
+        />
+      )}
     </div>
   );
 };
