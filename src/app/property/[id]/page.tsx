@@ -191,10 +191,11 @@ export default function PropertyDetailsPage() {
   // information the title doesn't already include.
   const displayAddress = getNonDuplicateAddress(property.title, formatAddress(property.address));
 
-  // Backend now returns a reliable `agent` + `agentAssigned`. Prefer those;
-  // keep local `agent` state only as a harmless fallback.
-  const resolvedAgent = property.agent || agent;
-  const hasAgent = !!(property.agentAssigned && resolvedAgent);
+  // Agent UI is driven solely by the backend property payload: presence of an
+  // `agent` object means a contactable agent is assigned. No alternative fields
+  // (agentAssigned, agent.id) participate in the display decision.
+  const resolvedAgent = property.agent;
+  const hasAgent = !!property.agent;
 
   // Paid-content gate. The backend omits the full details and sets isUnlocked:false
   // for viewers who haven't paid. Treat an explicit `false` as locked.
@@ -411,7 +412,7 @@ export default function PropertyDetailsPage() {
                 </div>
               </div>
             ) : (
-              <p className="text-gray-500">No agent assigned yet.</p>
+              <p className="text-gray-500">No Agent Assigned</p>
             )}
           </div>
         </div>

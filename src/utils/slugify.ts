@@ -15,12 +15,15 @@ export function slugify(text: string): string {
 }
 
 /**
- * Generate a property URL with ID and slug
+ * Generate a property URL.
+ *
+ * The canonical (and only) property detail route is /property/[id]. The slug is
+ * no longer part of routing; the `title` parameter is kept for backward
+ * compatibility with existing call sites but is intentionally unused.
  * @param id - Property ID
- * @param title - Property title
- * @returns SEO-friendly property URL
+ * @param _title - Property title (unused; retained for call-site compatibility)
+ * @returns Canonical property detail URL
  */
-export function generatePropertyUrl(id: string, title: string): string {
-  const slug = slugify(title);
-  return `/property/${id}${slug ? `/${slug}` : ''}`;
+export function generatePropertyUrl(id: string, _title?: string): string {
+  return `/property/${id}`;
 }
